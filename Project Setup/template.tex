@@ -30,10 +30,33 @@ Alessandro Berti\\[6ex]
 
 \subsection{Client}
 Insurance company F is a internationally established insurer for road vehicles. It handles processes such as \textit{application-to-approval} and \textit{issue-to-resolution}. In the following we are going to focus on established clients of company F that submit an insurance claim as in the issue-to-resolution process. 
-Such a process may look like the following: 
+There are multiple stages of this process where conformance deviations may take place, such as the claim registration (sub-) process: "After a claim is registered, it is examined by a claims officer who then writes a settlement
+recommendation. This recommendation is then checked by a senior claims officer who may
+mark the claim as “OK” or “Not OK”. If the claim is marked as “Not OK”, it is sent back
+to the claims officer and the recommendation is repeated. If the claim is “OK”, the claim
+handling process proceeds." \cite{mendling2013fundamentals}.
+We modeled this processa as BPMN diagram in \ref{fig:claim_registration}
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/claim_registration.png}
+	\caption{Claim registration process for company F.}
+	\label{fig:claim_registration}
+\end{figure}
 \subsection{Example Use Case 1:}
+Company F notices that the claim handling regularly fails because of issues that have been introduced in the claim registration process which it directly proceeds. Such issues include: 
+\begin{enumerate}
+	\item The activity "Evaluate severity" was skipped and thus the activity "Send forms" is executed only with the basic forms sent to the customer and not the (in severe cases required) additional forms.
+	\item The activity "Check forms completeness" was emitted and thus the claim is registered even though not all required forms are present.
+\end{enumerate}
+It is self-evident how these deviations from standard procedure cause problems later on in the claim handling process. Depending on the exact conformance violation in the claim registration process, deviations in the subsequent process may or may not arise. To get a basis on which to act on, company F hopes to predict conformance deviations that may occur in subsequent parts of the process by deploying a ML-driven conformance prediction strategy.
 \subsection{Example Use Case 2:}
-
+Company F also suspects that a variety of case attributes, including the claimant’s age, sex, and the total claim amount might be useful features for predicting the eventual trajectory of the case. For instance, a claim with a high monetary value filed by a claimant in a specific demographic might be predicted to have a higher probability of being marked as "Not OK" during the senior officer's review, or it might be flagged as being at risk for a conformance deviation, such as the omission of a mandatory secondary verification. By analyzing these attributes early on, company F can anticipate whether a case will follow the standard workflow or if it is likely to encounter deviations, allowing for proactive management and more accurate outcome predictions.\\
+A second sub-process follows this initial registration: the \textit{Claim Settlement and Communication} phase. "In this stage, the claims officer initiates direct communication with the claimant to request additional documentation or clarify the circumstances of the incident. Based on the gathered information, a final decision is made to either reimburse the client, reject the claim, or reinitiate the decision-making process if new evidence suggests a different path." \ref{fig:claim_decision} (this process is not taken from the book "Fundamentals of Business Process Management").\\
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/claim_decision.png}
+	\caption{Claim communication and settlement process for company F.}
+	\label{fig:claim_decision}
+\end{figure}
+Conformance deviations are have been recorded during this interaction; for example, the officer might bypass the mandatory "Request Information" step and move directly to a rejection, or they might fail to provide the required justification when reinitiating the process. These deviations are candidates for prediction, as early indicators in the claim registration and especially case attributes often exhibit a higher likelihood of non-compliant behavior during these final decision steps.
 \section{Feasibility Study}
 
 \subsection{Theoretical Feasibility}
@@ -41,8 +64,8 @@ Such a process may look like the following:
 
 \section{Project Charter}\label{sec:charter} 
 
-\includegraphics[width=1\textwidth]{project_charter.png}
-\\\\
+%\includegraphics[width=1\textwidth]{project_charter.png}
+%\\\\
 The milestones and their respective deadlines for submission of the required materials are:
 \begin{itemize}
 	\item Project Setup:
@@ -74,34 +97,45 @@ PM4Py (Process Mining for Python) is an library that was created and over many y
 \section{Team}
 \subsection{Personal Description}
 \subsubsection{Richard Schuppener}
+I did my Bachelors degree in Computer Science from 2022-2025 and recently started my Masters degree in Data Science (both at RWTH Aachen University). From the third semester of my bachelor on, I developed a keen interest in Process Mining - my interest in Data Science was present long before. Currently, I am working at Fraunhofer FiT as a student assistant and I previously enrolled in the following (relevant) courses:
+\begin{itemize} 
+	\item \textit{Business Process Modeling and Computation}
+	\item \textit{Fundamentals of Business Process Management}
+	\item \textit{Business Process Intelligence}
+	\item \textit{Elements of Machine Learning and Data Science}
+	\item \textit{Introduction to Data Science}
+	\item \textit{Advanced Process Mining}
+	\item \textit{SPP: Conformance Checking in Python}
+\end{itemize}
+This concludes that I have strong theoretical backgrounds in the areas of process mining (especially conformance checking) and basics in machine learning. \\
+I am looking forward to working with Cem and honing my software development skills (in particular best practices), getting more insights into the combination of process mining and classical machine learning and ultimately delivering a complete and polished product that actually produces valuable insights.
 \subsubsection{Cem Colak}
 
 \section{Roles}
 
-\underline{Scrum Master}: 
+\underline{Scrum Master}: We decided that the role of the scrum master will not be assigned to any of us, since our team only consists of two participants and we deem a scrum master as a single responsible person to be unfitting and unnecessary.
 \\\\
-\underline{Official Communication/Product Owner}: 
+\underline{Official Communication/Product Owner}: Cem will be assigned to handle the official communication with Alessandro and notify him about our progress, potential problems, questions and organizational information.
 \\\\
-\underline{Tools Administration}: 
+\underline{Tools Administration}: Since Cem already set up Trello and is familiar with structuring boards, we assign him to be responsible for the Tool Administration.
 \\\\
-\underline{Theory Expert}: 
+\underline{Theory Expert}: Due to his background in process mining, we decided to assign Richard to the role of a theory expert. 
 \\\\
-\underline{Software Expert}: 
+\underline{Software Expert}: This role will also be assigned to Richard because of his background in Computer Science and his experience as programmer for FiT.
 \\\\
-\underline{Test Management}: 
+\underline{Test Management}: We assign the role of Test Manager to Cem, as he is a great fit for ensuring the functionality and correctness of any produced code. He has previous experience with the set-up of test suites test-first driven development.
 
 
 \section{Phase review}
 \subsection{Richard Schuppener}
+I believe that this phase went splendid and without any hiccups. Our group work started out by quickly establishing a communication channel (WhatsApp) and by meeting up in person. The organization of weekly time slot where we plan to work together on this project was easy and fits us both. I quickly established a GitLab repository and a LaTeX template for this document and Cem directly created the Trello board.
+We worked evenly on the "Project Setup" document and the atmosphere among the team was friendly, productive and supportive. I am looking forward to working with Cem on this interesting project.
 \subsection{Cem Colak}
 
 \paragraph{}
 \begin{thebibliography}{10}
-
-\bibitem{denisov2018performance}
-Denisov, V., Belkina, E., Fahland, D., van der Aalst, W. M. (2018, September). The Performance Spectrum Miner: Visual Analytics for Fine-Grained Performance Analysis of Processes. In BPM (Dissertation/Demos/Industry) (pp. 96-100).
-
+\bibitem{mendling2013fundamentals}
+Dumas, M., La Rosa, M., Mendling, J., \& Reijers, H. A. (2013). \textit{Fundamentals of Business Process Management}. Springer.
 \end{thebibliography}
-
 
 \end{document}
