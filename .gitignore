@@ -3,3 +3,17 @@
 *.out
 *.toc
 *.fdb_latexmk
+*.fls
+*.synctex.gz
+*.blg
+*.bbl
+*.run.xml
+*.bcf
+*.nav
+*.snm
+*.vrb
+*.pre
+*.glo
+*.idx
+*.ist
+.DS_Store
