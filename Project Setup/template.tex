@@ -24,13 +24,40 @@ Alessandro Berti\\[6ex]
 \tableofcontents
 
 \section{Introduction}
+This document encompasses the set-up phase of Cem and Richards project "Conformance Predictions" supervised by Dr. Alessandro Berti. The scope of this project is located in the field of Process Mining and Data Science \cite{vanderaalst2016}. We aim to provide a fully functional Python (+PM4Py) based, modular repository that integrates \textbf{Process Mining} and \textbf{Machine Learning} to retrieve relevant insights. Of course, the projects output shall be applicable to real-world data in form of event logs and normative process models.
+In the following, exemplary business cases for our projects output are presented, the theoretical and technical feasibility is analyzed and a project charter is presented. Finally we provide personal descriptions of the teams members (Richard \& Cem) and both assign roles and provide a personal phase review.
 
 \section{Business Case} 
 
 \subsection{Client}
+Insurance company F is a internationally established insurer for road vehicles. It handles processes such as \textit{application-to-approval} and \textit{issue-to-resolution}. In the following we are going to focus on established clients of company F that submit an insurance claim as in the issue-to-resolution process. 
+There are multiple stages of this process where conformance deviations may take place, such as the claim registration (sub-) process: "After a claim is registered, it is examined by a claims officer who then writes a settlement
+recommendation. This recommendation is then checked by a senior claims officer who may
+mark the claim as “OK” or “Not OK”. If the claim is marked as “Not OK”, it is sent back
+to the claims officer and the recommendation is repeated. If the claim is “OK”, the claim
+handling process proceeds." \cite{mendling2013fundamentals}.
+We modeled this processa as BPMN diagram in \ref{fig:claim_registration}
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/claim_registration.png}
+	\caption{Claim registration process for company F.}
+	\label{fig:claim_registration}
+\end{figure}
 \subsection{Example Use Case 1:}
+Company F notices that the claim handling regularly fails because of issues that have been introduced in the claim registration process which it directly proceeds. Such issues include: 
+\begin{enumerate}
+	\item The activity "Evaluate severity" was skipped and thus the activity "Send forms" is executed only with the basic forms sent to the customer and not the (in severe cases required) additional forms.
+	\item The activity "Check forms completeness" was emitted and thus the claim is registered even though not all required forms are present.
+\end{enumerate}
+It is self-evident how these deviations from standard procedure cause problems later on in the claim handling process. Depending on the exact conformance violation in the claim registration process, deviations in the subsequent process may or may not arise. To get a basis on which to act on, company F hopes to predict conformance deviations that may occur in subsequent parts of the process by deploying a ML-driven conformance prediction strategy.
 \subsection{Example Use Case 2:}
-
+Company F also suspects that a variety of case attributes, including the claimant’s age, sex, and the total claim amount might be useful features for predicting the eventual trajectory of the case. For instance, a claim with a high monetary value filed by a claimant in a specific demographic might be predicted to have a higher probability of being marked as "Not OK" during the senior officer's review, or it might be flagged as being at risk for a conformance deviation, such as the omission of a mandatory secondary verification. By analyzing these attributes early on, company F can anticipate whether a case will follow the standard workflow or if it is likely to encounter deviations, allowing for proactive management and more accurate outcome predictions.\\
+A second sub-process follows this initial registration: the \textit{Claim Settlement and Communication} phase. "In this stage, the claims officer initiates direct communication with the claimant to request additional documentation or clarify the circumstances of the incident. Based on the gathered information, a final decision is made to either reimburse the client, reject the claim, or reinitiate the decision-making process if new evidence suggests a different path." \ref{fig:claim_decision} (this process is not taken from the book "Fundamentals of Business Process Management").\\
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/claim_decision.png}
+	\caption{Claim communication and settlement process for company F.}
+	\label{fig:claim_decision}
+\end{figure}
+Conformance deviations are have been recorded during this interaction; for example, the officer might bypass the mandatory "Request Information" step and move directly to a rejection, or they might fail to provide the required justification when reinitiating the process. These deviations are candidates for prediction, as early indicators in the claim registration and especially case attributes often exhibit a higher likelihood of non-compliant behavior during these final decision steps.
 \section{Feasibility Study}
 
 \subsection{Theoretical Feasibility}
@@ -45,7 +72,7 @@ In conclusion, conformance checking theory and predictive process monitoring pro
 
 \subsection{Technical Feasibility}
 
-\section{Project Scope and Deliverables deadlines}\label{sec:charter} 
+\section{Project Scope and Deliverables deadlines}\label{sec:charter}
 \\\\
 The project scope encompasses the design and implementation of a predictive analytics pipeline that integrates conformance checking diagnostics with machine learning-based predictive modeling. The primary deliverables include:
 \begin{itemize}
@@ -71,43 +98,66 @@ In order to plan, organize, and track the development of our work, we rely on a 
 Link to our Trello board: \href{https://trello.com/invite/b/69e7795b0301156f7b398049/ATTI312fa2edbd35f19912efe97f4c4d0d8bCA988E2A/conformance-predictions}{\textit{Group 4 Trello}}
 
 \subsection{Git and GitLab}
-Version control systems are indispensable for modern software development, especially in collaborative environments like academic projects. For our PM4PY-based project we used Git and GitLab, which will be introduced in the following: \\ 
+Version control systems are indispensable for modern software development, especially in collaborative environments like academic projects. For our PM4PY based project we used Git and GitLab, which will use the following: \\
 \\
-\textit{Git}, at its core, is a distributed version control system that tracks changes in source code over time. Its key strengths lie in its ability to create branches for remote independent development, merge code easily, and revert to previous versions. This allows team members to work concurrently on different features or bug fixes without interfering with each other's progress. Remote repositories enable the developing team to get the most up-to-date version of the project and develop from there. \\
+\textit{Git}, at its core, is a distributed version control system that tracks changes in source code over time. Its key strengths lie in its ability to create branches for remote independent development, merge code easily, and revert to previous versions. This allows team members to work concurrently on different features or bug fixes without interfering with each other's progress. Changes are transparently tracked and loss of progress is mitigated. Remote repositories enable the developing team to get the most up-to-date version of the project and develop from there. \\
 \\
-\textit{GitLab} on the other hand, provides a web-based platform built around Git, extending its functionalities with a suite of project management and collaboration tools. These include issue tracking, code review, continuous integration/continuous delivery (CI/CD) pipelines, and wiki pages for documentation. By integrating these features, GitLab creates a centralized hub for project activity.
+\textit{GitLab} on the other hand, provides a web-based platform built around Git, extending its functionalities with a suite of project management and collaboration tools. These include issue tracking, code review, continuous integration/continuous delivery (CI/CD) pipelines for example to automatically run tests, and wiki pages for documentation. Additionally, analytics are automatically created and on-demand displayed such as commits per member, time of commits, code review analytics, CI/CD analytics and many more. By integrating these features, GitLab creates a centralized hub for project activity.
 \\\\
 
 \subsection{PM4Py}
-PM4Py is an open source library designed by the process mining group of the Frauenhofer Institute (FiT), which includes a plethora of state-of-the-art process mining algorithms. In regards to our project and the overall topic of Conformance Checking, PM4Py supports f.e. token-based, alignment-based and footprint-based conformance diagnostics, while also offering a lot of visualization techniques. Filtering event logs and extracting features is also supported, which makes pm4py it perfect for our project.
-
+PM4Py (Process Mining for Python) \cite{pm4py2023} is an library that was created and over many years developed the Frauenhofer Institute (FiT), but development was handed off to its spin-off \textit{Process Intelligence Solutions} (P. I. S.). The library is open-source and encompasses a plethora of state-of-the-art process mining algorithms for filtering, discovery, conformance checking, visualization etc. In regards to our project and the overall topic of Conformance Predictions, PM4Py supports f.e. token-based, alignment-based and footprint-based conformance diagnostics, while also offering many visualization techniques. Special methods for filtering and extracting features from event logs is also supported, which makes PM4Py it perfect for our project.
 
 \section{Team}
 \subsection{Personal Description}
 \subsubsection{Richard Schuppener}
+Richard did his Bachelors degree in Computer Science from 2022-2025 and recently started his Masters degree in Data Science (both at RWTH Aachen University). From the third semester of his bachelor on, he developed a keen interest in Process Mining - his interest in Data Science was present long before. Currently, he is working at Fraunhofer FiT as a student assistant and previously enrolled in the following (relevant) courses:
+\begin{itemize} 
+	\item \textit{Business Process Modeling and Computation}
+	\item \textit{Fundamentals of Business Process Management}
+	\item \textit{Business Process Intelligence}
+	\item \textit{Elements of Machine Learning and Data Science}
+	\item \textit{Introduction to Data Science}
+	\item \textit{Advanced Process Mining}
+	\item \textit{SPP: Conformance Checking in Python}
+\end{itemize}
+This concludes that he has strong theoretical backgrounds in the areas of process mining (especially conformance checking) and basics in machine learning. \\
+He is looking forward to working with Cem and honing his software development skills (in particular best practices), getting more insights into the combination of process mining and classical machine learning and ultimately delivering a complete and polished product that actually produces valuable insights.
 \subsubsection{Cem Colak}
 Cem Colak is a Data Science student in the 2nd semester of his master's degree at RWTH Aachen University. He has a background in mathematics and gained industry experience in financial services and consulting though internships. He combines business understanding with technical skills in data analysis, research, project management and software development. Cem is passionate about leveraging data to drive insights and solve complex problems, making him a valuable asset to the project team.
 \section{Roles}
 
-\underline{Scrum Master}: 
+\underline{Scrum Master}: We decided that the role of the scrum master will not be assigned to any of us, since our team only consists of two participants and we deem a scrum master as a single responsible person to be unfitting and unnecessary.
 \\\\
-\underline{Official Communication/Product Owner}:
+\underline{Official Communication/Product Owner}: Cem will be assigned to handle the official communication with Alessandro and notify him about our progress, potential problems, questions and organizational information.
 \\\\
-\underline{Tools Administration}:
+\underline{Tools Administration}: Since Cem already set up Trello and is familiar with structuring boards, we assign him to be responsible for the Tool Administration.
 \\\\
-\underline{Theory Expert}: 
+\underline{Theory Expert}: Due to his background in process mining, we decided to assign Richard to the role of a theory expert. 
 \\\\
-\underline{Software Expert}: 
+\underline{Software Expert}: This role will also be assigned to Richard because of his background in Computer Science and his experience as programmer for FiT.
 \\\\
-\underline{Test Management}: 
+\underline{Test Management}: We assign the role of Test Manager to Cem, as he is a great fit for ensuring the functionality and correctness of any produced code. He has previous experience with the set-up of test suites test-first driven development.
 
 
 \section{Phase review}
 \subsection{Richard Schuppener}
+I believe that this phase went splendid and without any hiccups. Our group work started out by quickly establishing a communication channel (WhatsApp) and by meeting up in person. The organization of weekly time slot where we plan to work together on this project was easy and fits us both. I quickly established a GitLab repository and a LaTeX template for this document and Cem directly created the Trello board.
+We worked evenly on the "Project Setup" document and the atmosphere among the team was friendly, productive and supportive. I am looking forward to working with Cem on this interesting project.
 \subsection{Cem Colak}
-I think, the project setup phase was very successful and well coordinated. We both value the importance of clear, strucured and transparent coordination and communication. 
+I think, the project setup phase was very successful and well coordinated. We both value the importance of clear, strucured and transparent coordination and communication.
 Since I'm doing such a lab for my first time, I'm a bit overwhelmed by the amount of work and the time pressure.  Richard already did a lab in his bachelor, so he was able to guide me through the process, share experience and give me a good overview of the requirements and expectations. This was very helpful for me to get started and to understand the overall process.
-We already established a setup for the project, to regularly work, communicate and coordinate. The trello board really helped to fulfill our expectations on a tool to coordinate the phase. 
-So far, the only thing I'm concerend about are my skills in process mining and the technical implementation. Nevertheless, Richard definitely can support me in this regard, and I'm sure that I will be able to leard a lot during this project. 
+We already established a setup for the project, to regularly work, communicate and coordinate. The trello board really helped to fulfill our expectations on a tool to coordinate the phase.
+So far, the only thing I'm concerend about are my skills in process mining and the technical implementation. Nevertheless, Richard definitely can support me in this regard, and I'm sure that I will be able to leard a lot during this project.
+
+\paragraph{}
+\begin{thebibliography}{10}
+\bibitem{vanderaalst2016}
+Van Der Aalst, Wil. (2016) \textit{Process mining: Data science in action.} Berlin, Heidelberg: Springer Berlin Heidelberg.
+\bibitem{mendling2013fundamentals}
+Dumas, M., La Rosa, M., Mendling, J., \& Reijers, H. A. (2013). \textit{Fundamentals of Business Process Management}. Springer.
+\bibitem{pm4py2023}
+Berti A, van Zelst S, Schuster D. \textit{PM4Py: A process mining library for Python.} Software Impacts. 2023
+\end{thebibliography}
 
 \end{document}
