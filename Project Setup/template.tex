@@ -22,7 +22,6 @@ Alessandro Berti\\[6ex]
 \newpage
 
 \tableofcontents
-\newpage
 
 \section{Introduction}
 
@@ -35,20 +34,33 @@ Alessandro Berti\\[6ex]
 \section{Feasibility Study}
 
 \subsection{Theoretical Feasibility}
+
+The theoretical foundation of this project rests on two well-established and mutually reinforcing research domains: process mining --- in particular conformance checking --- and predictive machine learning applied to sequential process data.
+
+\textit{Conformance checking} is a mature subfield of process mining concerned with quantifying the degree to which observed process executions, recorded in event logs, comply with a normative reference model such as a Petri net or BPMN diagram. Established techniques include token-based replay, alignment-based conformance checking, and footprint-based methods, each of which produces interpretable fitness and precision metrics that provide a principled basis for identifying deviations such as those described in the insurance business case.
+
+The predictive dimension of the project is grounded in \textit{Predictive Process Monitoring} (PPM), which applies supervised machine learning to partial case traces, treating the prefix of an ongoing case as a feature representationn and a future process outcome as the prediction target. This maps directly towards the project's core objective: predicting whether a conformance deviation will occur based on early-stage process events and case attributes such as alignment issues, claimant demographics and claim amount.
+
+In conclusion, conformance checking theory and predictive process monitoring provide a robust theoretical basis for predicting future conformance deviations from partial event logs using a modular PM4Py-based pipeline.
+
 \subsection{Technical Feasibility}
 
-\section{Project Charter}\label{sec:charter} 
-
-\includegraphics[width=1\textwidth]{project_charter.png}
+\section{Project Scope and Deliverables deadlines}\label{sec:charter} 
 \\\\
-The milestones and their respective deadlines for submission of the required materials are:
+The project scope encompasses the design and implementation of a predictive analytics pipeline that integrates conformance checking diagnostics with machine learning-based predictive modeling. The primary deliverables include:
 \begin{itemize}
-	\item Project Setup:
-	\item Requirements Engineering: 
-	\item Sprint 1: 
-	\item Sprint 2: 
-	\item Sprint 3: 
-	\item Testing and Assessment: 
+	\item \textbf{Reproducible Python-based software artifact} with \textbf{tests and documentation}
+	\item \textbf{Prototype software documentation} including a technical documentation, a user guide and a prototype interface
+	\item \textbf{An evaluation} addressing the question \textit{if conformance information derived from a process model improve the prediction of future deviations and compliance risks}
+\end{itemize}
+	The milestones and their respective deadlines for submission of the required materials are:
+\begin{itemize}
+	\item Project Setup: Friday 24 April 2026
+	\item Requirements Engineering: Sunday 3 May 2026
+	\item Sprint 1: Sunday 17 May 2026
+	\item Sprint 2: Sunday 31 May 2026
+	\item Sprint 3: Sunday 14 June 2026
+	\item Testing and Assessment: Sunday 21 June 2026 
 \end{itemize}
 It is essential to acknowledge that the schedule presented here is preliminary and may be subject to adjustments. This flexibility accommodates unforeseen personal or professional circumstances that may arise during the project's execution, allowing team members to navigate challenges effectively. 
 
@@ -56,10 +68,10 @@ It is essential to acknowledge that the schedule presented here is preliminary a
 \subsection{Trello}
 In order to plan, organize, and track the development of our work, we rely on a project management tool called Trello. It is based on the concept of boards, lists, and cards, allowing us to break down complex tasks into smaller ones and distribute them among team members. We utilize features such as due dates and labels to further customize our tasks and distinguish them from one another. This web-based platform makes it easy for group members to monitor the progress of each task and identify their responsibilities. In conclusion, Trello's user-friendly interface and comprehensive features significantly contribute to the success of our project.
 \\\\
-Link to our Trello board: \href{https://trello.com/b/Hlx8Wp8m}{\textit{Group 4 Trello}}
+Link to our Trello board: \href{https://trello.com/invite/b/69e7795b0301156f7b398049/ATTI312fa2edbd35f19912efe97f4c4d0d8bCA988E2A/conformance-predictions}{\textit{Group 4 Trello}}
 
 \subsection{Git and GitLab}
-Version control systems are indispensable for modern software development, especially in collaborative environments like academic projects. For our PM4PY based project we used Git and GitLab, which will be introduced in the following: \\ 
+Version control systems are indispensable for modern software development, especially in collaborative environments like academic projects. For our PM4PY-based project we used Git and GitLab, which will be introduced in the following: \\ 
 \\
 \textit{Git}, at its core, is a distributed version control system that tracks changes in source code over time. Its key strengths lie in its ability to create branches for remote independent development, merge code easily, and revert to previous versions. This allows team members to work concurrently on different features or bug fixes without interfering with each other's progress. Remote repositories enable the developing team to get the most up-to-date version of the project and develop from there. \\
 \\
@@ -74,14 +86,14 @@ PM4Py is an open source library designed by the process mining group of the Frau
 \subsection{Personal Description}
 \subsubsection{Richard Schuppener}
 \subsubsection{Cem Colak}
-
+Cem Colak is a Data Science student in the 2nd semester of his master's degree at RWTH Aachen University. He has a background in mathematics and gained industry experience in financial services and consulting though internships. He combines business understanding with technical skills in data analysis, research, project management and software development. Cem is passionate about leveraging data to drive insights and solve complex problems, making him a valuable asset to the project team.
 \section{Roles}
 
 \underline{Scrum Master}: 
 \\\\
-\underline{Official Communication/Product Owner}: 
+\underline{Official Communication/Product Owner}:
 \\\\
-\underline{Tools Administration}: 
+\underline{Tools Administration}:
 \\\\
 \underline{Theory Expert}: 
 \\\\
@@ -93,14 +105,9 @@ PM4Py is an open source library designed by the process mining group of the Frau
 \section{Phase review}
 \subsection{Richard Schuppener}
 \subsection{Cem Colak}
-
-\paragraph{}
-\begin{thebibliography}{10}
-
-\bibitem{denisov2018performance}
-Denisov, V., Belkina, E., Fahland, D., van der Aalst, W. M. (2018, September). The Performance Spectrum Miner: Visual Analytics for Fine-Grained Performance Analysis of Processes. In BPM (Dissertation/Demos/Industry) (pp. 96-100).
-
-\end{thebibliography}
-
+I think, the project setup phase was very successful and well coordinated. We both value the importance of clear, strucured and transparent coordination and communication. 
+Since I'm doing such a lab for my first time, I'm a bit overwhelmed by the amount of work and the time pressure.  Richard already did a lab in his bachelor, so he was able to guide me through the process, share experience and give me a good overview of the requirements and expectations. This was very helpful for me to get started and to understand the overall process.
+We already established a setup for the project, to regularly work, communicate and coordinate. The trello board really helped to fulfill our expectations on a tool to coordinate the phase. 
+So far, the only thing I'm concerend about are my skills in process mining and the technical implementation. Nevertheless, Richard definitely can support me in this regard, and I'm sure that I will be able to leard a lot during this project. 
 
 \end{document}
