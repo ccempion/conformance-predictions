@@ -71,9 +71,26 @@ The predictive dimension of the project is grounded in \textit{Predictive Proces
 In conclusion, conformance checking theory and predictive process monitoring provide a robust theoretical basis for predicting future conformance deviations from partial event logs using a modular PM4Py-based pipeline.
 
 \subsection{Technical Feasibility}
+Our project heavily relies on a choice of widespread used open-source python libraries such as \textbf{Numpy}, \textbf{Pandas}, \textbf{PM4Py}, \textbf{Scikit-Learn} and \textbf{Matplotlib}. They all serve different purposes and will be used to varying extent. In the following, we allow the libraries themselves to give us a brief overview of what they define themselves as:
+\begin{enumerate}
+	\item \textit{Numpy}: "NumPy is the fundamental package for N-dimensional arrays, mathematical functions, and numerical computing in Python." \cite{numpy2026}
+	\item \textit{Pandas}: "pandas is a fast, powerful, flexible and easy to use open source data analysis and manipulation tool, built on top of the Python programming language." \cite{pandas2026}
+	\item \textit{PM4Py}: "PM4Py is a leading open-source process mining library in Python, designed for use in both academia and industry." \cite{pm4py2026}
+	\item \textit{Scikit-Learn}: "Simple and efficient tools for predictive data analysis, Accessible to everybody, and reusable in various contexts, Built on NumPy, SciPy, and matplotlib" \cite{scikit-learn2026}
+	\item \textit{Matplotlib}: "Matplotlib is a comprehensive library for creating static, animated, and interactive visualizations in Python. Matplotlib makes easy things easy and hard things possible." \cite{matplotlib2026}
+\end{enumerate}
+Now we define their designated use-case in this project:
+\begin{enumerate}
+	\item \textit{Numpy}: Numpy will be used in many different and at this point unforeseeable steps in this project. It will be useful at the machine learning level but also at the filtering of logs, the extracting of case features and other pre-processing related tasks. 
+	\item \textit{Pandas}: PM4Py converts event logs that are stored as ".xes" to a pandas dataframe with its implemented read functions. It also notes that ".csv"-based event logs can directly be read with pandas. Pandas will inevitably be used throughout this project as a clean approach to store intermediate and event data.
+	\item \textit{PM4Py}: This library will be central to our project as it provides much of the required functionality regarding process mining, such as loading and filtering event logs, extracting case-based features and conformance checking with alignments. PM4Py is also great for initial exploration of event logs since it provides a comprehensive visualization module.
+	\item \textit{Scikit-Learn}: A machine learning library that is as widely used in academia as scikit-learn is core to our ML-driven approach. It provides easy access to ML-algorithms such as regression, decision trees and neural networks. These algorithms implement a great variety of parameters, automatic hyper-parameter tuning etc. Scikit-Learn also provides visualizations and evaluation methods that will be used in our assessment. 
+	\item \textit{Matplotlib}: In our assessment, we plan to use Matplotlib to visualize our projects outputs and thus our achievements. Matplotlib is extensive, widely used in academia and very user-friendly.
+\end{enumerate}
+We believe that this selection of libraries will probably cover all our projects needs, but note that other libraries may also be integrated into our project later on in the development stage.
+
 
 \section{Project Scope and Deliverables deadlines}\label{sec:charter}
-\\\\
 The project scope encompasses the design and implementation of a predictive analytics pipeline that integrates conformance checking diagnostics with machine learning-based predictive modeling. The primary deliverables include:
 \begin{itemize}
 	\item \textbf{Reproducible Python-based software artifact} with \textbf{tests and documentation}
@@ -165,6 +182,19 @@ Van Der Aalst, Wil. (2016) \textit{Process mining: Data science in action.} Berl
 Dumas, M., La Rosa, M., Mendling, J., \& Reijers, H. A. (2013). \textit{Fundamentals of Business Process Management}. Springer.
 \bibitem{pm4py2023}
 Berti A, van Zelst S, Schuster D. \textit{PM4Py: A process mining library for Python.} Software Impacts. 2023
+
+\bibitem{numpy2026}
+https://numpy.org/ - visited April 2026
+
+\bibitem{pm4py2026}
+https://processintelligence.solutions/pm4py - visited April 2026
+
+\bibitem{matplotlib2026}
+https://matplotlib.org/ - visited April 2026
+\bibitem{scikit-learn2026}
+https://scikit-learn.org/stable/ - visited April 2026
+\bibitem{pandas2026}
+https://pandas.pydata.org/ - visited April 2026
 \end{thebibliography}
 
 \end{document}
