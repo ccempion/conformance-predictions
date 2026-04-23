@@ -34,13 +34,26 @@ Alessandro Berti\\[6ex]
 \section{Feasibility Study}
 
 \subsection{Theoretical Feasibility}
+
+The theoretical foundation of this project rests on two well-established and mutually reinforcing research domains: process mining --- in particular conformance checking --- and predictive machine learning applied to sequential process data.
+
+\textit{Conformance checking} is a mature subfield of process mining concerned with quantifying the degree to which observed process executions, recorded in event logs, comply with a normative reference model such as a Petri net or BPMN diagram. Established techniques include token-based replay, alignment-based conformance checking, and footprint-based methods, each of which produces interpretable fitness and precision metrics that provide a principled basis for identifying deviations such as those described in the insurance business case.
+
+The predictive dimension of the project is grounded in \textit{Predictive Process Monitoring} (PPM), which applies supervised machine learning to partial case traces, treating the prefix of an ongoing case as a feature representationn and a future process outcome as the prediction target. This maps directly towards the project's core objective: predicting whether a conformance deviation will occur based on early-stage process events and case attributes such as alignment issues, claimant demographics and claim amount.
+
+In conclusion, conformance checking theory and predictive process monitoring provide a robust theoretical basis for predicting future conformance deviations from partial event logs using a modular PM4Py-based pipeline.
+
 \subsection{Technical Feasibility}
 
-\section{Project Charter}\label{sec:charter} 
-
-\includegraphics[width=1\textwidth]{project_charter.png}
+\section{Project Scope and Deliverables deadlines}\label{sec:charter} 
 \\\\
-The milestones and their respective deadlines for submission of the required materials are:
+The project scope encompasses the design and implementation of a predictive analytics pipeline that integrates conformance checking diagnostics with machine learning-based predictive modeling. The primary deliverables include:
+\begin{itemize}
+	\item \textbf{Reproducible Python-based software artifact} with \textbf{tests and documentation}
+	\item \textbf{Prototype software documentation} including a technical documentation, a user guide and a prototype interface
+	\item \textbf{An evaluation} addressing the question \textit{if conformance information derived from a process model improve the prediction of future deviations and compliance risks}
+\end{itemize}
+	The milestones and their respective deadlines for submission of the required materials are:
 \begin{itemize}
 	\item Project Setup: Friday 24 April 2026
 	\item Requirements Engineering: Sunday 3 May 2026
@@ -96,14 +109,5 @@ I think, the project setup phase was very successful and well coordinated. We bo
 Since I'm doing such a lab for my first time, I'm a bit overwhelmed by the amount of work and the time pressure.  Richard already did a lab in his bachelor, so he was able to guide me through the process, share experience and give me a good overview of the requirements and expectations. This was very helpful for me to get started and to understand the overall process.
 We already established a setup for the project, to regularly work, communicate and coordinate. The trello board really helped to fulfill our expectations on a tool to coordinate the phase. 
 So far, the only thing I'm concerend about are my skills in process mining and the technical implementation. Nevertheless, Richard definitely can support me in this regard, and I'm sure that I will be able to leard a lot during this project. 
-
-\paragraph{}
-\begin{thebibliography}{10}
-
-\bibitem{denisov2018performance}
-Denisov, V., Belkina, E., Fahland, D., van der Aalst, W. M. (2018, September). The Performance Spectrum Miner: Visual Analytics for Fine-Grained Performance Analysis of Processes. In BPM (Dissertation/Demos/Industry) (pp. 96-100).
-
-\end{thebibliography}
-
 
 \end{document}
