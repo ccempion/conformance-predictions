@@ -25,7 +25,7 @@ Alessandro Berti\\[6ex]
 
 \section{Introduction}
 This document encompasses the set-up phase of Cem and Richards project "Conformance Predictions" supervised by Dr. Alessandro Berti. The scope of this project is located in the field of Process Mining and Data Science \cite{vanderaalst2016}. We aim to provide a fully functional Python (+PM4Py) based, modular repository that integrates \textbf{Process Mining} and \textbf{Machine Learning} to retrieve relevant insights. Of course, the projects output shall be applicable to real-world data in form of event logs and normative process models.
-In the following, exemplary business cases for our projects output are presented, the theoretical and technical feasibility is analyzed and a project charter is presented. Finally we provide personal descriptions of the teams members (Richard \& Cem) and both assign roles and provide a personal phase review.
+In the following, exemplary business cases for our projects output are presented, the theoretical and technical feasibility is analyzed and the Deliverables deadlines are detailed. Finally we provide personal descriptions of the teams members (Richard \& Cem), both assigned roles and a personal phase review.
 
 \section{Business Case} 
 
@@ -64,9 +64,9 @@ Conformance deviations are have been recorded during this interaction; for examp
 
 The theoretical foundation of this project rests on two well-established and mutually reinforcing research domains: process mining --- in particular conformance checking --- and predictive machine learning applied to sequential process data.
 
-\textit{Conformance checking} is a mature subfield of process mining concerned with quantifying the degree to which observed process executions, recorded in event logs, comply with a normative reference model such as a Petri net or BPMN diagram. Established techniques include token-based replay, alignment-based conformance checking, and footprint-based methods, each of which produces interpretable fitness and precision metrics that provide a principled basis for identifying deviations such as those described in the insurance business case.
+\textit{Conformance checking} is a mature subfield of process mining concerned with quantifying the degree to which observed process executions, recorded in event logs, comply with a normative reference model such as a Petri net or BPMN diagram. Established techniques include token-based replay, alignment-based conformance checking, and footprint-based methods (e.g. cumulative alignment costs). Each of these produces interpretable fitness and precision metrics based on conformance- and log-based features that provide a principled basis for identifying deviations such as those described in the insurance business case.
 
-The predictive dimension of the project is grounded in \textit{Predictive Process Monitoring} (PPM), which applies supervised machine learning to partial case traces, treating the prefix of an ongoing case as a feature representationn and a future process outcome as the prediction target. This maps directly towards the project's core objective: predicting whether a conformance deviation will occur based on early-stage process events and case attributes such as alignment issues, claimant demographics and claim amount.
+The predictive dimension of the project is grounded in \textit{Predictive Process Monitoring} (PPM), which applies supervised machine learning to partial case traces, treating the prefix of an ongoing case as a feature representation and a future process outcome as the prediction target. This maps directly towards the project's core objective: predicting whether a conformance deviation will occur based on early-stage process events and case attributes such as alignment issues, claimant demographics and claim amount.
 
 In conclusion, conformance checking theory and predictive process monitoring provide a robust theoretical basis for predicting future conformance deviations from partial event logs using a modular PM4Py-based pipeline.
 
@@ -124,7 +124,13 @@ Richard did his Bachelors degree in Computer Science from 2022-2025 and recently
 This concludes that he has strong theoretical backgrounds in the areas of process mining (especially conformance checking) and basics in machine learning. \\
 He is looking forward to working with Cem and honing his software development skills (in particular best practices), getting more insights into the combination of process mining and classical machine learning and ultimately delivering a complete and polished product that actually produces valuable insights.
 \subsubsection{Cem Colak}
-Cem Colak is a Data Science student in the 2nd semester of his master's degree at RWTH Aachen University. He has a background in mathematics and gained industry experience in financial services and consulting though internships. He combines business understanding with technical skills in data analysis, research, project management and software development. Cem is passionate about leveraging data to drive insights and solve complex problems, making him a valuable asset to the project team.
+Cem Colak is a Data Science student in the 2nd semester of his master's degree at RWTH Aachen University. His background consists of a bachelor's degree in mathematics from the Heinrich-Heine-University Düsseldorf and gained hands-on industry experience in financial services and consulting. Through several internships at major companies such as BCG and zeb he leardned to combine his technical skills in complex modeling, data analysis and  research with valuable softskills in project management and teamwork. Currently he is a board member of a Germany-wide student organization and is responsible for the IT-architecture. This semester, he is enrolled in the following (relevant) courses: 
+\begin{itemize} 
+	\item \textit{Advanced Process Mining}
+	\item \textit{Fundamentals of Business Process Management}
+	\item \textit{Business Process Intelligence}
+	\item \textit{Process Mining with Frequencies}
+	\item 
 \section{Roles}
 
 \underline{Scrum Master}: We decided that the role of the scrum master will not be assigned to any of us, since our team only consists of two participants and we deem a scrum master as a single responsible person to be unfitting and unnecessary.
