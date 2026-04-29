@@ -24,82 +24,79 @@ Alessandro Berti\\[6ex]
 \tableofcontents
 \newpage
 
-\section{Introduction}
+\section{Motivation}
+% short and concise motivation to why requirement engineering is important and useful
 
-\section{Business Case} 
-
-\subsection{Client}
-\subsection{Example Use Case 1:}
-\subsection{Example Use Case 2:}
-
-\section{Feasibility Study}
-
-\subsection{Theoretical Feasibility}
-\subsection{Technical Feasibility}
-
-\section{Project Charter}\label{sec:charter} 
-
-\includegraphics[width=1\textwidth]{project_charter.png}
-\\\\
-The milestones and their respective deadlines for submission of the required materials are:
-\begin{itemize}
-	\item Project Setup:
-	\item Requirements Engineering: 
-	\item Sprint 1: 
-	\item Sprint 2: 
-	\item Sprint 3: 
-	\item Testing and Assessment: 
-\end{itemize}
-It is essential to acknowledge that the schedule presented here is preliminary and may be subject to adjustments. This flexibility accommodates unforeseen personal or professional circumstances that may arise during the project's execution, allowing team members to navigate challenges effectively. 
-
-\section{Tools}
-\subsection{Trello}
-In order to plan, organize, and track the development of our work, we rely on a project management tool called Trello. It is based on the concept of boards, lists, and cards, allowing us to break down complex tasks into smaller ones and distribute them among team members. We utilize features such as due dates and labels to further customize our tasks and distinguish them from one another. This web-based platform makes it easy for group members to monitor the progress of each task and identify their responsibilities. In conclusion, Trello's user-friendly interface and comprehensive features significantly contribute to the success of our project.
-\\\\
-Link to our Trello board: \href{https://trello.com/b/Hlx8Wp8m}{\textit{Group 4 Trello}}
-
-\subsection{Git and GitLab}
-Version control systems are indispensable for modern software development, especially in collaborative environments like academic projects. For our PM4PY based project we used Git and GitLab, which will be introduced in the following: \\ 
-\\
-\textit{Git}, at its core, is a distributed version control system that tracks changes in source code over time. Its key strengths lie in its ability to create branches for remote independent development, merge code easily, and revert to previous versions. This allows team members to work concurrently on different features or bug fixes without interfering with each other's progress. Remote repositories enable the developing team to get the most up-to-date version of the project and develop from there. \\
-\\
-\textit{GitLab} on the other hand, provides a web-based platform built around Git, extending its functionalities with a suite of project management and collaboration tools. These include issue tracking, code review, continuous integration/continuous delivery (CI/CD) pipelines, and wiki pages for documentation. By integrating these features, GitLab creates a centralized hub for project activity.
-\\\\
-
-\subsection{PM4Py}
-PM4Py is an open source library designed by the process mining group of the Frauenhofer Institute (FiT), which includes a plethora of state-of-the-art process mining algorithms. In regards to our project and the overall topic of Conformance Checking, PM4Py supports f.e. token-based, alignment-based and footprint-based conformance diagnostics, while also offering a lot of visualization techniques. Filtering event logs and extracting features is also supported, which makes pm4py it perfect for our project.
+\section{Requirement Identification}
+% maybe do requirement identification not in textual form but as:
+% mind-map?
+% maybe only explain how we identified the requirements but dont actually write them down here as they are fully specified in the Requirement Specification anyways?
+\subsection{Stakeholders}
+% who are the stakeholders (use Company F from "Project Setup" as exemplary business)
+% new paragraph
+\textbf{Business Requirements}
+% Company F (or similar companies)
+% new paragraph
+\textbf{User Requirements}
+% let the user be a business analyst hired by Company F
+\subsection{Functional Requirements}
+\subsection{Non-Functional Requirements}
+% new paragraph
+\textbf{Performance requirements}
+\subsection{Technical Constraints}
+% e.g. only use the libraries specified in the "Project Setup" document
 
 
-\section{Team}
-\subsection{Personal Description}
-\subsubsection{Richard Schuppener}
-\subsubsection{Cem Colak}
+\section{Requirement Specification}
+% fully specify for each requirement: ID, Type, Description: Goal, reasoning as to why
+% ID: "HL-number" / "LL-number" HL = high level, LL = low level
+% Type: Business / User / Functional / Non-Functional / ...
+% Importance: [1-3] 1 = most important
+% Optional: Yes / No
+\subsection{Stakeholder Requirements}
+% new paragraph
+\textbf{Business Requirements}
+% new paragraph
+\textbf{User Requirements}
+\subsection{Functional Requirements}
+\subsection{Non-Functional Requirements}
+% new paragraph
+\textbf{Performance requirements}
+\subsection{Technical Constraints}
+% e.g. only use the libraries specified in the "Project Setup" document
 
-\section{Roles}
 
-\underline{Scrum Master}: 
-\\\\
-\underline{Official Communication/Product Owner}: 
-\\\\
-\underline{Tools Administration}: 
-\\\\
-\underline{Theory Expert}: 
-\\\\
-\underline{Software Expert}: 
-\\\\
-\underline{Test Management}: 
+\section{Requirement Allocation \& Flowdown}
+% keep this section concise (little to none description - as the requirements are already fully specified in the previous chapter)
+% format: 
+% \textbf{Module X:} -> allocation of requirements to modules & people (Cem, Richard)
+% ID: "HL-number" / "LL-number" HL = high level, LL = low level
+% Decomposition / Heritage: for HL -> of which LL is it composed, for LL -> what HL requ. depend on this low level requ.?
 
-
+\section{Functional Models}
+% concise textual descriptions & BPMN diagrams: let the diagrams speak for themselves
+\subsection{Installation}
+% basic description how to install the project:
+% prerequisites: git, python, pip
+% 1. clone into repo, 2. create venv, 3. install requirements from requirements.txt, 4. execute script
+\subsection{Usage}
+% how does it look like when a user (i.e. business analyst) uses the script 
+% how does the python script work internally (what modules does it encompass)
+% how deos the python script communicate with the user?
+\section{Requirement Management}
+\subsection{Organization in Group 4}
+% describe how we plan to update, track, mark as satisfied etc, the specified requirements
+\subsection{GitLabs Requirements Management}
+% describe the builtin functionality provided by gitlab, why we chose it over other tools such as "Jira" etc.
 \section{Phase review}
 \subsection{Richard Schuppener}
 \subsection{Cem Colak}
 
 \paragraph{}
 \begin{thebibliography}{10}
-
-\bibitem{denisov2018performance}
-Denisov, V., Belkina, E., Fahland, D., van der Aalst, W. M. (2018, September). The Performance Spectrum Miner: Visual Analytics for Fine-Grained Performance Analysis of Processes. In BPM (Dissertation/Demos/Industry) (pp. 96-100).
-
+% gitlab documentation
+% nasa guide to requirement engineering?
+% BPMN citation / SBPM citation
 \end{thebibliography}
 
 
