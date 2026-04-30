@@ -85,6 +85,11 @@ Alessandro Berti\\[6ex]
 \section{Functional Models}
 % concise textual descriptions & BPMN diagrams: let the diagrams speak for themselves
 \subsection{Installation}\label{installation}
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/installation.png}
+	\caption{Installation process of our projects' python script.}
+	\label{fig:installation}
+\end{figure}
 % basic description how to install the project:
 % prerequisites: git, python, pip
 % 1. clone into repo, 2. create venv, 3. install requirements from requirements.txt, 4. execute script
@@ -100,8 +105,13 @@ The next step is to install all packages from the \textit{requirements.txt} file
 \texttt{pip install -r requirements.txt} \\\\
 Now, the script can be launched via the terminal if the user is inside the folder that contains the \textit{main.py} file: \\\\ 
 \texttt{python main.py} \\\\
-
+The installation process is visualized in \ref{fig:installation}. Note that this aims only to roughly sketch the installation process and neither depict correct BPMN, nor comprehensively describe the script setup.
 \subsection{Usage}
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/usage.png}
+	\caption{Typical usage of our projects' python script.}
+	\label{fig:usage}
+\end{figure}
 % how does it look like when a user (i.e. business analyst) uses the script 
 % how does the python script work internally (what modules does it encompass)
 % how deos the python script communicate with the user?
@@ -130,6 +140,7 @@ When the final preprocessing steps succeed, the user can now optionally specify 
 Now, the machine learning module becomes active and builds a \textbf{prediction model} based on the now fully specified data and parameters. \\ 
 After the model is built, the user is asked which data should undergo prediction: the input for this needs to be provided in the form of a file containing trace prefixes (and case attributes).
 The prediction is performed and the script asks if any other data should be predicted. If not, the script successfully terminates.
+This process is visualized in \ref{fig:usage}. Note that this aims to only roughly sketch the usage and neither depict correct BPMN, nor comprehensively describe the functionality of the script.
 \section{Requirement Management}
 \subsection{Organization in Group 4}
 % describe how we plan to update, track, mark as satisfied etc, the specified requirements
