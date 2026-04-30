@@ -48,6 +48,7 @@ Alessandro Berti\\[6ex]
 
 
 \section{Requirement Specification}
+The following requirements are structured such that they are clear and understandable. Each entry is identified by an unique \textbf{ID} (HL for high-level, LL for low-level) and an \textbf{Importance rating} from 1 (critical) to 3 (low priority). We also specify if a requirement is \textbf{Optional or mandatory}. The \textbf{Description} is split into a Goal, defining the specific objective, and a Reasoning, explaining the technical or business necessity behind it.
 % fully specify for each requirement: ID, Type, Description: Goal, reasoning as to why
 % ID: "HL-number" / "LL-number" HL = high level, LL = low level
 % Type: Business / User / Functional / Non-Functional / ...
@@ -59,20 +60,151 @@ Alessandro Berti\\[6ex]
 % new paragraph
 \textbf{User Requirements}
 - output of this project is accessible to anyone with slight technical understanding
+
 \subsection{Functional Requirements}
+% ID: "HL-number" / "LL-number" HL = high level, LL = low level
+% Importance: [1-3] 1 = most important
+% Optional: Yes / No
+
+\begin{itemize}
+    \item \textbf{ID:} HL-01
+    \item \textbf{Importance:} 1
+    \item \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The data and model input component must load and preprocess the event log (filtering, timestamp cleaning), and import or discover a process model, preparing it for conformance checking (e.g., a Petri or BPMN). All standard model and log formats shall be supported.
+        \item \textbf{Reasoning:} This is the foundational first step of the pipeline before analysis can begin.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize} \label{HL-02}
+    \item \textbf{ID:} HL-02
+    \item \textbf{Importance:} 1
+    \item \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The conformance analysis module must compute alignment-based diagnostics for each prefix, extracting metrics such as log- / model- / synchronous-moves, cumulative alignment cost.
+        \item \textbf{Reasoning:} These diagnostics serve as the foundation for conformance-based predictive features.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-03
+    \item \textbf{Importance:} 1
+    \item \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The prefix generation and feature engineering module must dynamically construct standard log-based features alongside conformance-based features derived from the diagnostics mentioned in \ref{HL-02}.
+        \item \textbf{Reasoning:} Predictive process monitoring relies on these prefix features to evaluate the risk of future deviations and the outcome of the process.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-04
+    \item \textbf{Importance:} 1
+    \item \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The system must implement supervised prediction pipelines as scikit-learn-style objects to predict a defined deviation-related target, such as the probability that a case's final alignment cost exceeds a threshold.
+        \item \textbf{Reasoning:} Building and applying the predictive model is the core deliverable of the software artifact.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-05
+    \item \textbf{Importance:} 2
+    \item \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The software must include automated tests verifying data loading, conformance checking on tiny examples, prefix generation consistency, and model training without runtime errors.
+        \item \textbf{Reasoning:} Automated testing provides a basic safety net against errors induced by refactoring.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+\item \textbf{ID:} HL-06
+\item \textbf{Importance:} 3
+\item \textbf{Optional:} Yes 
+\item \textbf{Description:}
+\begin{itemize}
+\item \textbf{Goal:} The system utilizes Matplotlib to generate comprehensive visualizations, including confusion matrices for classification performance, resource usage plots, and charts comparing elapsed time against varying log sizes.
+\item \textbf{Reasoning:} Visual analytics are essential for the comparative analysis of prediction models, as well as for discussing the computational feasibility of the pipeline. An evaluation will be conducted anyways after the final sprint.
+\end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
 \subsection{Non-Functional Requirements}
-% new paragraph
+
+\vspace{1.5em}
 \textbf{Performance requirements}
-- upper bound for time spent on training the model should be given by the time it takes to calculate the alignments (usually very resource intensive)
-- script should be able to run on any modern pc
+
+\begin{itemize}
+    \item \textbf{ID:} HL-07
+    \item \textbf{Importance:} 1
+    \item \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} Conformance analysis results must be cached to handle repeated use during feature generation.
+        \item \textbf{Reasoning:} Alignment calculation is inherently resource-intensive; caching ensures the script remains computationally feasible when generating features.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-08
+    \item \textbf{Importance:} 2
+    \item \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The system must allow for measuring and reporting the runtime and resource requirements of conformance checking and feature generation.
+        \item \textbf{Reasoning:} This is necessary to reflect on the feasibility of deploying such a system in near real-time.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+
 \subsection{Technical Constraints}
-% e.g. only use the libraries specified in the "Project Setup" document
-- only the libraries specified in the project setup document are used:
--> matplotlib
--> pandas
--> numpy
--> pm4py
--> scikit-learn
+
+\begin{itemize}
+    \item \textbf{ID:} HL-09
+    \item \textbf{Importance:} 1
+    \item \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The implementation must primarily utilize PM4Py for process and conformance handling, scikit-learn for machine learning, alongside standard tools like pandas, numpy and matplotlib.
+        \item \textbf{Reasoning:} These libraries are standard for process mining and machine learning pipelines and were selected such that compatibility with the project's scope is ensured.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-10
+    \item \textbf{Importance:} 1
+    \item \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The project must be organized into coherent modules (e.g., input/preprocessing, conformance, features, model-training, visualization, user-interaction), maintained in a Git repository with a meaningful commit history, and utilize docstrings and type hints.
+        \item \textbf{Reasoning:} These are explicit software engineering requirements outlined for the assignment.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-11
+    \item \textbf{Importance:} 1
+    \item \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The project must provide a clear requirements.txt or environment specification detailing all dependencies, targeting a stable Python environment (e.g., version 3.14.4).
+        \item \textbf{Reasoning:} This ensures reproducibility and ease of installation for end-to-end experiment replication.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
 
 
 \section{Requirement Allocation \& Flowdown}
