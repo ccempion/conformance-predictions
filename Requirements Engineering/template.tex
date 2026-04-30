@@ -58,12 +58,21 @@ Alessandro Berti\\[6ex]
 \textbf{Business Requirements}
 % new paragraph
 \textbf{User Requirements}
+- output of this project is accessible to anyone with slight technical understanding
 \subsection{Functional Requirements}
 \subsection{Non-Functional Requirements}
 % new paragraph
 \textbf{Performance requirements}
+- upper bound for time spent on training the model should be given by the time it takes to calculate the alignments (usually very resource intensive)
+- script should be able to run on any modern pc
 \subsection{Technical Constraints}
 % e.g. only use the libraries specified in the "Project Setup" document
+- only the libraries specified in the project setup document are used:
+-> matplotlib
+-> pandas
+-> numpy
+-> pm4py
+-> scikit-learn
 
 
 \section{Requirement Allocation \& Flowdown}
@@ -79,34 +88,46 @@ Alessandro Berti\\[6ex]
 % basic description how to install the project:
 % prerequisites: git, python, pip
 % 1. clone into repo, 2. create venv, 3. install requirements from requirements.txt, 4. execute script
-To use our python script, the following set-up steps are required. First of all, the user should check whether all prerequisites are met:
-Our project requires a working python \cite{python2026} installation of version [TODO: what version] and a proper installation of git \cite{git2026}. 
-First, the repository needs to be cloned (git clone link_to_repo), then we suggest to change the directory that was created when cloning the repository and then create a virtual environment for the python packages that need to be installed (python -m venv .venv). Alternatively (not recommended), this step can be skipped and the required packages can be globally installed on the PC.
-The next step is to install all packages from the \textit{requirements.txt} file (pip install -r requirements.txt). Now, the script can be launched via the terminal if, the user is inside the folder that contains the \textit{main.py} file (python main.py).
+To use our \textbf{Python script}, the following set-up steps are required. First of all, the user should check whether all prerequisites are met:
+Our project requires a working \textbf{Python} \cite{python2026} installation of version \textit{3.14.4} (currently the latest available python version where all required packages are supported). Also, a proper installation of \textbf{Git} \cite{git2026} is required. \\ 
+First, the repository needs to be cloned: \\\\
+\texttt{git clone <https://git.rwth-aachen.de/schuppenerr/\\
+conformance-predictions.git>} \\\\
+Then, we suggest entering the directory created by cloning the repository and creating a virtual environment for the Python packages that need to be installed: \\\\
+\texttt{python -m venv .venv} \\\\
+Alternatively (not recommended), this step can be skipped and the required packages can be globally installed on the PC.
+The next step is to install all packages from the \textit{requirements.txt} file: \\\\
+\texttt{pip install -r requirements.txt} \\\\
+Now, the script can be launched via the terminal if the user is inside the folder that contains the \textit{main.py} file: \\\\ 
+\texttt{python main.py} \\\\
+
 \subsection{Usage}
 % how does it look like when a user (i.e. business analyst) uses the script 
 % how does the python script work internally (what modules does it encompass)
 % how deos the python script communicate with the user?
-After launching the python script as described in \ref{installation}, the usage of our product looks like the following:
-The user is asked whether they are in posession of a normative model or if one should be discovered from the event log in question. 
+After launching the \textbf{Python script} as described in Section \ref{installation}, the usage of our product is as follows:
+The user is asked whether they are in possession of a \textbf{normative model} or if one should be discovered from the \textbf{event log} in question. 
 After selecting option one, the user is asked for the path to the model and then the path to the event log.
-If option two is selected instead, the user is directly asked for the path to the event log.
-Independent of the initially chosen option, the paths are checked for validity. In case of option two, additional parameters are asked including discovery algorithm, noise threshholds and whether the model should be saved.
-After passing the path-validity check the success of reading and preprocessing the input data is confirmed. Now the input data undergoes conformance analysis - more specifically, the log and the model are aligned. 
-Note that throughout these steps, it is possible for the script to unexpectedly terminate due to an error. Such errors are transparently and as clear as possible communicated to the user. 
-Now the user is questioned which type of prediction should be conducted. Again, the script presents the user with multiple options:
-What should be predicted?
-1. future deviations
-2. the outcome of the process (i.e. whether a specific activity is executed)
-What should the prediction be based upon?
-1. the prefixes plain trace (control-flow)
-2. the prefixes trace and alignment-based diagnostics
-3. case features
-4. a mixture of all available information
-
-The final step before actually applying machine learning are the generation of prefixes and the feature engineering, which are internally handled.
-When the final preprocessing steps succeed, the user can now optionally specify which ML-algorithm should be applied and what hyperparameters should be chosen, or decide that this step is to be skipped. Then the script continues with default values.
-Now, the machine learning module becomes active and builds a prediction model based on the now fully specified data and parameters. 
+If option two is selected instead, the user is directly asked for the path to the event log.\\
+Independent of the initially chosen option, the paths are checked for validity. In case of option two, additional \textbf{parameters} are requested, including the discovery algorithm, noise thresholds, and whether the model should be saved.
+After passing the path-validity check, the success of reading and \textbf{preprocessing} the input data is confirmed.  
+Note that throughout these steps, it is possible for the script to unexpectedly terminate due to an error. Such errors are communicated to the user as \textbf{transparently and clearly} as possible. 
+Now the user is asked which \textbf{type of prediction} should be conducted. Again, the script presents the user with multiple options: \\\\
+\textbf{What should be predicted?}
+\begin{enumerate}
+    \item future deviations
+    \item the outcome of the process (i.e., whether a specific activity is executed)
+\end{enumerate}
+\textbf{What should the prediction be based upon?}
+\begin{enumerate}
+    \item the prefixes' plain trace (control-flow)
+    \item the prefixes' trace and alignment-based diagnostics
+    \item case features
+    \item a mixture of all available information
+\end{enumerate}
+The final step before actually applying machine learning is the generation of prefixes and the feature engineering, which are internally handled. Depending on the users choice, the input data undergoes \textbf{conformance analysis} - more specifically, the log and the model are aligned.\\
+When the final preprocessing steps succeed, the user can now optionally specify which \textbf{ML-algorithm} should be applied and what hyperparameters should be chosen, or decide that this step is to be skipped. In that case, the script continues with default values.
+Now, the machine learning module becomes active and builds a \textbf{prediction model} based on the now fully specified data and parameters. \\ 
 After the model is built, the user is asked which data should undergo prediction: the input for this needs to be provided in the form of a file containing trace prefixes (and case attributes).
 The prediction is performed and the script asks if any other data should be predicted. If not, the script successfully terminates.
 \section{Requirement Management}
@@ -123,12 +144,15 @@ The prediction is performed and the script asks if any other data should be pred
 
 \paragraph{}
 \begin{thebibliography}{10}
-% gitlab documentation
 % nasa guide to requirement engineering?
 % BPMN citation / SBPM citation
+\bibitem{python2026}
+https://www.python.org/ - visited April 2026
+\bibitem{git2026}
+https://git-scm.com/ - visited April 2026
+\bibitem{gitlab2026}
+https://docs.gitlab.com/user/project/requirements/ - visited April 2026
 \end{thebibliography}
 
-\bibitem{python2026}
-\bibitem{git2026}
 
 \end{document}
