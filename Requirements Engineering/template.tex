@@ -66,6 +66,7 @@ The following requirements are structured such that they are clear and understan
 % Importance: [1-3] 1 = most important
 % Optional: Yes / No
 
+\textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-01
     \item \textbf{Importance:} 1
@@ -138,7 +139,140 @@ The following requirements are structured such that they are clear and understan
 \end{itemize}
 \vspace{1.5em}
 
+\textbf{Low-Level (LL)}\\\\
+
+\begin{itemize}
+    \item \textbf{ID:} LL-01.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Event log data successfully parsed into an internal tabular or object-oriented format regardless of the input file type.
+        \item \textbf{Implementation:} Use \texttt{pm4py.read\_xes} for standard XES logs and pandas \texttt{read\_csv} (followed by PM4Py dataframe conversion) for CSV files.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-01.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} A valid Petri net or BPMN representation loaded from an existing file.
+        \item \textbf{Implementation:} Use \texttt{pm4py.read\_petri\_net} or \texttt{pm4py.read\_bpmn} when the user provides a normative model file.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-01.3
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} A discovered Petri net representation if no normative model is provided.
+        \item \textbf{Implementation:} Apply the Inductive Miner via \texttt{pm4py.discover\_petri\_net\_inductive} as an automated fallback to generate a model directly from the event log.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-02.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Raw alignment dictionaries computed for every trace in the event log against the normative model.
+        \item \textbf{Implementation:} Execute \texttt{pm4py.conformance.conformance\_diagnostics\_alignments} using a predefined standard cost function for synchronous and asynchronous moves.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-02.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Extracted numerical deviations mapped to specific cases.
+        \item \textbf{Implementation:} Parse the generated alignment dictionaries to programmatically extract and sum specific metrics, such as the total count of log-moves and model-moves.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-03.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Truncated event logs representing ongoing case states at varying lengths.
+        \item \textbf{Implementation:} Develop a prefix-generation loop that iterates through cases and slices event lists sequentially up to an integer length $k$.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-03.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Formatted numerical feature matrices ready for machine learning algorithms.
+        \item \textbf{Implementation:} Map categorical prefix activities to one-hot encodings and concatenate the corresponding numerical alignment costs using Pandas DataFrames.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-03.3
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Baseline prefix event logs generated strictly from control-flow data without alignment diagnostics.
+        \item \textbf{Implementation:} Utilize \texttt{pm4py.ml.get\_prefixes\_from\_log} to establish a baseline for evaluating the added value of conformance-based features in the subsequent assessment.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-04.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Standardized feature distributions preventing scale-sensitive algorithms from underperforming.
+        \item \textbf{Implementation:} Utilize \texttt{sklearn.preprocessing.StandardScaler} or \texttt{MinMaxScaler} integrated within a \texttt{sklearn.pipeline.Pipeline}.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-04.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} A fitted predictive model capable of mapping the feature matrix to the deviation risk target.
+        \item \textbf{Implementation:} Utilize \texttt{scikit-learn} to implement and compare a selection of different machine learning algorithms that fit the data, situated at the end of the processing pipeline.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-05.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Isolated and predictable testing environments containing synthetic process data.
+        \item \textbf{Implementation:} Create \texttt{pytest.fixture} objects that load a hardcoded, perfectly conforming toy XES log and corresponding Petri net.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-05.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Automated assertion of correctness for the core conformance logic.
+        \item \textbf{Implementation:} Write test functions asserting that the computed alignment cost exactly equals $0.0$ for the synthetic conforming dataset.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-05.3
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Automated verification of the prefix generation to prevent data leakage.
+        \item \textbf{Implementation:} Write test functions asserting that generated prefixes of length $k$ strictly contain only the first $k$ events of the original trace, ensuring no future information is exposed to the model.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
 \subsection{Non-Functional Requirements}
+\textbf{High-Level (HL)}\\\\
 
 \vspace{1.5em}
 \textbf{Performance requirements}
@@ -167,8 +301,51 @@ The following requirements are structured such that they are clear and understan
 \end{itemize}
 \vspace{1.5em}
 
+\textbf{Low-Level (LL)}\\\\
+
+\begin{itemize}
+    \item \textbf{ID:} LL-07.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Deterministic identification of previously computed trace prefixes to avoid redundant calculations.
+        \item \textbf{Implementation:} Hash the ordered sequence of activities in a given prefix to generate a unique cache key.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-07.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Disk-based persistence of intermediate alignment results.
+        \item \textbf{Implementation:} Utilize Python's \texttt{joblib} library to serialize and save the alignment dictionaries, mapping them to their corresponding prefix hashes.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-08.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} High-precision metrics on the execution duration of critical script segments.
+        \item \textbf{Implementation:} Use Python's \texttt{time.perf\_counter()} immediately before and after resource-intensive calls like \texttt{pm4py.conformance.conformance\_diagnostics\_alignments} and model training.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-08.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Tracking of the peak memory footprint during data preprocessing and alignment.
+        \item \textbf{Implementation:} Integrate the \texttt{psutil.Process().memory\_info()} method to poll and log RAM consumption asynchronously.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
 
 \subsection{Technical Constraints}
+
+\textbf{High-Level (HL)}\\\\
 
 \begin{itemize}
     \item \textbf{ID:} HL-09
@@ -206,6 +383,36 @@ The following requirements are structured such that they are clear and understan
 \end{itemize}
 \vspace{1.5em}
 
+\textbf{Low-Level (LL)}\\\\
+
+\begin{itemize}
+    \item \textbf{ID:} LL-10.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} A statically verifiable, type-safe internal API bridging the different modules.
+        \item \textbf{Implementation:} Enforce the rigorous use of Python's \texttt{typing} module (e.g., \texttt{List}, \texttt{Dict}, \texttt{DataFrame}) for all function parameters and return signatures.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-10.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Decoupled configuration state, preventing hardcoded values scattered throughout the modules.
+        \item \textbf{Implementation:} Maintain a centralized \texttt{config.py} script (or a parsed JSON file) holding all hyperparameter thresholds, file paths, and target definitions.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-11.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} A reproducible, lightweight, and easily accessible environment specification for standard Python setups.
+        \item \textbf{Implementation:} Maintain a standard \texttt{requirements.txt} file (e.g., generated via \texttt{pip freeze}) instead of utilizing overly rigorous environment managers like \texttt{uv} or \texttt{poetry}, ensuring simple and universally understood installation for end users.
+    \end{itemize}
+\end{itemize}
 
 \section{Requirement Allocation \& Flowdown}
 % keep this section concise (little to none description - as the requirements are already fully specified in the previous chapter)
