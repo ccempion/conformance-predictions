@@ -46,15 +46,11 @@ The following requirements are structured such that they are clear and understan
 \subsection{Stakeholder Requirements}
 
 \textbf{Business Requirements}
-% new paragraph
-\textbf{User Requirements}
-- output of this project is accessible to anyone with slight technical understanding
-
-\subsection{Functional Requirements}
 % ID: "HL-number" / "LL-number" HL = high level, LL = low level
 % Importance: [1-3] 1 = most important
 % Optional: Yes / No
 
+\textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-01
     \item \textbf{Importance:} 1
@@ -63,18 +59,6 @@ The following requirements are structured such that they are clear and understan
     \begin{itemize}
         \item \textbf{Goal:} The software must enable insurance company F (or comparable organizations) to predict whether a conformance deviation will occur in future steps of the claim handling process, based on partial trace prefixes extracted from event logs and a normative process model.
         \item \textbf{Reasoning:} This is the primary business objective of the project: company F requires early, actionable predictions of non-compliant behavior to prevent downstream failures in the claim handling process.
-    \end{itemize}
-\end{itemize}
-\vspace{1.5em}
-
-\begin{itemize}
-    \item \textbf{ID:} HL-02
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
-    \item \textbf{Description:}
-    \begin{itemize}
-        \item \textbf{Goal:} The software must be applicable to real-world event logs in standard formats (e.g., \texttt{.xes}, \texttt{.csv}) and accept normative process models in standard representations (e.g., Petri net, BPMN), ensuring compatibility with existing data infrastructure at company F.
-        \item \textbf{Reasoning:} Company F operates with established data systems; the tool must integrate without requiring custom preprocessing or non-standard formats to be practically deployable.
     \end{itemize}
 \end{itemize}
 \vspace{1.5em}
@@ -93,13 +77,14 @@ The following requirements are structured such that they are clear and understan
 
 \textbf{User Requirements}
 
+\textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-04
     \item \textbf{Importance:} 1
     \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
-        \item \textbf{Goal:} The Python script must provide an interactive command-line interface that guides the user (a business analyst employed by company F) through all configuration steps --- including providing event log and model paths, selecting the prediction target, choosing the feature basis, and optionally configuring the ML algorithm --- without requiring deep process mining expertise.
+        \item \textbf{Goal:} The Python script must provide an interactive command-line interface that guides the user (a business analyst employed by company F) through all configuration steps - including providing event log and model paths, selecting the prediction target, choosing the feature basis, and optionally configuring the ML algorithm - without requiring deep process mining expertise.
         \item \textbf{Reasoning:} The primary user is a business analyst, not a process mining specialist. A guided, interactive interface ensures correct usage and broad adoption of the tool within company F.
     \end{itemize}
 \end{itemize}
@@ -117,8 +102,9 @@ The following requirements are structured such that they are clear and understan
 \end{itemize}
 \vspace{1.5em}
 
+\textbf{Low-Level (LL)}\\\\
 \begin{itemize}
-    \item \textbf{ID:} HL-06
+    \item \textbf{ID:} LL-04.1
     \item \textbf{Importance:} 1
     \item \textbf{Optional:} No
     \item \textbf{Description:}
@@ -131,6 +117,7 @@ The following requirements are structured such that they are clear and understan
 
 \subsection{Functional Requirements}
 
+\textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-07
     \item \textbf{Importance:} 1
@@ -187,18 +174,6 @@ The following requirements are structured such that they are clear and understan
     \begin{itemize}
         \item \textbf{Goal:} The system must implement at least one baseline prediction model using only classical log-based features (control-flow encodings, aggregated case attributes, temporal features) and at least one conformance-aware model that augments these with the diagnostics from \ref{HL-08}, enabling a direct performance comparison between the two approaches.
         \item \textbf{Reasoning:} The central research question of the project requires a controlled comparison to quantify the added predictive value of conformance information; without a proper baseline, no meaningful claim about its benefit can be made.
-    \end{itemize}
-\end{itemize}
-\vspace{1.5em}
-
-\begin{itemize}
-    \item \textbf{ID:} HL-12
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
-    \item \textbf{Description:}
-    \begin{itemize}
-        \item \textbf{Goal:} All key configuration parameters --- including feature sets, selected ML algorithm, prediction target definition, deviation thresholds, and hyperparameters --- must be controllable via a dedicated configuration module or file, without requiring changes to core pipeline code.
-        \item \textbf{Reasoning:} A centralized configuration ensures full reproducibility of experiments and makes it straightforward to run different experimental setups without code modifications, which is essential for the comparative evaluation.
     \end{itemize}
 \end{itemize}
 \vspace{1.5em}
@@ -397,44 +372,6 @@ The following requirements are structured such that they are clear and understan
     \begin{itemize}
         \item \textbf{Goal:} The system must allow for measuring and reporting the runtime and resource requirements of conformance checking and feature generation.
         \item \textbf{Reasoning:} This is necessary to reflect on the feasibility of deploying such a system in near real-time.
-    \end{itemize}
-\end{itemize}
-\vspace{1.5em}
-
-\textbf{Evaluation requirements}
-
-\begin{itemize}
-    \item \textbf{ID:} HL-18
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
-    \item \textbf{Description:}
-    \begin{itemize}
-        \item \textbf{Goal:} The evaluation must use a temporal train/validation/test split (or rolling-origin evaluation) that assigns cases to sets strictly based on time order, ensuring no future information leaks into training. Individual cases must not be split across different sets.
-        \item \textbf{Reasoning:} A temporally ordered evaluation protocol is essential to avoid data leakage, which would artificially inflate predictive performance and invalidate the experimental results.
-    \end{itemize}
-\end{itemize}
-\vspace{1.5em}
-
-\begin{itemize}
-    \item \textbf{ID:} HL-19
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
-    \item \textbf{Description:}
-    \begin{itemize}
-        \item \textbf{Goal:} The system must compute and report appropriate evaluation metrics for the prediction task: for classification targets at minimum ROC AUC, precision, recall, F1-score, and Brier score; for regression targets MAE and RMSE. Results must be reported with variability measures (e.g., across multiple random seeds).
-        \item \textbf{Reasoning:} A comprehensive set of metrics is required to rigorously assess and compare model performance and to support the central evaluation question of the assignment.
-    \end{itemize}
-\end{itemize}
-\vspace{1.5em}
-
-\begin{itemize}
-    \item \textbf{ID:} HL-20
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
-    \item \textbf{Description:}
-    \begin{itemize}
-        \item \textbf{Goal:} The evaluation must analyze and report prediction performance as a function of prefix length for both baseline and conformance-aware models, enabling an assessment of early-warning capability versus late-stage accuracy.
-        \item \textbf{Reasoning:} Prefix-length analysis is explicitly required by the assignment and is necessary to understand when in the process conformance information begins to provide meaningful predictive value.
     \end{itemize}
 \end{itemize}
 \vspace{1.5em}
