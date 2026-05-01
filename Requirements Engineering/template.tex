@@ -378,8 +378,7 @@ Then, we suggest entering the directory created by cloning the repository and cr
 Alternatively (not recommended), this step can be skipped and the required packages can be globally installed on the PC.
 The next step is to install all packages from the \textit{requirements.txt} file: \\\\
 \texttt{pip install -r requirements.txt} \\\\
-Now
-, the script can be launched via the terminal if the user is inside the folder that contains the \textit{main.py} file: \\\\ 
+Now, the script can be launched via the terminal if the user is inside the folder that contains the \textit{main.py} file: \\\\
 \texttt{python main.py} \\\\
 The installation process is visualized in \ref{fig:installation}. Note that this aims only to roughly sketch the installation process and neither depict correct BPMN, nor comprehensively describe the script setup.
 \subsection{Usage}
@@ -416,7 +415,7 @@ After the model is built, the user is asked which data should undergo prediction
 The prediction is performed and the script asks if any other data should be predicted. If not, the script successfully terminates.
 This process is visualized in \ref{fig:usage}. Note that this aims to only roughly sketch the usage and neither depict correct BPMN, nor comprehensively describe the functionality of the script.
 \section{Requirement Management}
-The requirement management process is crucial for the successful implementation of our project, as it makes sure that all the requirements are properly documented, tracked and fulfilled throughout the whole process of production. We have decided to use gitlab's built-in requirement management functionality \cite{gitlab2026} to manage our requirements. This allows us to create a clear and structured overview of all requirements, their status, and their allocation to different modules and team members. We can easily track the progress of each requirement, identify any dependencies or blockers, and ensure that all requirements are addressed in a timely manner. Additionally, using gitlab for requirement management allows us to integrate it seamlessly with our code repository, making it easier to link requirements to specific code changes and ensuring that our development process is closely aligned with our defined requirements. As the project progresses through its sprints, requirements may be refined, reprioritized, or added in response to new insights or feedback from the supervisor. All changes to requirements are subject to mutual agreement between both team members and are documented by updating this document.
+The requirement management process is crucial for the successful implementation of our project, as it makes sure that all the requirements are properly documented, tracked and fulfilled throughout the whole process of production. As the project progresses through its sprints, requirements may be refined, reprioritized, or added in response to new insights or feedback from the supervisor. All changes to requirements are subject to mutual agreement between both team members and are documented by updating this document.
 Both of us are responsible for the general project management, including documentation, testing, and integration of the two modules, which we will specify in the following subsection.
 \subsection{Organization in Group 4}
 For the implementation of the software artifact, we decided to split the work into two main modules alongside the general project management: the \textbf{conformance analysis} and the \textbf{machine learning} module. The conformance analysis module is responsible for loading and preprocessing the data, performing the conformance checking, and generating the features. The machine learning module is responsible for building the prediction model based on the generated features and applying it to new data. We decided to allocate the responsibility for the conformance analysis module to Richard, while Cem is responsible for the machine learning module. 
@@ -425,10 +424,16 @@ To ensure, that both modules are well integrated and that the overall project ma
 
 \subsection{GitLabs Requirements Management}
 % describe the builtin functionality provided by gitlab, why we chose it over other tools such as "Jira" etc.
+We have decided to use gitlab's built-in requirement management functionality \cite{gitlab2026} to manage our requirements. This allows us to create a clear and structured overview of all requirements, their status, and their allocation to different modules and team members. We can easily track the progress of each requirement, identify any dependencies or blockers, and ensure that all requirements are addressed in a timely manner. Additionally, using gitlab for requirement management allows us to integrate it seamlessly with our code repository, making it easier to link requirements to specific code changes and ensuring that our development process is closely aligned with our defined requirements. 
+% describe why we chose it over other tools such as "Jira" etc.
 \section{Event Logs}
-% short list of event logs we are going to use
-For this assignment we have a total of seven event logs in 
-% explain why we focus on which event logs
+Following the recommendation of our supervisor Mr. Berti, we adopt a three-tier event log setup that satisfies the core criteria for this assignment: support for prefix generation, meaningful deviation and compliance labels, and the availability of a process model for alignment or token-based replay.
+
+\begin{itemize}
+    \item \textbf{Primary evaluation log --- BPI Challenge 2012} (Loan Application Process): A real-life Dutch financial-institution process with 262,200 events across 13,087 cases. Supplied man-made BPMN/Petri-net models make it the strongest fit for alignment-based conformance checking and deviation label construction.
+    \item \textbf{Development and test log --- Sepsis Cases} (Hospital Pathway): Approximately 1,000 cases, 15,000 events, and 39 case attributes. Its small size makes it well-suited for automated tests and rapid prototyping of prefix-level features.
+    \item \textbf{Optional scalability experiment --- BPI Challenge 2017, Road Traffic Fine Management, or BPI Challenge 2019}: To be considered if time and computational resources permit, enabling an assessment of pipeline scalability across larger or differently structured logs.
+\end{itemize}
 \section{Phase review}
 \subsection{Richard Schuppener}
 \subsection{Cem Colak}
