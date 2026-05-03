@@ -6,6 +6,7 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage[dvipsnames]{xcolor}
 
 \begin{document}
 \thispagestyle{empty}
@@ -44,11 +45,8 @@ The following requirements are structured such that they are clear and understan
 % Importance: [1-3] 1 = most important
 % Optional: Yes / No
 \subsection{Stakeholder Requirements}
-\textbf{Business Requirements}
-% ID: "HL-number" / "LL-number" HL = high level, LL = low level
-% Importance: [1-3] 1 = most important
-% Optional: Yes / No
-\textbf{High-Level (HL)}\\\\
+\noindent \textbf{Business Requirements}\\
+\noindent \textit{High-Level (HL)}
 \begin{itemize}
     \item \textbf{ID:} HL-01
  \textbf{Importance:} 1
@@ -73,9 +71,9 @@ The following requirements are structured such that they are clear and understan
 \end{itemize}
 \vspace{1.5em}
 
-\textbf{User Requirements}
+\noindent \textbf{User Requirements}\\
+\noindent \textit{High-Level (HL)}
 
-\textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-03
  \textbf{Importance:} 1
@@ -100,7 +98,8 @@ The following requirements are structured such that they are clear and understan
 \end{itemize}
 \vspace{1.5em}
 
-\textbf{Low-Level (LL)}\\\\
+\noindent \textit{Low-Level (LL)}
+
 \begin{itemize}
     \item \textbf{ID:} LL-01.1
     \item \textbf{Description:}
@@ -132,7 +131,8 @@ The following requirements are structured such that they are clear and understan
 
 \subsection{Functional Requirements}
 
-\textbf{High-Level (HL)}\\\\
+\noindent \textit{High-Level (HL)}
+
 \begin{itemize}
     \item \textbf{ID:} HL-05
  \textbf{Importance:} 1
@@ -229,7 +229,7 @@ The following requirements are structured such that they are clear and understan
 \end{itemize}
 \vspace{1.5em}
 
-\textbf{Low-Level (LL)}\\\\
+\noindent \textit{Low-Level (LL)}
 
 \begin{itemize}
     \item \textbf{ID:} LL-05.1
@@ -363,10 +363,8 @@ The following requirements are structured such that they are clear and understan
 
 \subsection{Non-Functional Requirements}
 
-\textbf{Performance requirements}
-
-\vspace{1.5em}
-\textbf{High-Level (HL)}\\\\
+\noindent \textbf{Performance requirements}\\
+\noindent \textit{High-Level (HL)}
 
 \begin{itemize}
     \item \textbf{ID:} HL-13
@@ -392,9 +390,9 @@ The following requirements are structured such that they are clear and understan
 \end{itemize}
 \vspace{1.5em}
 
-\textbf{Evaluation requirements}
+\noindent \textbf{Evaluation requirements}\\
+\noindent \textit{High-Level (HL)}
 
-\textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-15
  \textbf{Importance:} 1
@@ -431,7 +429,7 @@ The following requirements are structured such that they are clear and understan
 \end{itemize}
 \vspace{1.5em}
 
-\textbf{Low-Level (LL)}\\\\
+\noindent \textit{Low-Level (LL)}
 
 \begin{itemize}
     \item \textbf{ID:} LL-13.1
@@ -514,7 +512,7 @@ The following requirements are structured such that they are clear and understan
 
 \subsection{Technical Constraints}
 
-\textbf{High-Level (HL)}\\\\
+\noindent \textit{High-Level (HL)}
 
 \begin{itemize}
     \item \textbf{ID:} HL-18
@@ -564,7 +562,7 @@ The following requirements are structured such that they are clear and understan
 \end{itemize}
 \vspace{1.5em}
 
-\textbf{Low-Level (LL)}\\\\
+\noindent \textit{Low-Level (LL)}
 
 \begin{itemize}
     \item \textbf{ID:} LL-19.1
@@ -604,45 +602,45 @@ The following requirements are structured such that they are clear and understan
 % ID: "HL-number" / "LL-number" HL = high level, LL = level
 % Decomposition / Heritage: for HL -> of which LL is it composed, for LL -> what HL requ. depend on this low level requ.?
 
-\noindent \textbf{Module: IO} (Richard) % Module Color A
+\noindent \textbf{Module: IO} (\colorbox{BurntOrange}{Richard}) % Module Color A
 \begin{itemize}
     \item \textbf{ID:} HL-01 $\rightarrow$ Decomposition: LL-01.1, LL-01.2
     \item \textbf{ID:} HL-05 $\rightarrow$ Decomposition: LL-05.1, LL-05.2, LL-05.3, LL-01.1, LL-01.2
     \item \textbf{ID:} HL-04
 \end{itemize}
 
-\noindent \textbf{Module: CONFORMANCE} (Richard) % Module Color B
+\noindent \textbf{Module: CONFORMANCE} (\colorbox{BurntOrange}{Richard}) % Module Color B
 \begin{itemize}
     \item \textbf{ID:} HL-06 $\rightarrow$ Decomposition: LL-06.1, LL-06.2
     \item \textbf{ID:} HL-13 $\rightarrow$ Decomposition: LL-13.1, LL-13.2
 \end{itemize}
 
-\noindent \textbf{Module: FEATURE EXTRACTION} (Richard) % Module Color C
+\noindent \textbf{Module: FEATURE EXTRACTION} (\colorbox{BurntOrange}{Richard}) % Module Color C
 \begin{itemize}
     \item \textbf{ID:} HL-07 $\rightarrow$ Decomposition: LL-07.1, LL-07.2, LL-07.3
     \item \textbf{ID:} HL-02
 \end{itemize}
 
-\noindent \textbf{Module: MODEL TRAINING} (Cem) % Module Color D
+\noindent \textbf{Module: MODEL TRAINING} (\colorbox{Aquamarine}{Cem}) % Module Color D
 \begin{itemize}
     \item \textbf{ID:} HL-08 $\rightarrow$ Decomposition: LL-08.1, LL-08.2
     \item \textbf{ID:} HL-09 $\rightarrow$ Decomposition: LL-08.2
 \end{itemize}
 
-\noindent \textbf{Module: EVALUATION} (Cem) % Module Color E
+\noindent \textbf{Module: EVALUATION} (\colorbox{Aquamarine}{Cem}) % Module Color E
 \begin{itemize}
     \item \textbf{ID:} HL-12, HL-15, HL-17
     \item \textbf{ID:} HL-16 $\rightarrow$ Decomposition: LL-16.1, LL-16.2
 \end{itemize}
 
-\noindent \textbf{Module: CONFIG \& PIPELINE} (Richard \& Cem) % Module Color F
+\noindent \textbf{Module: CONFIG \& PIPELINE} (\colorbox{BurntOrange}{Richard} \& \colorbox{Aquamarine}{Cem}) % Module Color F
 \begin{itemize}
     \item \textbf{ID:} HL-03 $\rightarrow$ Decomposition: LL-03.1
     \item \textbf{ID:} HL-14 $\rightarrow$ Decomposition: LL-14.1, LL-14.2, LL-14.3, LL-14.4
     \item \textbf{ID:} HL-10
 \end{itemize}
 
-\noindent \textbf{Module: Project Infrastructure \& TESTING} (Richard \& Cem) % Module Color G
+\noindent \textbf{Module: Project Infrastructure \& TESTING} (\colorbox{BurntOrange}{Richard} \& \colorbox{Aquamarine}{Cem}) % Module Color G
 \begin{itemize}
     \item \textbf{ID:} HL-11 $\rightarrow$ Decomposition: LL-11.1, LL-11.2, LL-11.3
     \item \textbf{ID:} HL-19 $\rightarrow$ Decomposition: LL-19.1, LL-19.2
