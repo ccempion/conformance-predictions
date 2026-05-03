@@ -28,6 +28,7 @@ Alessandro Berti\\[6ex]
 \section{Motivation}
 % short and concise motivation to why requirement engineering is important and useful
 Requirements engineering (RE) is a critical phase in the software development lifecycle that involves the systematic process of eliciting, analyzing, documenting, and managing the requirements of a software system before it is build. It serves as the foundation for successful software development by ensuring that the needs and expectations of stakeholders are accurately captured and translated into actionable specifications to develop software. Especially in a complex project, involving multiple stakeholders and specific functionalities as Dr. Berti described in the project document, it allows us to align our understanding with the stakeholders e.g. the client, user (business analyst) and supervisors. As a result, we will use the RE to allocate responsibilities within our group, specify the functionality and technical constraints of our software artifact, and to manage the requirements throughout the project lifecycle. This will help us to ensure that we are building the right product, meet the stakeholders' needs, and can effectively track changes and progress during development.
+Requirements engineering (RE) is a critical phase in the software development lifecycle that involves the systematic process of eliciting, analyzing, documenting, and managing the requirements of a software system before it is build. It serves as the foundation for successful software development by ensuring that the needs and expectations of stakeholders are accurately captured and translated into actionable specifications to develop software. Especially in a complex project, involving multiple stakeholders and specific functionalities as Dr. Berti described in the project document, it allows us to align our understanding with the stakeholders e.g. the client, user (business analyst) and supervisors. As a result, we will use the RE to allocate responsibilities within our group, specify the functionality and technical constraints of our software artifact, and to manage the requirements throughout the project lifecycle. This will help us to ensure that we are building the right product, meet the stakeholders' needs, and can effectively track changes and progress during development.
 
 \section{Requirements}
 The requirements  we have identified were split into four top-level categories, which are visualized in \ref{fig:requirements_overview}. These categories are: Stakeholder Requirements, Functional Requirements, Non-Functional Requirements, and Technical Constraints. Each of these categories encompasses specific requirements that are crucial for the successful implementation of our project. The stakeholder requirements focus on the needs and expectations of the users and business, hence being a core aspect of our requirement analysis. The functional requirements specify the core functionalities that our software must provide. The non-functional requirements address performance and usability aspects, and the technical constraints outline the limitations and standards we need to adhere to during development.
@@ -74,12 +75,14 @@ The following requirements are structured such that they are clear and understan
 \noindent \textbf{User Requirements}\\
 \noindent \textit{High-Level (HL)}
 
+\textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-03
  \textbf{Importance:} 1
  \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
+        \item \textbf{Goal:} The Python script must provide an interactive command-line interface that guides the user (a business analyst employed by company F) through all configuration steps - including providing event log and model paths, selecting the prediction target, choosing the feature basis, and optionally configuring the ML algorithm - without requiring deep process mining expertise.
         \item \textbf{Goal:} The Python script must provide an interactive command-line interface that guides the user (a business analyst employed by company F) through all configuration steps - including providing event log and model paths, selecting the prediction target, choosing the feature basis, and optionally configuring the ML algorithm - without requiring deep process mining expertise.
         \item \textbf{Reasoning:} The primary user is a business analyst, not a process mining specialist. A guided, interactive interface ensures correct usage and broad adoption of the tool within company F.
     \end{itemize}
@@ -597,7 +600,7 @@ The following requirements are structured such that they are clear and understan
 
 \section{Requirement Allocation \& Flowdown}
 % keep this section concise (little to none description - as the requirements are already fully specified in the previous chapter)
-% format: 
+% format:
 % \textbf{Module X:} -> allocation of requirements to modules & people (Cem, Richard)
 % ID: "HL-number" / "LL-number" HL = high level, LL = level
 % Decomposition / Heritage: for HL -> of which LL is it composed, for LL -> what HL requ. depend on this low level requ.?
@@ -659,6 +662,7 @@ The following requirements are structured such that they are clear and understan
 % basic description how to install the project:
 % prerequisites: git, python, pip
 % 1. clone into repo, 2. create venv, 3. install requirements from requirements.txt, 4. execute script
+
 To use our \textbf{Python script}, the following set-up steps are required. 
 First, the user should check whether all prerequisites are met: 
 Our project requires a working \textbf{Python} \cite{python2026} installation of version \textit{3.14.4} (currently the latest available Python version where all required packages are supported). 
@@ -726,12 +730,13 @@ The requirement management process is crucial for the successful implementation 
 Both of us are responsible for the general project management, including documentation, testing, and integration of the two modules, which we will specify in the following subsection.
 \subsection{Organization in Group 4}
 For the implementation of the software artifact, we decided to split the work into two main modules alongside the general project management: the \textbf{conformance analysis} and the \textbf{machine learning} module. both modules include specific submodules for specific tasks. The conformance analysis module is responsible for loading and preprocessing the data, performing the conformance checking, and generating the features. The machine learning module is responsible for building the prediction model based on the generated features and applying it to new data and evaluating it. We decided to allocate the responsibility for the conformance analysis module to Richard, while Cem is responsible for the machine learning module.
+For the implementation of the software artifact, we decided to split the work into two main modules alongside the general project management: the \textbf{conformance analysis} and the \textbf{machine learning} module. both modules include specific submodules for specific tasks. The conformance analysis module is responsible for loading and preprocessing the data, performing the conformance checking, and generating the features. The machine learning module is responsible for building the prediction model based on the generated features and applying it to new data and evaluating it. We decided to allocate the responsibility for the conformance analysis module to Richard, while Cem is responsible for the machine learning module.
 
 To ensure, that both modules are well integrated and that the overall project management is handled effectively, we will maintain regular communication and coordination between us, as well as with our supervisor. 
 
 \subsection{GitLabs Requirements Management}
 % describe the builtin functionality provided by gitlab, why we chose it over other tools such as "Jira" etc.
-We have decided to use gitlab's built-in requirement management functionality \cite{gitlab2026} to manage our requirements. This allows us to create a clear and structured overview of all requirements, their status, and their allocation to different modules and team members. We can easily track the progress of each requirement, identify any dependencies or blockers, and ensure that all requirements are addressed in a timely manner. Additionally, using gitlab for requirement management allows us to integrate it seamlessly with our code repository, making it easier to link requirements to specific code changes and ensuring that our development process is closely aligned with our defined requirements. 
+We have decided to use GitLab's built-in requirement management functionality \cite{gitlab2026} to manage our requirements. This allows us to create a clear and structured overview of all requirements, their status, and their allocation to different modules, milestones and team members. For that reason we won't use a traceability matrix, because the use case will be the same but the interconnection between modules, sprints and changes will be managed directly within gitlab. Additionally, using gitlab for requirement management allows us to integrate it seamlessly with our code repository, making it easier to link requirements to specific work items and code changes. 
 % describe why we chose it over other tools such as "Jira" etc.
 \section{Event Logs}
 Following the recommendation of our supervisor Dr. Berti, we adopt a three-tier event log setup that satisfies the core criteria for this assignment: support for prefix generation, meaningful deviation and compliance labels, and the availability of a process model for alignment.
