@@ -103,8 +103,6 @@ The following requirements are structured such that they are clear and understan
 \textbf{Low-Level (LL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} LL-01.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} The software must enable users without a normative process model to automatically discover the underlying model of the process from the event-log data, ensuring that the conformance checking and prediction pipeline can be executed even in the absence of a pre-defined model.
@@ -114,8 +112,6 @@ The following requirements are structured such that they are clear and understan
 \vspace{1.5em}
 \begin{itemize}
     \item \textbf{ID:} LL-01.2
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} Yes
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} The user should be able to see the discovered process model after the execution of the script as a visualization (e.g., Petri net or BPMN diagram) to verify that the discovered model reasonably represents the underlying process before proceeding with conformance checking and prediction.
@@ -126,8 +122,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-03.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} The user must be able to select both the prediction target (future conformance deviations vs.\ process outcome) and the feature basis (control-flow trace, trace with alignment-based diagnostics, case attributes, or a combination of all available information).
@@ -239,8 +233,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-05.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Event log data successfully parsed into an internal tabular or object-oriented format regardless of the input file type.
@@ -251,8 +243,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-05.2
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} A valid Petri net or BPMN representation loaded from an existing file.
@@ -263,8 +253,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-05.3
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} A discovered Petri net representation if no normative model is provided.
@@ -275,8 +263,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-06.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Raw alignment dictionaries computed for every trace in the event log against the normative model.
@@ -287,8 +273,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-06.2
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Extracted numerical deviations mapped to specific cases.
@@ -299,8 +283,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-07.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Truncated event logs representing ongoing case states at varying lengths.
@@ -311,8 +293,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-07.2
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Formatted numerical feature matrices ready for machine learning algorithms.
@@ -323,8 +303,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-07.3
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Baseline prefix event logs generated strictly from control-flow data without alignment diagnostics.
@@ -335,8 +313,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-08.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Standardized feature distributions preventing scale-sensitive algorithms from underperforming.
@@ -347,8 +323,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-08.2
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} A fitted predictive model capable of mapping the feature matrix to the deviation risk target.
@@ -359,8 +333,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-11.1
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Isolated and predictable testing environments containing synthetic process data.
@@ -371,8 +343,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-11.2
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Automated assertion of correctness for the core conformance logic.
@@ -383,8 +353,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-11.3
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Automated verification of the prefix generation to prevent data leakage.
@@ -467,8 +435,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-13.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Deterministic identification of previously computed trace prefixes to avoid redundant calculations.
@@ -479,8 +445,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-13.2
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Disk-based persistence of intermediate alignment results.
@@ -491,8 +455,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-14.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} High-precision metrics on the execution duration of critical script segments.
@@ -503,8 +465,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-14.2
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Tracking of the peak memory footprint during data preprocessing and alignment.
@@ -515,8 +475,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-14.3
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} The system must record the start and end execution time (in milliseconds) for the combined processes of conformance checking and feature generation per individual data batch.
@@ -527,8 +485,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-14.4
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} Yes
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} The system must output the collected runtime and resource metrics in the console and persist them in a structured log file (e.g., CSV or JSON) for subsequent analysis.
@@ -539,8 +495,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-16.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} The system must use evaluation metrics such as ROC AUC, precision, recall, F1-score, and Brier score for classification targets. Any other appropriate metrics for classification targets may also be included.
@@ -551,8 +505,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-16.2
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} The system must use evaluation metrics such as MAE and RMSE for regression targets. Results must be reported with variability measures (e.g., across multiple random seeds). Any other appropriate metrics for regression targets may also be included.
@@ -616,8 +568,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-19.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} A statically verifiable, type-safe internal API bridging the different modules.
@@ -628,8 +578,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-19.2
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} Decoupled configuration state, preventing hardcoded values scattered throughout the modules.
@@ -640,8 +588,6 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} LL-20.1
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Result:} A reproducible, lightweight, and easily accessible environment specification for standard Python setups.
