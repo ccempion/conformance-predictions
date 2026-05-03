@@ -51,8 +51,8 @@ The following requirements are structured such that they are clear and understan
 \textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-01
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The software must enable insurance company F (or comparable organizations) to predict whether a conformance deviation will occur in future steps of the claim handling process, based on partial trace prefixes extracted from event logs and a normative process model.
@@ -63,8 +63,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-02
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The software must support the inclusion of structured case attributes (e.g., claimant demographics, claim amount) as predictive features alongside process-level signals, enabling company F to leverage available case data for more accurate deviation and outcome predictions.
@@ -78,8 +78,8 @@ The following requirements are structured such that they are clear and understan
 \textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-03
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The Python script must provide an interactive command-line interface that guides the user (a business analyst employed by company F) through all configuration steps - including providing event log and model paths, selecting the prediction target, choosing the feature basis, and optionally configuring the ML algorithm - without requiring deep process mining expertise.
@@ -90,8 +90,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-04
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The system must report errors (e.g., invalid file paths, preprocessing failures, unexpected terminations) to the user in a clear and transparent manner throughout all stages of execution.
@@ -135,8 +135,8 @@ The following requirements are structured such that they are clear and understan
 \textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-05
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The data and model input component must load and preprocess the event log (filtering, timestamp cleaning), and import or discover a process model, preparing it for conformance checking (e.g., a Petri or BPMN). All standard model and log formats shall be supported.
@@ -147,11 +147,11 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize} \label{HL-06}
     \item \textbf{ID:} HL-06
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
-        \item \textbf{Goal:} The conformance analysis module must compute alignment-based or token-based replay diagnostics for each prefix, extracting metrics such as log-moves, model-moves, synchronous-moves, cumulative alignment cost, current model state/marking, and distance-to-completion indicators where feasible.
+        \item \textbf{Goal:} The conformance analysis module must compute alignment-based diagnostics for each prefix, extracting metrics such as log-moves, model-moves, synchronous-moves, cumulative alignment cost, current model state/marking, and distance-to-completion indicators where feasible.
         \item \textbf{Reasoning:} These diagnostics serve as the foundation for conformance-based predictive features; model state and distance-to-completion in particular provide essential context about how far a running case has deviated and how far it is from a compliant end state.
     \end{itemize}
 \end{itemize}
@@ -159,8 +159,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-07
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The prefix generation and feature engineering module must dynamically construct standard log-based features alongside conformance-based features derived from the diagnostics mentioned in \ref{HL-06}.
@@ -171,8 +171,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-08
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The system must implement supervised prediction pipelines as scikit-learn-style objects to predict a defined deviation-related target, such as the probability that a case's final alignment cost exceeds a threshold.
@@ -183,8 +183,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-09
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The system must implement at least one baseline prediction model using only classical log-based features (control-flow encodings, aggregated case attributes, temporal features) and at least one conformance-aware model that augments these with the diagnostics from \ref{HL-06}, enabling a direct performance comparison between the two approaches.
@@ -195,8 +195,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-10
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The project must provide an end-to-end experiment runner (script or notebook) that starts from raw data and process model and reproduces all main results and plots without any manual intermediate steps.
@@ -207,8 +207,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-11
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The software must include automated tests (e.g., pytest) for data loading, conformance checking, prefix generation, and model training. Tests must be executable via a single command.
@@ -219,8 +219,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
 \item \textbf{ID:} HL-12
-\item \textbf{Importance:} 3
-\item \textbf{Optional:} Yes
+ \textbf{Importance:} 3
+ \textbf{Optional:} Yes
 \item \textbf{Description:}
 \begin{itemize}
 \item \textbf{Goal:} The system utilizes Matplotlib to generate comprehensive visualizations, including confusion matrices for classification performance, resource usage plots, and charts comparing elapsed time against varying log sizes.
@@ -370,8 +370,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-13
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} Conformance analysis results must be cached to handle repeated use during feature generation.
@@ -382,8 +382,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-14
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The system must allow for measuring and reporting the runtime and resource requirements of conformance checking and feature generation.
@@ -397,8 +397,8 @@ The following requirements are structured such that they are clear and understan
 \textbf{High-Level (HL)}\\\\
 \begin{itemize}
     \item \textbf{ID:} HL-15
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The evaluation must use a temporal train/validation/test split (or rolling-origin evaluation) that assigns cases to sets strictly based on time order, ensuring no future information leaks into training. Individual cases must not be split across different sets.
@@ -409,8 +409,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-16
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The system must compute and report appropriate evaluation metrics for the prediction task: for classification targets at minimum ROC AUC, precision, recall, F1-score, and Brier score; for regression targets MAE and RMSE. Results must be reported with variability measures (e.g., across multiple random seeds).
@@ -421,8 +421,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-17
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The evaluation must analyze and report prediction performance as a function of prefix length for both baseline and conformance-aware models, enabling an assessment of early-warning capability versus late-stage accuracy.
@@ -518,8 +518,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-18
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The implementation must primarily utilize PM4Py for process and conformance handling, scikit-learn for machine learning, alongside standard tools like pandas, numpy and matplotlib.
@@ -530,8 +530,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-19
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The project must be organized into coherent modules (e.g., io, conformance, features, models, evaluation, config), maintained in a Git repository with a meaningful commit history making use of branches or issues for major changes, and utilize docstrings and type hints throughout.
@@ -542,8 +542,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-20
-    \item \textbf{Importance:} 1
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The project must provide a \texttt{requirements.txt} or environment specification detailing all dependencies targeting a stable Python environment (e.g., version 3.14.4), as well as a \texttt{README.md} explaining how to install dependencies and run the full pipeline.
@@ -554,8 +554,8 @@ The following requirements are structured such that they are clear and understan
 
 \begin{itemize}
     \item \textbf{ID:} HL-21
-    \item \textbf{Importance:} 2
-    \item \textbf{Optional:} No
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
         \item \textbf{Goal:} The project must include a technical documentation of 3--5 pages describing the system architecture, data and model flow, conformance checking strategy, feature design, and main implementation choices. An architecture diagram is strongly recommended.
@@ -601,8 +601,54 @@ The following requirements are structured such that they are clear and understan
 % keep this section concise (little to none description - as the requirements are already fully specified in the previous chapter)
 % format: 
 % \textbf{Module X:} -> allocation of requirements to modules & people (Cem, Richard)
-% ID: "HL-number" / "LL-number" HL = high level, LL = low level
+% ID: "HL-number" / "LL-number" HL = high level, LL = level
 % Decomposition / Heritage: for HL -> of which LL is it composed, for LL -> what HL requ. depend on this low level requ.?
+
+\noindent \textbf{Module: IO} (Richard) % Module Color A
+\begin{itemize}
+    \item \textbf{ID:} HL-01 $\rightarrow$ Decomposition: LL-01.1, LL-01.2
+    \item \textbf{ID:} HL-05 $\rightarrow$ Decomposition: LL-05.1, LL-05.2, LL-05.3, LL-01.1, LL-01.2
+    \item \textbf{ID:} HL-04
+\end{itemize}
+
+\noindent \textbf{Module: CONFORMANCE} (Richard) % Module Color B
+\begin{itemize}
+    \item \textbf{ID:} HL-06 $\rightarrow$ Decomposition: LL-06.1, LL-06.2
+    \item \textbf{ID:} HL-13 $\rightarrow$ Decomposition: LL-13.1, LL-13.2
+\end{itemize}
+
+\noindent \textbf{Module: FEATURE EXTRACTION} (Richard) % Module Color C
+\begin{itemize}
+    \item \textbf{ID:} HL-07 $\rightarrow$ Decomposition: LL-07.1, LL-07.2, LL-07.3
+    \item \textbf{ID:} HL-02
+\end{itemize}
+
+\noindent \textbf{Module: MODEL TRAINING} (Cem) % Module Color D
+\begin{itemize}
+    \item \textbf{ID:} HL-08 $\rightarrow$ Decomposition: LL-08.1, LL-08.2
+    \item \textbf{ID:} HL-09 $\rightarrow$ Decomposition: LL-08.2
+\end{itemize}
+
+\noindent \textbf{Module: EVALUATION} (Cem) % Module Color E
+\begin{itemize}
+    \item \textbf{ID:} HL-12, HL-15, HL-17
+    \item \textbf{ID:} HL-16 $\rightarrow$ Decomposition: LL-16.1, LL-16.2
+\end{itemize}
+
+\noindent \textbf{Module: CONFIG \& PIPELINE} (Richard \& Cem) % Module Color F
+\begin{itemize}
+    \item \textbf{ID:} HL-03 $\rightarrow$ Decomposition: LL-03.1
+    \item \textbf{ID:} HL-14 $\rightarrow$ Decomposition: LL-14.1, LL-14.2, LL-14.3, LL-14.4
+    \item \textbf{ID:} HL-10
+\end{itemize}
+
+\noindent \textbf{Module: Project Infrastructure \& TESTING} (Richard \& Cem) % Module Color G
+\begin{itemize}
+    \item \textbf{ID:} HL-11 $\rightarrow$ Decomposition: LL-11.1, LL-11.2, LL-11.3
+    \item \textbf{ID:} HL-19 $\rightarrow$ Decomposition: LL-19.1, LL-19.2
+    \item \textbf{ID:} HL-20 $\rightarrow$ Decomposition: LL-20.1
+    \item \textbf{ID:} HL-18, HL-21
+\end{itemize}
 
 \section{Functional Models}
 % concise textual descriptions & BPMN diagrams: let the diagrams speak for themselves
@@ -690,7 +736,7 @@ To ensure, that both modules are well integrated and that the overall project ma
 We have decided to use gitlab's built-in requirement management functionality \cite{gitlab2026} to manage our requirements. This allows us to create a clear and structured overview of all requirements, their status, and their allocation to different modules and team members. We can easily track the progress of each requirement, identify any dependencies or blockers, and ensure that all requirements are addressed in a timely manner. Additionally, using gitlab for requirement management allows us to integrate it seamlessly with our code repository, making it easier to link requirements to specific code changes and ensuring that our development process is closely aligned with our defined requirements. 
 % describe why we chose it over other tools such as "Jira" etc.
 \section{Event Logs}
-Following the recommendation of our supervisor Dr. Berti, we adopt a three-tier event log setup that satisfies the core criteria for this assignment: support for prefix generation, meaningful deviation and compliance labels, and the availability of a process model for alignment or token-based replay.
+Following the recommendation of our supervisor Dr. Berti, we adopt a three-tier event log setup that satisfies the core criteria for this assignment: support for prefix generation, meaningful deviation and compliance labels, and the availability of a process model for alignment.
 
 \begin{itemize}
     \item \textbf{Primary evaluation log --- BPI Challenge 2012} (Loan Application Process): A real-life Dutch financial-institution process with 262,200 events across 13,087 cases. Supplied man-made BPMN/Petri-net models make it the strongest fit for alignment-based conformance checking and deviation label construction.
