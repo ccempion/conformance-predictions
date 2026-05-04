@@ -24,6 +24,7 @@ def run_interactive_cli() -> None:
         model_path = input("Enter the path to the normative model (Petri net/BPMN): ").strip()
     else:
         print("Model discovery will be used.")
+        discovery_params = {}
         # Prompt for discovery algorithm & noise thresholds
         # print("\nWhich discovery algorithm should be used?")
         # print("1. Inductive Miner (recommended)")
@@ -65,6 +66,7 @@ def run_interactive_cli() -> None:
         results = pipeline.run_conformance_prediction_pipeline(
             log_path=log_path,
             model_path=model_path,
+            discovery_params=discovery_params,
             target=target_choice,
             features=feature_choice,
             ml_params=ml_params
