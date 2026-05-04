@@ -17,3 +17,7 @@
 *.idx
 *.ist
 .DS_Store
+
+Code/.venv
+Code/data/
+.python-version
