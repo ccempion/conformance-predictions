@@ -22,3 +22,4 @@ Code/.venv
 Code/data/
 Code/src/__pycache__/
 .python-version
+Code/event_logs/
