@@ -1,7 +1,8 @@
-from typing import Tuple, Optional, Dict, Any
+from typing import Tuple, Optional, Dict, Any, List
 import pandas as pd
+import numpy as np
 from pm4py.objects.petri_net.obj import PetriNet, Marking
-from src import io, config
+from src import io, config, feature_extraction
 
 def prepare_log_and_model(
     log_path: str,
@@ -18,7 +19,7 @@ def prepare_log_and_model(
         A tuple containing ((Net, Initial Marking, Final Marking), Event Log DataFrame).
     """
     
-    # 1. Load the Event Log
+    # Load the Event Log
     print(f"--- Loading event log: {log_path} ---")
     log = io.load_event_log(log_path)
     
@@ -47,3 +48,47 @@ def prepare_log_and_model(
         )
         
     return model, log
+
+
+def extract_target_and_feature(
+    target: config.PredictionTarget,
+    feature: config.PredictionFeature,
+    model: Tuple[Any, Any, Any],
+    log: pd.DataFrame,
+    outcome_activities: Optional[List[str]] = None
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Orchestrates the extraction of labels (y) and features (X).
+    Ensures that the features and targets are aligned by case/prefix.
+    """
+    # Determine if alignments are required
+    needs_alignments = (
+        feature in [config.PredictionFeature.DIAGNOSTICS, config.PredictionFeature.HYBRID] or
+        target == config.PredictionTarget.FUTURE_DEVIATIONS
+    )
+
+    alignments = feature_extraction.compute_alignments(log, model) if needs_alignments else None
+    
+    # Extract Labels
+    print(f"--- Extracting target: {target.name} ---")
+    y_raw = feature_extraction.extract_label(
+        log=log, 
+        target_type=target, 
+        outcome_activities=outcome_activities,
+        alignments=alignments
+    )
+
+    # Extract Features
+    print(f"--- Extracting features: {feature.name} ---")
+    X_raw = feature_extraction.extract_features(
+        log=log, 
+        feature_type=feature, 
+        model=model,
+        alignments=alignments
+    )
+
+    # Preprocessing
+    print("--- Preprocessing and encoding data ---")
+    X, y = feature_extraction.preprocess_for_ml(X_raw, y_raw)
+    
+    return X, y
