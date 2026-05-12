@@ -1,10 +1,13 @@
 from typing import List, Dict, Optional, Any, Tuple
+
 import pandas as pd
 import numpy as np
-from src.config import PredictionTarget, PredictionFeature
-import config
 import pm4py
 from pm4py.objects.petri_net.obj import PetriNet, Marking
+
+from src.config import PredictionTarget, PredictionFeature
+from src import config
+
 
 def compute_alignments(log: pd.DataFrame, model: Tuple[PetriNet, Marking, Marking]) -> List[Dict[str, Any]]:
     """
@@ -167,6 +170,28 @@ def extract_features(
     
     return final_df
 
+from sklearn.preprocessing import LabelEncoder
+
 def preprocess_for_ml(X_raw: pd.DataFrame, y_raw: pd.Series) -> Tuple[np.ndarray, np.ndarray]:
-    """Encodes and scales the raw data for ML consumption."""
-    pass
+    """
+    Encodes and scales the raw data for ML training.
+    """
+    
+    # Feature Preprocessing (X)
+    # Converts categorical Case Attributes (strings) into numeric One-Hot encoded columns.
+    # Numerical features (Control Flow/Diagnostics) remain unchanged.
+    X = pd.get_dummies(X_raw, drop_first=True).values
+
+
+    # Label Preprocessing (y): PROCESS_OUTCOME
+    # Since labels are strings (e.g., 'Approve', 'uncertain_outcome'), we map them to integers (0, 1, 2...).
+    le = LabelEncoder()
+    y = le.fit_transform(y_raw)
+
+    # Handling for Remaining Time (Regression)
+    # pass
+
+    # Handling for Future Deviations (Binary)
+    # pass
+
+    return X, y
