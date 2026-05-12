@@ -26,28 +26,134 @@ def run_interactive_cli() -> None:
         print("Model discovery will be used.")
         discovery_params = {}
         # Prompt for discovery algorithm & noise thresholds
-        # print("\nWhich discovery algorithm should be used?")
-        # print("1. Inductive Miner (recommended)")
-        # print("2. Alpha Miner")
-        # print("3. Heuristic Miner")
-        # discovery_alg_choice = input("Select option (1-3):").strip()
-        
+        print("\nWhich discovery algorithm should be used?")
+        print("1. Inductive Miner (recommended)")
+        print("2. Alpha Miner")
+        print("3. Genetic Miner")
+        choice = int(input("Select option (1-3): ").strip())
+        # Map to config.Discovery_alg Enum
+        discovery_alg = [
+            config.Discovery_alg.INDUCTIVE, 
+            config.Discovery_alg.ALPHA, 
+            config.Discovery_alg.GENETIC
+        ][choice - 1]
 
-    # Prediction Configuration
+        if discovery_alg == config.Discovery_alg.INDUCTIVE:  # Inductive
+            discovery_params['noise_threshold'] = float(input("Noise threshold (default 0.0): ") or 0.0)
+            discovery_params['disable_fallthroughs'] = input("Disable fall-throughs? (y/n, default n): ").lower() == 'y'
+        
+        elif discovery_alg == config.Discovery_alg.GENETIC:  # Genetic
+            discovery_params['population_size'] = int(input("Population size (default 500): ") or 500)
+            discovery_params['elitism_rate'] = float(input("Elitism rate (default 0.01): ") or 0.01)
+            discovery_params['crossover_rate'] = float(input("Crossover rate (default 1.0): ") or 1.0)
+            discovery_params['mutation_rate'] = float(input("Mutation rate (default 0.01): ") or 0.01)
+            discovery_params['generations'] = int(input("Generations (default 100): ") or 100)
+            discovery_params['elitism_min_sample'] = int(input("Elitism min sample (default 5): ") or 5)
+
+    vis_params = None
+    vis_prompt = f"\nDo you want a visualization of the {'discovered' if model_path is None else 'provided'} normative model saved (s) or directly displayed (d) or not (N)? (s/d/N): "
+    vis_choice = input(vis_prompt).lower().strip()
+
+    if vis_choice in ['s', 'd']:
+        vis_params = {}
+        # Ask for representation format 
+        print("\nChoose model representation for visualization:")
+        print("1. Petri Net")
+        print("2. BPMN")
+        print("3. Process Tree")
+        rep_choice = int(input("Select option (1-3): ").strip())
+        
+        # Map to config.ModelRepresentation Enum
+        try: 
+            vis_params['representation'] = [
+                config.ModelRepresentation.PETRI_NET,
+                config.ModelRepresentation.BPMN,
+                config.ModelRepresentation.PROCESS_TREE
+            ][rep_choice - 1] 
+        except (ValueError, IndexError): 
+            print("Invalid choice. Defaulting to Petri Net.")
+            vis_params['representation'] = config.ModelRepresentation.PETRI_NET
+
+        if vis_choice == 's':
+            vis_params['output_path'] = input("Enter the path to save the visualization (e.g., model.png): ").strip()
+        else:
+            vis_params['output_path'] = None  # This triggers the 'else' (view) in your io.py logic
+    
+    # Call Input + initial visualization pipeline -> read files, optionally disover model and visualize to user
+    try:
+        model_tuple, log_df = pipeline.prepare_log_and_model(
+            log_path=log_path,
+            model_path=model_path,
+            discovery_alg=discovery_alg,
+            discovery_params=discovery_params,
+            vis_params=vis_params
+        )
+    
+    except Exception as e:
+        print(f"\n[SETUP ERROR]: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Target and Feature Configuration
     print("\nWhat should be predicted?")
     print("1. Future conformance deviations")
     print("2. Process outcome")
-    target_choice = input("Select option (1-2): ").strip()
+    print("3. Remaining time")
     
+    try:
+        target_choice = int(input("Select option (1-3): ").strip())
+        target = [
+            config.PredictionTarget.FUTURE_DEVIATIONS, 
+            config.PredictionTarget.PROCESS_OUTCOME, 
+            config.PredictionTarget.REMAINING_TIME
+        ][target_choice - 1]
+        
+        # for target == outcome
+        outcome_activities = []
+        if target == config.PredictionTarget.PROCESS_OUTCOME:
+            print("\nDefine the target outcome:")
+            print("Enter activity names that signify a outcome (one per line).")
+            print("Type 'done' when finished.")
+            while True:
+                act = input("> ").strip()
+                if act.lower() == 'done': break
+                if act: outcome_activities.append(act)
+    except (ValueError, IndexError):
+        print("Invalid choice. Defaulting to Future Conformance Deviations.")
+        target = config.PredictionTarget.FUTURE_DEVIATIONS
+
     print("\nWhat should the prediction be based upon?")
     print("1. Plain trace (control-flow)")
     print("2. Trace and alignment-based diagnostics")
     print("3. Case features")
     print("4. Mixture of all available information")
-    feature_choice = input("Select option (1-4): ").strip()
+    
+    try:
+        feature_choice = int(input("Select option (1-4): ").strip())
+        feature = [
+            config.PredictionFeature.CONTROL_FLOW,
+            config.PredictionFeature.DIAGNOSTICS,
+            config.PredictionFeature.CASE_ATTRIBUTES,
+            config.PredictionFeature.HYBRID
+        ][feature_choice - 1]
+    except (ValueError, IndexError):
+        print("Invalid choice. Defaulting to Control-flow.")
+        feature = config.PredictionFeature.CONTROL_FLOW
 
+    # Call Target and feature extraction + preprocessing pipeline
+    try:
+        X, y = pipeline.extract_target_and_feature(
+            target=target,
+            feature=feature,
+            model=model_tuple,
+            log=log_df,
+            outcome_activities=outcome_activities,
+        )
+    
+    except Exception as e:
+        print(f"\n[SETUP ERROR]: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    # 3. ML Algorithm Configuration
+    # ML Algorithm Configuration
     use_custom_ml = input("\nDo you want to configure the ML algorithm? (y/n): ").lower().strip() == 'y'
     ml_params = {}
     if use_custom_ml:
@@ -59,13 +165,14 @@ def run_interactive_cli() -> None:
         # ml_alg_choice = input("Select option (1-3): ").strip()
 
 
-    # 4. Trigger Pipeline
+    # Call model training pipeline 
     print("\nStarting execution pipeline...")
     try:
         # This calls the orchestration logic in src/pipeline.py
         results = pipeline.run_conformance_prediction_pipeline(
             log_path=log_path,
             model_path=model_path,
+            discovery_alg=discovery_alg,
             discovery_params=discovery_params,
             target=target_choice,
             features=feature_choice,
