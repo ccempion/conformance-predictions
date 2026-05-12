@@ -132,9 +132,9 @@ def extract_features(
                 # Determine the specific move type and activity
                 if log_move == model_move and log_move != '>>':
                     feat_name = f"sync_move_{log_move}"
-                elif model_move == '>>':
+                elif model_move == '>>' and log_move != None:
                     feat_name = f"log_move_{log_move}"
-                elif log_move == '>>':
+                elif log_move == '>>' and model_move != None:
                     feat_name = f"model_move_{model_move}"
                 else:
                     # Invisible transitions
