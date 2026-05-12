@@ -106,6 +106,17 @@ def run_interactive_cli() -> None:
             config.PredictionTarget.PROCESS_OUTCOME, 
             config.PredictionTarget.REMAINING_TIME
         ][target_choice - 1]
+        
+        # for target == outcome
+        outcome_activities = []
+        if target == config.PredictionTarget.PROCESS_OUTCOME:
+            print("\nDefine the target outcome:")
+            print("Enter activity names that signify a outcome (one per line).")
+            print("Type 'done' when finished.")
+            while True:
+                act = input("> ").strip()
+                if act.lower() == 'done': break
+                if act: outcome_activities.append(act)
     except (ValueError, IndexError):
         print("Invalid choice. Defaulting to Future Conformance Deviations.")
         target = config.PredictionTarget.FUTURE_DEVIATIONS
@@ -128,8 +139,19 @@ def run_interactive_cli() -> None:
         print("Invalid choice. Defaulting to Control-flow.")
         feature = config.PredictionFeature.CONTROL_FLOW
 
-
-    # Call Target and feature configuration + preprocessing pipeline
+    # Call Target and feature extraction + preprocessing pipeline
+    try:
+        X, y = pipeline.extract_target_and_feature(
+            target=target,
+            feature=feature,
+            model=model_tuple,
+            log=log_df,
+            outcome_activities=outcome_activities,
+        )
+    
+    except Exception as e:
+        print(f"\n[SETUP ERROR]: {e}", file=sys.stderr)
+        sys.exit(1)
 
     # ML Algorithm Configuration
     use_custom_ml = input("\nDo you want to configure the ML algorithm? (y/n): ").lower().strip() == 'y'
