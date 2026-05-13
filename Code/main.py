@@ -139,31 +139,22 @@ def run_interactive_cli() -> None:
         print("Invalid choice. Defaulting to Control-flow.")
         feature = config.PredictionFeature.CONTROL_FLOW
 
-    # Call Target and feature extraction + preprocessing pipeline
-    try:
-        X, y = pipeline.extract_target_and_feature(
-            target=target,
-            feature=feature,
-            model=model_tuple,
-            log=log_df,
-            outcome_activities=outcome_activities,
-        )
-    
-    except Exception as e:
-        print(f"\n[SETUP ERROR]: {e}", file=sys.stderr)
-        sys.exit(1)
-
     # ML Algorithm Configuration
     use_custom_ml = input("\nDo you want to configure the ML algorithm? (y/n): ").lower().strip() == 'y'
     ml_params = {}
     if use_custom_ml:
-        # Placeholder for ML configuration logic
-        print("\nWhich ML algorithm should be used?")
-        # print("1. Neural Network")
-        # print("2. Decision Tree")
-        # print("3. Regression")
-        # ml_alg_choice = input("Select option (1-3): ").strip()
-
+        print("\nConfiguring Decision Tree Parameters:")
+        criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
+        if criterion in ["gini", "entropy"]:
+            ml_params["criterion"] = criterion
+            
+        max_depth = input("Max depth (int, default None): ").strip()
+        if max_depth:
+            ml_params["max_depth"] = int(max_depth)
+            
+        min_samples_split = input("Min samples split (int, default 2): ").strip()
+        if min_samples_split:
+            ml_params["min_samples_split"] = int(min_samples_split)
 
     # Call model training pipeline 
     print("\nStarting execution pipeline...")
@@ -174,9 +165,12 @@ def run_interactive_cli() -> None:
             model_path=model_path,
             discovery_alg=discovery_alg,
             discovery_params=discovery_params,
-            target=target_choice,
-            features=feature_choice,
-            ml_params=ml_params
+            target=str(target_choice),
+            features=str(feature_choice),
+            outcome_activities=outcome_activities,
+            ml_params=ml_params,
+            preloaded_model=model_tuple,
+            preloaded_log=log_df
         )
         print("\nPipeline completed successfully!")
         

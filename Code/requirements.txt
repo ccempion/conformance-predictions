@@ -1,0 +1,8 @@
+pm4py
+pandas
+scikit-learn
+numpy
+matplotlib
+joblib
+psutil
+graphviz 
