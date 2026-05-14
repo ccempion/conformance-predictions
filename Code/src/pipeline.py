@@ -40,14 +40,16 @@ def run_conformance_prediction_pipeline(
     # TODO: handle X_train X_test mismatch
     y_pred, y_prob = model_training.predict(trained_model, X_test)
     metrics = evaluation.compute_classification_metrics(y_test, y_pred, y_prob)
-    
+
     print(f"Evaluation results: {metrics}")
-    
+
     return {
         "model": trained_model,
         "metrics": metrics,
         "X_test": X_test,
-        "y_test": y_test
+        "y_test": y_test,
+        "y_pred": y_pred,
+        "y_prob": y_prob,
     }
 
 def prepare_log_and_model(
@@ -103,10 +105,15 @@ def extract_target_and_feature(
     model: Tuple[Any, Any, Any],
     log: pd.DataFrame,
     outcome_activities: Optional[List[str]] = None
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, List[str]]:
     """
     Orchestrates the extraction of labels (y) and features (X).
     Ensures that the features and targets are aligned by case/prefix.
+
+    Returns:
+        X: feature matrix.
+        y: encoded label vector.
+        class_names: ordered list of original class labels.
     """
     # Determine if alignments are required
     needs_alignments = (
@@ -115,12 +122,12 @@ def extract_target_and_feature(
     )
 
     alignments = feature_extraction.compute_alignments(log, model) if needs_alignments else None
-    
+
     # Extract Labels
     print(f"--- Extracting target: {target.name} ---")
     y_raw = feature_extraction.extract_label(
-        log=log, 
-        target_type=target, 
+        log=log,
+        target_type=target,
         outcome_activities=outcome_activities,
         alignments=alignments
     )
@@ -128,14 +135,14 @@ def extract_target_and_feature(
     # Extract Features
     print(f"--- Extracting features: {feature.name} ---")
     X_raw = feature_extraction.extract_features(
-        log=log, 
-        feature_type=feature, 
+        log=log,
+        feature_type=feature,
         model=model,
         alignments=alignments
     )
 
     # Preprocessing
     print("--- Preprocessing and encoding data ---")
-    X, y = feature_extraction.preprocess_for_ml(X_raw, y_raw)
-    
-    return X, y
+    X, y, class_names = feature_extraction.preprocess_for_ml(X_raw, y_raw)
+
+    return X, y, class_names
