@@ -54,26 +54,25 @@ def extract_label(
     elif target_type == config.PredictionTarget.FUTURE_DEVIATIONS:
         if alignments is None:
             raise ValueError("Future Deviations target requires alignment results.")
-            
         case_ids = log[case_id_key].unique()
         
         if len(case_ids) != len(alignments):
             raise ValueError("Number of alignments does not match number of unique cases in the log.")
             
-        # deviations = []
-        # for align_dict in alignments:
-        #     # PM4Py alignments contain 'alignment', a list of tuples: (log_move, model_move)
-        #     # A deviation is present if either the log move or model move is '>>' (skip)
-        #     alignment_moves = align_dict.get('alignment', [])
-        #     has_deviation = any(
-        #         log_move == '>>' or model_move == '>>' 
-        #         for log_move, model_move in alignment_moves
-        #     )
-        #     # You can also return a count by changing this to a sum() if you prefer regression
-        #     deviations.append(int(has_deviation)) 
+        deviations = []
+        for align_dict in alignments:
+             # PM4Py alignments contain 'alignment', a list of tuples: (log_move, model_move)
+             # A deviation is present if either the log move or model move is '>>' (skip)
+            alignment_moves = align_dict.get('alignment', [])
+            has_deviation = any(
+                log_move == '>>' or model_move == '>>' 
+                for log_move, model_move in alignment_moves
+             )
+             # You can also return a count by changing this to a sum() if you prefer regression
+            deviations.append(int(has_deviation)) 
             
-        # return pd.Series(deviations, index=case_ids, name="future_deviations")
-        return None
+        return pd.Series(deviations, index=case_ids, name="future_deviations")
+        #return None
 
     elif target_type == config.PredictionTarget.REMAINING_TIME:
         # Calculates the total duration of the case in seconds
