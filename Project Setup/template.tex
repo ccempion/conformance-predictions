@@ -1,0 +1,200 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+Rheinisch-Westf\"alische Technische Hochschule Aachen \\
+Alessandro Berti\\[6ex]
+
+\LARGE
+	\textbf{Project Initialization: Implementation of "Conformance Predictions"} \\[6ex]
+        \centering{Group 4:}\\
+	\textit{Richard Schuppener, Cem Colak} \\[6ex]
+\end{center}
+
+\newpage
+
+\tableofcontents
+
+\section{Introduction}
+This document encompasses the set-up phase of Cem and Richards project "Conformance Predictions" supervised by Dr. Alessandro Berti. The scope of this project is located in the field of Process Mining and Data Science \cite{vanderaalst2016}. We aim to provide a fully functional Python (+PM4Py) based, modular repository that integrates \textbf{Process Mining} and \textbf{Machine Learning} to retrieve relevant insights. Of course, the projects output shall be applicable to real-world data in form of event logs and normative process models.
+In the following, exemplary business cases for our projects output are presented, the theoretical and technical feasibility is analyzed and the Deliverables deadlines are detailed. Finally we provide personal descriptions of the teams members (Richard \& Cem), both assigned roles and a personal phase review.
+
+\section{Business Case} 
+
+\subsection{Client}
+Insurance company F is a internationally established insurer for road vehicles. It handles processes such as \textit{application-to-approval} and \textit{issue-to-resolution}. In the following we are going to focus on established clients of company F that submit an insurance claim as in the issue-to-resolution process. 
+There are multiple stages of this process where conformance deviations may take place, such as the claim registration (sub-) process: "After a claim is registered, it is examined by a claims officer who then writes a settlement
+recommendation. This recommendation is then checked by a senior claims officer who may
+mark the claim as “OK” or “Not OK”. If the claim is marked as “Not OK”, it is sent back
+to the claims officer and the recommendation is repeated. If the claim is “OK”, the claim
+handling process proceeds." \cite{mendling2013fundamentals}.
+We modeled this process as BPMN diagram in \ref{fig:claim_registration}
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/claim_registration.png}
+	\caption{Claim registration process for company F.}
+	\label{fig:claim_registration}
+\end{figure}
+\subsection{Example Use Case 1:}
+Company F notices that the claim handling regularly fails because of issues that have been introduced in the claim registration process which directly proceeds the claim handling. Such issues include: 
+\begin{enumerate}
+	\item The activity "Evaluate severity" was skipped and thus the activity "Send forms" is executed only with the basic forms sent to the customer and not the (in severe cases required) additional forms.
+	\item The activity "Check forms completeness" was emitted and thus the claim is registered even though not all required forms are present.
+\end{enumerate}
+It is self-evident how these deviations from standard procedure cause problems later on in the claim handling process. Depending on the exact conformance violation in the claim registration process, deviations in the subsequent process-steps may or may not arise. To get a basis on which to act on, company F aims to predict conformance deviations that may occur in subsequent parts of the process by deploying a ML-driven conformance prediction strategy.
+\subsection{Example Use Case 2:}
+Company F also suspects that a variety of case attributes, including the claimant’s age, sex, and the total claim amount might be useful features for predicting the eventual trajectory of the case. For instance, a claim with a high monetary value filed by a claimant in a specific demographic might be predicted to have a higher probability of being marked as "Not OK" during the senior officer's review, or it might be flagged as being at risk for a conformance deviation, such as the omission of a mandatory secondary verification. By analyzing these attributes early on, company F can anticipate whether a case will follow the standard workflow or if it is likely to encounter deviations, allowing for proactive management and more accurate outcome predictions.\\
+A second sub-process follows this initial registration: the \textit{Claim Settlement and Communication} phase. "In this stage, the claims officer initiates direct communication with the claimant to request additional documentation or clarify the circumstances of the incident. Based on the gathered information, a final decision is made to either reimburse the client, reject the claim, or reinitiate the decision-making process if new evidence suggests a different path." \ref{fig:claim_decision} (this process is not taken from the book "Fundamentals of Business Process Management").\\
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/claim_decision.png}
+	\caption{Claim communication and settlement process for company F.}
+	\label{fig:claim_decision}
+\end{figure}
+Conformance deviations have been recorded during this interaction; for example, the officer might skip the mandatory "Request Information" step and move directly to a rejection, or they might fail to provide the required justification when reinitiating the process. These deviations are candidates for prediction, as early indicators in the claim registration. Especially case attributes often may help deducing non-compliant behavior during final decision steps of the process.
+\section{Feasibility Study}
+
+\subsection{Theoretical Feasibility}
+
+The theoretical foundation of this project is based on two established and often intertwined research domains: process mining - in particular conformance checking - and predictive machine learning.
+
+\textit{Conformance checking} is a mature subfield of process mining concerned with quantifying the degree to which observed process executions, recorded in event logs, comply with a normative reference model such as a Petri net or BPMN diagram. Established techniques include token-based replay, alignment-based conformance checking, and footprint-based methods. Each of these can be utilized to produce fitness and precision metrics. Especially alignment-based conformance diagnostics allow us to pinpoint steps in the process where conformance deviations occur. These pin-pointed deviations will serve as a principled basis for classifying future deviations such as those described in the insurance business case.
+
+The predictive dimension of the project is grounded in \textit{Predictive Process Monitoring} (PPM), which applies supervised machine learning to partial case traces, treating the prefix of an ongoing case as a feature representation and a future process outcome as the prediction target. This maps directly towards the project's core objective: predicting whether a conformance deviation will occur based on early-stage process events and case attributes such as alignment issues, claimant demographics and claim amount.
+
+In conclusion, conformance checking theory and predictive process monitoring provide a robust theoretical basis for predicting future conformance deviations from partial event logs using a modular PM4Py-based pipeline.
+
+\subsection{Technical Feasibility}
+Our project heavily relies on a choice of widespread used open-source python libraries such as \textbf{Numpy}, \textbf{Pandas}, \textbf{PM4Py}, \textbf{Scikit-Learn} and \textbf{Matplotlib}. They all serve different purposes and will be used to varying extent. In the following, we allow the libraries themselves to give us a brief overview of what they define themselves as:
+\begin{enumerate}
+	\item \textit{Numpy}: "NumPy is the fundamental package for N-dimensional arrays, mathematical functions, and numerical computing in Python." \cite{numpy2026}
+	\item \textit{Pandas}: "pandas is a fast, powerful, flexible and easy to use open source data analysis and manipulation tool, built on top of the Python programming language." \cite{pandas2026}
+	\item \textit{PM4Py}: "PM4Py is a leading open-source process mining library in Python, designed for use in both academia and industry." \cite{pm4py2026}
+	\item \textit{Scikit-Learn}: "Simple and efficient tools for predictive data analysis, Accessible to everybody, and reusable in various contexts, Built on NumPy, SciPy, and matplotlib" \cite{scikit-learn2026}
+	\item \textit{Matplotlib}: "Matplotlib is a comprehensive library for creating static, animated, and interactive visualizations in Python. Matplotlib makes easy things easy and hard things possible." \cite{matplotlib2026}
+\end{enumerate}
+Now we define their designated use-case in this project:
+\begin{enumerate}
+	\item \textit{Numpy}: Numpy will be used in many different and at this point unforeseeable steps in this project. It will be useful at the machine learning level but also at the filtering of logs, the extracting of case features and other pre-processing related tasks. 
+	\item \textit{Pandas}: PM4Py converts event logs that are stored as ".xes" to a pandas dataframe with its implemented read functions. It also notes that ".csv"-based event logs can directly be read with pandas. Pandas will inevitably be used throughout this project as a clean approach to store intermediate and event data.
+	\item \textit{PM4Py}: This library will be central to our project as it provides much of the required functionality regarding process mining, such as loading and filtering event logs, extracting case-based features and conformance checking with alignments. PM4Py is also great for initial exploration of event logs since it provides a comprehensive visualization module.
+	\item \textit{Scikit-Learn}: A machine learning library that is as widely used in academia as scikit-learn is core to our ML-driven approach. It provides easy access to ML-algorithms such as regression, decision trees and neural networks. These algorithms implement a great variety of parameters, automatic hyper-parameter tuning etc. Scikit-Learn also provides visualizations and evaluation methods that will be used in our assessment. 
+	\item \textit{Matplotlib}: In our assessment, we plan to use Matplotlib to visualize our projects outputs and thus our achievements. Matplotlib is extensive, widely used in academia and very user-friendly.
+\end{enumerate}
+We believe that this selection of libraries will probably cover all our projects needs, but note that other libraries may also be integrated into our project later on in the development stage.
+
+
+\section{Project Scope and Deliverables deadlines}\label{sec:charter}
+The project scope encompasses the design and implementation of a predictive analytics pipeline that integrates conformance checking diagnostics with machine learning-based predictive modeling. The primary deliverables include:
+\begin{itemize}
+	\item \textbf{Reproducible Python-based software artifact} with \textbf{tests and documentation}
+	\item \textbf{Prototype software documentation} including a technical documentation, a user guide and a prototype interface
+	\item \textbf{An evaluation} addressing the question \textit{if conformance information derived from a process model improve the prediction of future deviations and compliance risks}
+\end{itemize}
+	The milestones and their respective deadlines for submission of the required materials are:
+\begin{itemize}
+	\item Project Setup: Friday 24 April 2026
+	\item Requirements Engineering: Sunday 3 May 2026
+	\item Sprint 1: Sunday 17 May 2026
+	\item Sprint 2: Sunday 31 May 2026
+	\item Sprint 3: Sunday 14 June 2026
+	\item Testing and Assessment: Sunday 21 June 2026 
+\end{itemize}
+It is essential to acknowledge that the schedule presented here is preliminary and may be subject to adjustments. This flexibility accommodates unforeseen personal or professional circumstances that may arise during the project's execution, allowing team members to navigate challenges effectively. 
+
+\section{Tools}
+\subsection{Trello}
+In order to plan, organize, and track the development of our work, we rely on a project management tool called Trello. It is based on the concept of boards, lists, and cards, allowing us to break down complex tasks into smaller ones and distribute them among team members. We utilize features such as due dates and labels to further customize our tasks and distinguish them from one another. This web-based platform makes it easy for group members to monitor the progress of each task and identify their responsibilities. In conclusion, Trello's user-friendly interface and comprehensive features significantly contribute to the success of our project.
+\\\\
+Link to our Trello board: \href{https://trello.com/invite/b/69e7795b0301156f7b398049/ATTI312fa2edbd35f19912efe97f4c4d0d8bCA988E2A/conformance-predictions}{\textit{Group 4 Trello}}
+
+\subsection{Git and GitLab}
+Version control systems are indispensable for modern software development, especially in collaborative environments like academic projects. For our PM4PY based project we used Git and GitLab, which will use the following: \\
+\\
+\textit{Git}, at its core, is a distributed version control system that tracks changes in source code over time. Its key strengths lie in its ability to create branches for remote independent development, merge code easily, and revert to previous versions. This allows team members to work concurrently on different features or bug fixes without interfering with each other's progress. Changes are transparently tracked and loss of progress is mitigated. Remote repositories enable the developing team to get the most up-to-date version of the project and develop from there. \\
+\\
+\textit{GitLab} on the other hand, provides a web-based platform built around Git, extending its functionalities with a suite of project management and collaboration tools. These include issue tracking, code review, continuous integration/continuous delivery (CI/CD) pipelines for example to automatically run tests, and wiki pages for documentation. Additionally, analytics are automatically created and on-demand displayed such as commits per member, time of commits, code review analytics, CI/CD analytics and many more. By integrating these features, GitLab creates a centralized hub for project activity.
+\\\\
+
+\subsection{PM4Py}
+PM4Py (Process Mining for Python) \cite{pm4py2023} is an library that was created and over many years developed the Frauenhofer Institute (FiT), but development was handed off to its spin-off \textit{Process Intelligence Solutions} (P. I. S.). The library is open-source and encompasses a plethora of state-of-the-art process mining algorithms for filtering, discovery, conformance checking, visualization etc. In regards to our project and the overall topic of Conformance Predictions, PM4Py supports f.e. token-based, alignment-based and footprint-based conformance diagnostics, while also offering many visualization techniques. Special methods for filtering and extracting features from event logs is also supported, which makes PM4Py it perfect for our project.
+
+\section{Team}
+\subsection{Personal Description}
+\subsubsection{Richard Schuppener}
+Richard did his Bachelors degree in Computer Science from 2022-2025 and recently started his Masters degree in Data Science (both at RWTH Aachen University). From the third semester of his bachelor on, he developed a keen interest in Process Mining - his interest in Data Science was present long before. Currently, he is working at Fraunhofer FiT as a student assistant and previously enrolled in the following (relevant) courses:
+\begin{itemize} 
+	\item \textit{Business Process Modeling and Computation}
+	\item \textit{Fundamentals of Business Process Management}
+	\item \textit{Business Process Intelligence}
+	\item \textit{Elements of Machine Learning and Data Science}
+	\item \textit{Introduction to Data Science}
+	\item \textit{Advanced Process Mining}
+	\item \textit{SPP: Conformance Checking in Python}
+\end{itemize}
+This concludes that he has strong theoretical backgrounds in the areas of process mining (especially conformance checking) and basics in machine learning. \\
+He is looking forward to working with Cem and honing his software development skills (in particular best practices), getting more insights into the combination of process mining and classical machine learning and ultimately delivering a complete and polished product that actually produces valuable insights.
+\subsubsection{Cem Colak}
+Cem Colak is a Data Science student in the 2nd semester of his master's degree at RWTH Aachen University. His background consists of a bachelor's degree in mathematics from the Heinrich-Heine-University Düsseldorf and gained hands-on industry experience in financial services and consulting. Through several internships at major companies such as BCG and zeb he learned to combine his technical skills in complex modeling, data analysis and software development with valuable softskills in project management and teamwork. Currently he is a board member of the student organization "Bund der Alevitischen Studierenden" (BDAS) and is responsible for the IT-architecture. This semester, he is enrolled in the following (relevant) courses: 
+\begin{itemize} 
+	\item \textit{Advanced Process Mining}
+	\item \textit{Fundamentals of Business Process Management}
+	\item \textit{Business Process Intelligence}
+	\item \textit{Process Mining with Frequencies}
+\end{itemize}
+He is looking forward to working with Richard and accelerating his learning curve in the field of process mining, especially conformance checking. He is also excited to gain more experience in the intersection of process mining and machine learning, and to combine Richards' profound knowledge about Process Mining and his own experience in software development to create a polished product that delivers valuable insights.
+\section{Roles}
+
+\underline{Scrum Master}: We decided that the role of the scrum master will not be assigned to any of us, since our team only consists of two participants and we deem a scrum master as a single responsible person to be unfitting and unnecessary.
+\\\\
+\underline{Official Communication/Product Owner}: Cem will be assigned to handle the official communication with Alessandro and notify him about our progress, potential problems, questions and organizational information.
+\\\\
+\underline{Tools Administration}: Since Cem already set up Trello and is familiar with structuring boards, we assign him to be responsible for the Tool Administration.
+\\\\
+\underline{Theory Expert}: Due to his background in process mining, we decided to assign Richard to the role of a theory expert. 
+\\\\
+\underline{Software Expert}: This role will also be assigned to Richard because of his background in Computer Science and his experience as programmer for FiT.
+\\\\
+\underline{Test Management}: We assign the role of Test Manager to Cem, as he is a great fit for ensuring the functionality and correctness of any produced code. He has previous experience with the set-up of test suites test-first driven development.
+
+
+\section{Phase review}
+\subsection{Richard Schuppener}
+I believe that this phase went splendid and without any hiccups. Our group work started out by quickly establishing a communication channel (WhatsApp) and by meeting up in person. The organization of weekly time slot where we plan to work together on this project was easy and fits us both. I quickly established a GitLab repository and a LaTeX template for this document and Cem directly created the Trello board.
+We worked evenly on the "Project Setup" document and the atmosphere among the team was friendly, productive and supportive. I am looking forward to working with Cem on this interesting project.
+\subsection{Cem Colak}
+I think, the project setup phase was very successful and well coordinated. We both value the importance of clear, strucured and transparent coordination and communication, which is why we quickly established a communication channel and a Trello board to coordinate our work. We also met up in person to discuss the project and get to know each other, which was very helpful for building a good working relationship. We both contributed equally to the project setup document and shared our ideas and expectations for the project.
+Since I'm doing such a lab for my first time, I was a bit overwhelmed by the amount of work and the time pressure. Richard already did a lab in his bachelor, hence he was able to guide me through the process, share experience and give me a good overview of the requirements and expectations. This was very helpful for me to get started and to understand the overall process.
+We already established a setup for the project, to regularly work, communicate and coordinate. The trello board really helped to coordinate the phase.
+So far, the only thing I'm concerned about are my skills in process mining and the technical implementation. Nevertheless, Richard can definitely support me in this regard, and I'm sure that I will be able to learn a lot by both - Richard and the lab itself. I'm looking foward to work with Richard on this interesting project.
+
+\paragraph{}
+\begin{thebibliography}{10}
+\bibitem{vanderaalst2016}
+Van Der Aalst, Wil. (2016) \textit{Process mining: Data science in action.} Berlin, Heidelberg: Springer Berlin Heidelberg.
+\bibitem{mendling2013fundamentals}
+Dumas, M., La Rosa, M., Mendling, J., \& Reijers, H. A. (2013). \textit{Fundamentals of Business Process Management}. Springer.
+\bibitem{pm4py2023}
+Berti A, van Zelst S, Schuster D. \textit{PM4Py: A process mining library for Python.} Software Impacts. 2023
+
+\bibitem{numpy2026}
+https://numpy.org/ - visited April 2026
+
+\bibitem{pm4py2026}
+https://processintelligence.solutions/pm4py - visited April 2026
+
+\bibitem{matplotlib2026}
+https://matplotlib.org/ - visited April 2026
+\bibitem{scikit-learn2026}
+https://scikit-learn.org/stable/ - visited April 2026
+\bibitem{pandas2026}
+https://pandas.pydata.org/ - visited April 2026
+\end{thebibliography}
+
+\end{document}

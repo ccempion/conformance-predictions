@@ -1,0 +1,772 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage[dvipsnames]{xcolor}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+Rheinisch-Westf\"alische Technische Hochschule Aachen \\
+Alessandro Berti\\[6ex]
+
+\LARGE
+	\textbf{Requirements Engineering: Implementation of "Conformance Predictions"} \\[6ex]
+        \centering{Group 4:}\\
+	\textit{Richard Schuppener, Cem Colak} \\[6ex]
+\end{center}
+
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Motivation}
+% short and concise motivation to why requirement engineering is important and useful
+Requirements engineering (RE) is a critical phase in the software development lifecycle that involves the systematic process of eliciting, analyzing, documenting, and managing the requirements of a software system before it is build. It serves as the foundation for successful software development by ensuring that the needs and expectations of stakeholders are accurately captured and translated into actionable specifications to develop software. Especially in a complex project, involving multiple stakeholders and specific functionalities as Dr. Berti described in the project document, it allows us to align our understanding with the stakeholders e.g. the client, user (business analyst) and supervisors. As a result, we will use the RE to allocate responsibilities within our group, specify the functionality and technical constraints of our software artifact, and to manage the requirements throughout the project lifecycle. This will help us to ensure that we are building the right product, meet the stakeholders' needs, and can effectively track changes and progress during development.
+\section{Requirements}
+The requirements we have identified were split into four top-level categories, which are visualized in \ref{fig:requirements_overview}. These categories are: Stakeholder Requirements, Functional Requirements, Non-Functional Requirements, and Technical Constraints. Each of these categories encompasses specific requirements that are crucial for the successful implementation of our project. The stakeholder requirements focus on the needs and expectations of the users and business, hence being a core aspect of our requirement analysis. The functional requirements specify the core functionalities that our software must provide. The non-functional requirements address performance and usability aspects, and the technical constraints outline the limitations and standards we need to adhere to during development.
+
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/requirements_overview.png}
+	\caption{Overview of the four top-level requirement categories.}
+	\label{fig:requirements_overview}
+\end{figure}
+
+The following requirements are structured such that they are clear and understandable. Each entry is identified by an unique \textbf{ID} (HL for high-level, LL for low-level) and an \textbf{Importance rating} from 1 (critical) to 3 (low priority). We also specify if a requirement is \textbf{Optional or mandatory}. The \textbf{Description} is split into a Goal, defining the specific objective, and a Reasoning, explaining the technical or business necessity behind it.
+% fully specify for each requirement: ID, Type, Description: Goal, reasoning as to why
+% ID: "HL-number" / "LL-number" HL = high level, LL = low level
+% Type: Business / User / Functional / Non-Functional / ...
+% Importance: [1-3] 1 = most important
+% Optional: Yes / No
+\subsection{Stakeholder Requirements}
+\noindent \textbf{Business Requirements}\\
+\noindent \textit{High-Level (HL)}
+\begin{itemize}
+    \item \textbf{ID:} HL-01
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The software must enable insurance company F (or comparable organizations) to predict whether a conformance deviation will occur in future steps of the claim handling process, based on partial trace prefixes extracted from event logs and a normative process model.
+        \item \textbf{Reasoning:} This is the primary business objective of the project: company F requires early, actionable predictions of non-compliant behavior to prevent downstream failures in the claim handling process.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-02
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The software must support the inclusion of structured case attributes (e.g., claimant demographics, claim amount) as predictive features alongside process-level signals, enabling company F to leverage available case data for more accurate deviation and outcome predictions.
+        \item \textbf{Reasoning:} As described in the business case (Use Case 2), case attributes such as claimant age, sex, and claim amount are informative indicators for predicting non-compliant behavior and process trajectories.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\noindent \textbf{User Requirements}\\
+\noindent \textit{High-Level (HL)}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-03
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The Python script must provide an interactive command-line interface that guides the user (a business analyst employed by company F) through all configuration steps - including providing event log and model paths, selecting the prediction target, choosing the feature basis, and optionally configuring the ML algorithm - without requiring deep process mining expertise.
+        \item \textbf{Reasoning:} The primary user is a business analyst, not a process mining specialist. A guided, interactive interface ensures correct usage and broad adoption of the tool within company F.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-04
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The system must report errors (e.g., invalid file paths, preprocessing failures, unexpected terminations) to the user in a clear and transparent manner throughout all stages of execution.
+        \item \textbf{Reasoning:} Users with limited technical background must be able to self-diagnose configuration mistakes; opaque error messages would impede correct usage and reduce trust in the tool.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\noindent \textit{Low-Level (LL)}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-01.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} The software must enable users without a normative process model to automatically discover the underlying model of the process from the event-log data, ensuring that the conformance checking and prediction pipeline can be executed even in the absence of a pre-defined model.
+        \item \textbf{Implementation:} Processes may not be formally documented, and the ability to discover a model directly from the data ensures that the tool remains usable in real-world scenarios where a normative model is not available.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+\begin{itemize}
+    \item \textbf{ID:} LL-01.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} The user should be able to see the discovered process model after the execution of the script as a visualization (e.g., Petri net or BPMN diagram) to verify that the discovered model reasonably represents the underlying process before proceeding with conformance checking and prediction.
+        \item \textbf{Implementation:} This is an optional but valuable feature for users to gain confidence in the discovered model and to visually inspect the process structure for potential issues before relying on it for conformance analysis and predictions.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-03.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} The user must be able to select both the prediction target (future conformance deviations vs.\ process outcome) and the feature basis (control-flow trace, trace with alignment-based diagnostics, case attributes, or a combination of all available information).
+        \item \textbf{Implementation:} Different analytical questions and data availability scenarios require different prediction configurations; this flexibility is essential for the tool to remain useful across varying business contexts at company F.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\subsection{Functional Requirements}
+
+\noindent \textit{High-Level (HL)}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-05
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The data and model input component must load and preprocess the event log (filtering, timestamp cleaning), and import or discover a process model, preparing it for conformance checking (e.g., a Petri or BPMN). All standard model and log formats shall be supported.
+        \item \textbf{Reasoning:} This is the foundational first step of the pipeline before analysis can begin.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize} \label{HL-06}
+    \item \textbf{ID:} HL-06
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The conformance analysis module must compute alignment-based diagnostics for each prefix, extracting metrics such as log-moves, model-moves, synchronous-moves, cumulative alignment cost, current model state/marking, and distance-to-completion indicators where feasible.
+        \item \textbf{Reasoning:} These diagnostics serve as the foundation for conformance-based predictive features; model state and distance-to-completion in particular provide essential context about how far a running case has deviated and how far it is from a compliant end state.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-07
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The prefix generation and feature engineering module must dynamically construct standard log-based features alongside conformance-based features derived from the diagnostics mentioned in \ref{HL-06}.
+        \item \textbf{Reasoning:} Predictive process monitoring relies on these prefix features to evaluate the risk of future deviations and the outcome of the process.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-08
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The system must implement supervised prediction pipelines as scikit-learn-style objects to predict a defined deviation-related target, such as the probability that a case's final alignment cost exceeds a threshold.
+        \item \textbf{Reasoning:} Building and applying the predictive model is the core deliverable of the software artifact.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-09
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The system must implement at least one baseline prediction model using only classical log-based features (control-flow encodings, aggregated case attributes, temporal features) and at least one conformance-aware model that augments these with the diagnostics from \ref{HL-06}, enabling a direct performance comparison between the two approaches.
+        \item \textbf{Reasoning:} The central research question of the project requires a controlled comparison to quantify the added predictive value of conformance information; without a proper baseline, no meaningful claim about its benefit can be made.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-10
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The project must provide an end-to-end experiment runner (script or notebook) that starts from raw data and process model and reproduces all main results and plots without any manual intermediate steps.
+        \item \textbf{Reasoning:} Full reproducibility of results is a core deliverable of the assignment; a single-entry-point runner guarantees that all experiments can be replicated from scratch without ad-hoc intervention.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-11
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The software must include automated tests (e.g., pytest) for data loading, conformance checking, prefix generation, and model training. Tests must be executable via a single command.
+        \item \textbf{Reasoning:} Automated testing provides a basic safety net against errors induced by refactoring.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+\item \textbf{ID:} HL-12
+ \textbf{Importance:} 3
+ \textbf{Optional:} Yes
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The system utilizes Matplotlib to generate comprehensive visualizations, including confusion matrices for classification performance, resource usage plots, and charts comparing elapsed time against varying log sizes.
+        \item \textbf{Reasoning:} Visual analytics are essential for the comparative analysis of prediction models, as well as for discussing the computational feasibility of the pipeline. An evaluation will be conducted anyways after the final sprint.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\noindent \textit{Low-Level (LL)}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-05.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Event log data successfully parsed into an internal tabular or object-oriented format regardless of the input file type.
+        \item \textbf{Implementation:} Use \texttt{pm4py.read\_xes} for standard XES logs and pandas \texttt{read\_csv} (followed by PM4Py dataframe conversion) for CSV files.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-05.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} A valid Petri net or BPMN representation loaded from an existing file.
+        \item \textbf{Implementation:} Use \texttt{pm4py.read\_petri\_net} or \\ \texttt{pm4py.read\_bpmn} when the user provides a normative model file.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-05.3
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} A discovered Petri net representation if no normative model is provided.
+        \item \textbf{Implementation:} Apply the Inductive Miner via \\ \texttt{pm4py.discover\_petri\_net\_inductive} as an automated fallback to generate a model directly from the event log.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-06.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Raw alignment dictionaries computed for every trace in the event log against the normative model.
+        \item \textbf{Implementation:} Execute \\ \texttt{pm4py.conformance.conformance\_diagnostics\_alignments} using a predefined standard cost function for synchronous and asynchronous moves.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-06.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Extracted numerical deviations mapped to specific cases.
+        \item \textbf{Implementation:} Parse the generated alignment dictionaries to programmatically extract and sum specific metrics, such as the total count of log-moves and model-moves.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-07.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Truncated event logs representing ongoing case states at varying lengths.
+        \item \textbf{Implementation:} Develop a prefix-generation loop that iterates through cases and slices event lists sequentially up to an integer length $k$.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-07.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Formatted numerical feature matrices ready for machine learning algorithms.
+        \item \textbf{Implementation:} Map categorical prefix activities to one-hot encodings and concatenate the corresponding numerical alignment costs using Pandas DataFrames.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-07.3
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Baseline prefix event logs generated strictly from control-flow data without alignment diagnostics.
+        \item \textbf{Implementation:} Utilize \texttt{pm4py.ml.get\_prefixes\_from\_log} to establish a baseline for evaluating the added value of conformance-based features in the subsequent assessment.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-08.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Standardized feature distributions preventing scale-sensitive algorithms from underperforming.
+        \item \textbf{Implementation:} Utilize \texttt{sklearn.preprocessing.StandardScaler} or \texttt{MinMaxScaler} integrated within a \texttt{sklearn.pipeline.Pipeline}.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-08.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} A fitted predictive model capable of mapping the feature matrix to the deviation risk target.
+        \item \textbf{Implementation:} Utilize \texttt{scikit-learn} to implement and compare a selection of different machine learning algorithms that fit the data, situated at the end of the processing pipeline.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-11.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Isolated and predictable testing environments containing synthetic process data.
+        \item \textbf{Implementation:} Create \texttt{pytest.fixture} objects that load a hardcoded, perfectly conforming toy XES log and corresponding Petri net.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-11.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Automated assertion of correctness for the core conformance logic.
+        \item \textbf{Implementation:} Write test functions asserting that the computed alignment cost exactly equals $0.0$ for the synthetic conforming dataset.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-11.3
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Automated verification of the prefix generation to prevent data leakage.
+        \item \textbf{Implementation:} Write test functions asserting that generated prefixes of length $k$ strictly contain only the first $k$ events of the original trace, ensuring no future information is exposed to the model.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\subsection{Non-Functional Requirements}
+
+\noindent \textbf{Performance requirements}\\
+\noindent \textit{High-Level (HL)}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-13
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} Conformance analysis results must be cached to handle repeated use during feature generation.
+        \item \textbf{Reasoning:} Alignment calculation is inherently resource-intensive; caching ensures the script remains computationally feasible when generating features.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-14
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The system must allow for measuring and reporting the runtime and resource requirements of conformance checking and feature generation.
+        \item \textbf{Reasoning:} This is necessary to reflect on the feasibility of deploying such a system in near real-time.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\noindent \textbf{Evaluation requirements}\\
+\noindent \textit{High-Level (HL)}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-15
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The evaluation must use a temporal train/validation/test split (or rolling-origin evaluation) that assigns cases to sets strictly based on time order, ensuring no future information leaks into training. Individual cases must not be split across different sets.
+        \item \textbf{Reasoning:} A temporally ordered evaluation protocol is essential to avoid data leakage, which would artificially inflate predictive performance and invalidate the experimental results.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-16
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The system must compute and report appropriate evaluation metrics for the prediction task: for classification targets at minimum ROC AUC, precision, recall, F1-score, and Brier score; for regression targets MAE and RMSE. Results must be reported with variability measures (e.g., across multiple random seeds).
+        \item \textbf{Reasoning:} A comprehensive set of metrics is required to rigorously assess and compare model performance and to support the central evaluation question of the assignment.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-17
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The evaluation must analyze and report prediction performance as a function of prefix length for both baseline and conformance-aware models, enabling an assessment of early-warning capability versus late-stage accuracy.
+        \item \textbf{Reasoning:} Prefix-length analysis is explicitly required by the assignment and is necessary to understand when in the process conformance information begins to provide meaningful predictive value.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\noindent \textit{Low-Level (LL)}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-13.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Deterministic identification of previously computed trace prefixes to avoid redundant calculations.
+        \item \textbf{Implementation:} Hash the ordered sequence of activities in a given prefix to generate a unique cache key.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-13.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Disk-based persistence of intermediate alignment results.
+        \item \textbf{Implementation:} Utilize Python's \texttt{joblib} library to serialize and save the alignment dictionaries, mapping them to their corresponding prefix hashes.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-14.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} High-precision metrics on the execution duration of critical script segments.
+        \item \textbf{Implementation:} Use Python's \texttt{time.perf\_counter()} immediately before and after resource-intensive \linebreak calls like \texttt{pm4py.conformance.conformance} \texttt{\_diagnostics\_alignments} and model training.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-14.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Tracking of the peak memory footprint during data preprocessing and alignment.
+        \item \textbf{Implementation:} Integrate the \texttt{psutil.Process().memory\_info()} method to poll and log RAM consumption asynchronously.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-14.3
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} The system must record the start and end execution time (in milliseconds) for the combined processes of conformance checking and feature generation per individual data batch.
+        \item \textbf{Implementation:} Millisecond-level precision is strictly required to benchmark processing speeds and accurately determine if the system meets the near real-time processing threshold.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-14.4
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} The system must output the collected runtime and resource metrics in the console and persist them in a structured log file (e.g., CSV or JSON) for subsequent analysis.
+        \item \textbf{Implementation:} The performance data must be persistently stored in a standardized, machine-readable format so that the team can actually parse, graph, and reflect on the feasibility metrics.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-16.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} The system must use evaluation metrics such as ROC AUC, precision, recall, F1-score, and Brier score for classification targets. Any other appropriate metrics for classification targets may also be included.
+        \item \textbf{Implementation:} These metrics are standard for evaluating classification performance and are explicitly required by the assignment to ensure a comprehensive assessment of the predictive models.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-16.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} The system must use evaluation metrics such as MAE and RMSE for regression targets. Results must be reported with variability measures (e.g., across multiple random seeds). Any other appropriate metrics for regression targets may also be included.
+        \item \textbf{Implementation:} These metrics are standard for evaluating regression performance and are explicitly required by the assignment to ensure a comprehensive assessment of the predictive models.
+    \end{itemize}
+\end{itemize}
+ \vspace{1.5em}
+
+\subsection{Technical Constraints}
+
+\noindent \textit{High-Level (HL)}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-18
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The implementation must primarily utilize PM4Py for process and conformance handling, scikit-learn for machine learning, alongside standard tools like pandas, numpy and matplotlib.
+        \item \textbf{Reasoning:} These libraries are standard for process mining and machine learning pipelines and were selected such that compatibility with the project's scope is ensured.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-19
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The project must be organized into coherent modules (e.g., io, conformance, features, models, evaluation, config), maintained in a Git repository with a meaningful commit history making use of branches or issues for major changes, and utilize docstrings and type hints throughout.
+        \item \textbf{Reasoning:} These are explicit software engineering requirements outlined for the assignment.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-20
+ \textbf{Importance:} 1
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The project must provide a \texttt{requirements.txt} or environment specification detailing all dependencies targeting a stable Python environment (e.g., version 3.14.4), as well as a \texttt{README.md} explaining how to install dependencies and run the full pipeline.
+        \item \textbf{Reasoning:} Both files are explicitly required by the assignment to ensure reproducibility and to enable any user to set up and run the pipeline from scratch.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} HL-21
+ \textbf{Importance:} 2
+ \textbf{Optional:} No
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The project must include a technical documentation of 3--5 pages describing the system architecture, data and model flow, conformance checking strategy, feature design, and main implementation choices. An architecture diagram is strongly recommended.
+        \item \textbf{Reasoning:} Technical documentation is an explicit deliverable of the assignment and is required to communicate design decisions and architectural choices to external readers.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\noindent \textit{Low-Level (LL)}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-19.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} A statically verifiable, type-safe internal API bridging the different modules.
+        \item \textbf{Implementation:} Enforce the rigorous use of Python's \texttt{typing} module (e.g., \texttt{List}, \texttt{Dict}, \texttt{DataFrame}) for all function parameters and return signatures.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-19.2
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} Decoupled configuration state, preventing hardcoded values scattered throughout the modules.
+        \item \textbf{Implementation:} Maintain a centralized \texttt{config.py} script (or a parsed JSON file) holding all hyperparameter thresholds, file paths, and target definitions.
+    \end{itemize}
+\end{itemize}
+\vspace{1.5em}
+
+\begin{itemize}
+    \item \textbf{ID:} LL-20.1
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Result:} A reproducible, lightweight, and easily accessible environment specification for standard Python setups.
+        \item \textbf{Implementation:} Maintain a standard \texttt{requirements.txt} file (e.g., generated via \texttt{pip freeze}) instead of utilizing overly rigorous environment managers like \texttt{uv} or \texttt{poetry}, ensuring simple and universally understood installation for end users.
+    \end{itemize}
+\end{itemize}
+
+
+
+\section{Requirement Allocation \& Flowdown}
+% keep this section concise (little to none description - as the requirements are already fully specified in the previous chapter)
+% format:
+% \textbf{Module X:} -> allocation of requirements to modules & people (Cem, Richard)
+% ID: "HL-number" / "LL-number" HL = high level, LL = level
+% Decomposition / Heritage: for HL -> of which LL is it composed, for LL -> what HL requ. depend on this low level requ.?
+
+\noindent \textbf{Module: IO} (\colorbox{BurntOrange}{Richard}) % Module Color A
+\begin{itemize}
+    \item \textbf{ID:} HL-01 $\rightarrow$ Decomposition: LL-01.1, LL-01.2
+    \item \textbf{ID:} HL-05 $\rightarrow$ Decomposition: LL-05.1, LL-05.2, LL-05.3, LL-01.1, LL-01.2
+    \item \textbf{ID:} HL-04
+\end{itemize}
+
+\noindent \textbf{Module: CONFORMANCE} (\colorbox{BurntOrange}{Richard}) % Module Color B
+\begin{itemize}
+    \item \textbf{ID:} HL-06 $\rightarrow$ Decomposition: LL-06.1, LL-06.2
+    \item \textbf{ID:} HL-13 $\rightarrow$ Decomposition: LL-13.1, LL-13.2
+\end{itemize}
+
+\noindent \textbf{Module: FEATURE EXTRACTION} (\colorbox{BurntOrange}{Richard}) % Module Color C
+\begin{itemize}
+    \item \textbf{ID:} HL-07 $\rightarrow$ Decomposition: LL-07.1, LL-07.2, LL-07.3
+    \item \textbf{ID:} HL-02
+\end{itemize}
+
+\noindent \textbf{Module: MODEL TRAINING} (\colorbox{Aquamarine}{Cem}) % Module Color D
+\begin{itemize}
+    \item \textbf{ID:} HL-08 $\rightarrow$ Decomposition: LL-08.1, LL-08.2
+    \item \textbf{ID:} HL-09 $\rightarrow$ Decomposition: LL-08.2
+\end{itemize}
+
+\noindent \textbf{Module: EVALUATION} (\colorbox{Aquamarine}{Cem}) % Module Color E
+\begin{itemize}
+    \item \textbf{ID:} HL-12, HL-15, HL-17
+    \item \textbf{ID:} HL-16 $\rightarrow$ Decomposition: LL-16.1, LL-16.2
+\end{itemize}
+
+\noindent \textbf{Module: CONFIG \& PIPELINE} (\colorbox{BurntOrange}{Richard} \& \colorbox{Aquamarine}{Cem}) % Module Color F
+\begin{itemize}
+    \item \textbf{ID:} HL-03 $\rightarrow$ Decomposition: LL-03.1
+    \item \textbf{ID:} HL-14 $\rightarrow$ Decomposition: LL-14.1, LL-14.2, LL-14.3, LL-14.4
+    \item \textbf{ID:} HL-10
+\end{itemize}
+
+\noindent \textbf{Module: Project Infrastructure \& TESTING} (\colorbox{BurntOrange}{Richard} \& \colorbox{Aquamarine}{Cem}) % Module Color G
+\begin{itemize}
+    \item \textbf{ID:} HL-11 $\rightarrow$ Decomposition: LL-11.1, LL-11.2, LL-11.3
+    \item \textbf{ID:} HL-19 $\rightarrow$ Decomposition: LL-19.1, LL-19.2
+    \item \textbf{ID:} HL-20 $\rightarrow$ Decomposition: LL-20.1
+    \item \textbf{ID:} HL-18, HL-21
+\end{itemize}
+
+\section{Functional Models}
+% concise textual descriptions & BPMN diagrams: let the diagrams speak for themselves
+\subsection{Installation}\label{installation}
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/installation.png}
+	\caption{Installation process of our projects' python script.}
+	\label{fig:installation}
+\end{figure}
+% basic description how to install the project:
+% prerequisites: git, python, pip
+% 1. clone into repo, 2. create venv, 3. install requirements from requirements.txt, 4. execute script
+
+To use our \textbf{Python script}, the following set-up steps are required. 
+First, the user should check whether all prerequisites are met: 
+Our project requires a working \textbf{Python} \cite{python2026} installation of version \textit{3.14.4} (currently the latest available Python version where all required packages are supported). 
+Also, a proper installation of \textbf{Git} \cite{git2026} is required.
+
+First, the repository needs to be cloned:
+\begin{center}
+\texttt{git clone https://git.rwth-aachen.de/schuppenerr/conformance-predictions.git}
+\end{center}
+
+Then, we suggest entering the cloned directory and creating a virtual environment for the Python packages:
+\begin{center}
+\texttt{python -m venv .venv}
+\end{center}
+
+Alternatively (not recommended), this step can be skipped and the required packages can be globally installed on the PC.
+
+The next step is to install all packages from the \textit{requirements.txt} file:
+\begin{center}
+\texttt{pip install -r requirements.txt}
+\end{center}
+
+Now, the script can be launched via the terminal from the directory containing \textit{main.py}:
+\begin{center}
+\texttt{python main.py}
+\end{center}
+
+The installation process is visualized in \ref{fig:installation}. 
+Note that this aims only to roughly sketch the installation process and neither depicts correct BPMN nor comprehensively describes the script setup.
+\subsection{Usage}
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/usage.png}
+	\caption{Typical usage of our projects' python script.}
+	\label{fig:usage}
+\end{figure}
+
+After launching the \textbf{Python script} as described in Section \ref{installation}, the usage of our product is as follows:
+The user is asked whether they are in possession of a \textbf{normative model} or if one should be discovered from the \textbf{event log} in question. 
+After selecting option one, the user is asked for the path to the model and then the path to the event log.
+If option two is selected instead, the user is directly asked for the path to the event log.\\
+Independent of the initially chosen option, the paths are checked for validity. In case of option two, additional \textbf{parameters} are requested, including the discovery algorithm, noise thresholds, and whether the model should be saved.
+After passing the path-validity check, the success of reading and \textbf{preprocessing} the input data is confirmed.  
+Note that throughout these steps, it is possible for the script to unexpectedly terminate due to an error. Such errors are communicated to the user as \textbf{transparently and clearly} as possible. 
+Now the user is asked which \textbf{type of prediction} should be conducted. Again, the script presents the user with multiple options: \\\\
+\textbf{What should be predicted?}
+\begin{enumerate}
+    \item future deviations
+    \item the outcome of the process (i.e., whether a specific activity is executed)
+\end{enumerate}
+\textbf{What should the prediction be based upon?}
+\begin{enumerate}
+    \item the prefixes' plain trace (control-flow)
+    \item the prefixes' trace and alignment-based diagnostics
+    \item case features
+    \item a mixture of all available information
+\end{enumerate}
+The final step before actually applying machine learning is the generation of prefixes and the feature engineering, which are internally handled. Depending on the users choice, the input data undergoes \textbf{conformance analysis} - more specifically, the log and the model are aligned.\\
+When the final preprocessing steps succeed, the user can now optionally specify which \textbf{ML-algorithm} should be applied and what hyperparameters should be chosen, or decide that this step is to be skipped. In that case, the script continues with default values.
+Now, the machine learning module becomes active and builds a \textbf{prediction model} based on the now fully specified data and parameters. \\ 
+After the model is built, the user is asked which data should undergo prediction: the input for this needs to be provided in the form of a file containing trace prefixes (and case attributes).
+The prediction is performed and the script asks if any other data should be predicted. If not, the script successfully terminates.
+This process is visualized in \ref{fig:usage}. Note that this aims to only roughly sketch the usage and neither depict correct BPMN, nor comprehensively describe the functionality of the script.
+\section{Requirement Management}
+The requirement management process is crucial for the successful implementation of our project, as it makes sure that all the requirements are properly documented, tracked and fulfilled throughout the whole process of production. As the project progresses through its sprints, requirements may be refined, reprioritized, or added in response to new insights or feedback from the supervisor. All changes to requirements are subject to mutual agreement between both team members and are documented by updating this document.
+Both of us are responsible for the general project management, including documentation, testing, and integration of the two modules, which we will specify in the following subsection.
+\subsection{Organization in Group 4}
+For the implementation of the software artifact, we decided to split the work into two main modules alongside the general project management: the \textbf{conformance analysis} and the \textbf{machine learning} module. both modules include specific submodules for specific tasks. The conformance analysis module is responsible for loading and preprocessing the data, performing the conformance checking, and generating the features. The machine learning module is responsible for building the prediction model based on the generated features and applying it to new data and evaluating it. We decided to allocate the responsibility for the conformance analysis module to Richard, while Cem is responsible for the machine learning module.
+
+To ensure, that both modules are well integrated and that the overall project management is handled effectively, we will maintain regular communication and coordination between us, as well as with our supervisor. 
+
+\subsection{GitLab's Requirements Management}
+We have decided to use GitLab's built-in requirement management functionality \cite{gitlab2026} to manage our requirements. This allows us to create a clear and structured overview of all requirements, their status, and their allocation to different modules, milestones and team members. For that reason we won't use a traceability matrix, because the use case will be the same but the interconnection between modules, sprints and changes will be managed directly within gitlab. Additionally, using gitlab for requirement management allows us to integrate it seamlessly with our code repository, making it easier to link requirements to specific work items and code changes. 
+\section{Event Logs}
+Following the recommendation of our supervisor Dr. Berti, we adopt a three-tier event log setup that satisfies the core criteria for this assignment: support for prefix generation, meaningful deviation and compliance labels, and the availability of a process model for alignment.
+
+\begin{itemize}
+    \item \textbf{Primary evaluation log --- BPI Challenge 2012} (Loan Application Process): A real-life Dutch financial-institution process with 262,200 events across 13,087 cases. Supplied man-made BPMN/Petri-net models make it the strongest fit for alignment-based conformance checking and deviation label construction.
+    \item \textbf{Development and test log --- Sepsis Cases} (Hospital Pathway): Approximately 1,000 cases, 15,000 events, and 39 case attributes. Its small size makes it well-suited for automated tests and rapid prototyping of prefix-level features.
+    \item \textbf{Optional scalability experiment --- BPI Challenge 2017, Road Traffic Fine Management, or BPI Challenge 2019}: To be considered if time and computational resources permit, enabling an assessment of pipeline scalability across larger or differently structured logs.
+\end{itemize}
+\section{Phase review}
+\subsection{Richard Schuppener}
+The "Requirements Engineering" phase posed significantly more challenges than the "Project Setup" phase. It required not only thinking about how requirements engineering is actually done in practice and how to structure this document (which was less straightforward than the "Project Setup"), but also about the actual structure of our implementation.
+We had to combine our ideas and goals, the reasoning behind them, and a concrete and robust plan for the upcoming implementation. I experienced this as very complex and demanding - especially under the rather unfortunate time constraints of this week (national holiday on May 1st) and personal matters that constrained me such that I could work neither on Friday nor on Saturday on this project.  
+I think I did a good job of specifying the functional model and making modeling decisions for its BPMN visualization (though this modeling does not aim to depict correct BPMN syntax). I also believe that the structure I drafted is expressive. The functional requirements and technical constraints also seem to be at the sweet spot between coarse- and fine-grained. It feels good to fulfill my roles as Theory Expert and Software Expert.
+I also believe that we did splendidly in dividing the work that went into this document according to our roles. For example, Cem thoroughly and swiftly handled communication with Alessandro, and I tested tools such as GitLab "Work Items" and GitLab's requirements management.
+This shows that we take our roles as Official Communication and Software Expert seriously and go beyond.
+To conclude: even though this phase was significantly more challenging than the previous one, I believe we handled it very professionally and delivered a great "Requirements Engineering" document.
+\subsection{Cem Colak}
+This phase felt noticeably more demanding than the project setup. Setting up the Requirements Engineering document and assessing the requirements within it required genuine forward thinking about what we are actually going to build, which was both challenging and valuable. Unlike the previous phase, where the structure was largely given, here we had to make real decisions about scope, granularity, and priority.
+
+One point of uncertainty early on was whether to keep the requirements identification and specification as separate chapters or to merge them into one. I appreciate that Richard took the initiative to directly ask Dr. Berti about this, and our decision to combine both parts into a single comprehensive chapter was the right call - it made the document significantly more cohesive.
+
+Richard and I also aligned on using GitLab's requirements management tool to streamline our sprint workflow going forward. This sprint reinforced for me how important it is that requirements are not just written down, but actually agreed upon between all parties involved. This is something I had not fully appreciated before, and I can already see how it applies to my personal software development projects with friends, where a lack of shared understanding often creates friction.
+
+On the downside, we had intended to use this phase to collect feedback from Dr. Berti, but between the national holiday on May 1st and my own engagement on Friday, I was not able to contribute as much toward the end of the week as planned. Looking back, we should have sent the draft version that was ready on Friday - that would have given us a head start on incorporating feedback. This is a lesson I will take into the next sprint.
+
+\begin{thebibliography}{10}
+% nasa guide to requirement engineering?
+% BPMN citation / SBPM citation
+\bibitem{python2026}
+https://www.python.org/ - visited April 2026
+\bibitem{git2026}
+https://git-scm.com/ - visited April 2026
+\bibitem{gitlab2026}
+https://docs.gitlab.com/user/project/requirements/ - visited April 2026
+\end{thebibliography}
+
+
+\end{document}
