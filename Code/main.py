@@ -20,11 +20,12 @@ def run_interactive_cli() -> None:
     log_path = input("Enter the path to the event log (XES/CSV): ").strip()
     
     model_path: Optional[str] = None
+    discovery_alg: Optional[config.Discovery_alg] = None
+    discovery_params: dict = {}
     if has_model:
         model_path = input("Enter the path to the normative model (Petri net/BPMN): ").strip()
     else:
         print("Model discovery will be used.")
-        discovery_params = {}
         # Prompt for discovery algorithm & noise thresholds
         print("\nWhich discovery algorithm should be used?")
         print("1. Inductive Miner (recommended)")
@@ -33,16 +34,19 @@ def run_interactive_cli() -> None:
         choice = int(input("Select option (1-3): ").strip())
         # Map to config.Discovery_alg Enum
         discovery_alg = [
-            config.Discovery_alg.INDUCTIVE, 
-            config.Discovery_alg.ALPHA, 
+            config.Discovery_alg.INDUCTIVE,
+            config.Discovery_alg.ALPHA,
             config.Discovery_alg.GENETIC
         ][choice - 1]
 
-        if discovery_alg == config.Discovery_alg.INDUCTIVE:  # Inductive
+        if discovery_alg == config.Discovery_alg.INDUCTIVE:
             discovery_params['noise_threshold'] = float(input("Noise threshold (default 0.0): ") or 0.0)
             discovery_params['disable_fallthroughs'] = input("Disable fall-throughs? (y/n, default n): ").lower() == 'y'
-        
-        elif discovery_alg == config.Discovery_alg.GENETIC:  # Genetic
+
+        elif discovery_alg == config.Discovery_alg.ALPHA:
+            print("Alpha Miner has no configurable parameters.")
+
+        elif discovery_alg == config.Discovery_alg.GENETIC:
             discovery_params['population_size'] = int(input("Population size (default 500): ") or 500)
             discovery_params['elitism_rate'] = float(input("Elitism rate (default 0.01): ") or 0.01)
             discovery_params['crossover_rate'] = float(input("Crossover rate (default 1.0): ") or 1.0)
@@ -114,8 +118,8 @@ def run_interactive_cli() -> None:
             print("Enter activity names that signify a outcome (one per line).")
             print("Type 'done' when finished.")
             while True:
-                act = input("> ").strip()
-                if act.lower() == 'done': break
+                act = input("> ").lower().strip()
+                if act == 'done': break
                 if act: outcome_activities.append(act)
     except (ValueError, IndexError):
         print("Invalid choice. Defaulting to Future Conformance Deviations.")
@@ -140,22 +144,48 @@ def run_interactive_cli() -> None:
         feature = config.PredictionFeature.CONTROL_FLOW
 
     # ML Algorithm Configuration
-    use_custom_ml = input("\nDo you want to configure the ML algorithm? (y/n): ").lower().strip() == 'y'
+    
+    print("\nWhich ML algorithm do you want to apply on your data?")
+    print("Decision Tree")
+    print("Algorithm 2")
+    print("Algorithm 3")
+    try:
+        ml_choice = int(input("Select option (1-3): ").strip())
+        if ml_choice == 1:
+            print("Decision Tree selected.")
+        elif ml_choice == 2:
+            print("Algorithm 2 selected.")
+        elif ml_choice == 3:
+            print("Algorithm 3 selected.")
+    except (ValueError, IndexError):
+        print("Invalid choice. Defaulting to Decision Tree.")
+        ml_choice = int(input("Select option (1-3): ").strip())
+        feature = [
+            config.Algorithm.DECISION_TREE,
+            config.Algorithm.ALGORITHM_2,
+            config.Algorithm.ALGORITHM_3,
+        ][ml_choice - 1]
+
+    use_custom_ml = input("\nDo you want to configure the {ml_choice}? (y/n): ").lower().strip() == 'y'
+
+    #here we put all the parameters together
     ml_params = {}
-    if use_custom_ml:
+    if use_custom_ml== "y" and ml_choice == 1:  # Decision Tree
         print("\nConfiguring Decision Tree Parameters:")
         criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
         if criterion in ["gini", "entropy"]:
             ml_params["criterion"] = criterion
             
-        max_depth = input("Max depth (int, default None): ").strip()
+        max_depth = input("Max depth (int, default 4): ").strip()
         if max_depth:
             ml_params["max_depth"] = int(max_depth)
             
-        min_samples_split = input("Min samples split (int, default 2): ").strip()
+        min_samples_split = input("Min samples split (int, default 20): ").strip()
         if min_samples_split:
             ml_params["min_samples_split"] = int(min_samples_split)
-
+        min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
+        if min_samples_leaf:
+            ml_params["min_samples_leaf"] = int(min_samples_leaf)
     # Call model training pipeline 
     print("\nStarting execution pipeline...")
     try:
