@@ -171,12 +171,12 @@ def extract_features(
 
 from sklearn.preprocessing import LabelEncoder
 
-def preprocess_for_ml(X_raw: pd.DataFrame, y_raw: pd.Series) -> Tuple[np.ndarray, np.ndarray, List[str]]:
+def preprocess_for_ml(X_raw: pd.DataFrame, y_raw: pd.Series) -> Tuple[pd.DataFrame, np.ndarray, List[str]]:
     """
     Encodes and scales the raw data for ML training.
 
     Returns:
-        X: feature matrix as numpy array.
+        X: feature DataFrame (columns preserved for downstream alignment).
         y: encoded label vector as numpy array.
         class_names: ordered list of original class labels (index i maps to encoded integer i).
     """
@@ -184,7 +184,7 @@ def preprocess_for_ml(X_raw: pd.DataFrame, y_raw: pd.Series) -> Tuple[np.ndarray
     # Feature Preprocessing (X)
     # Converts categorical Case Attributes (strings) into numeric One-Hot encoded columns.
     # Numerical features (Control Flow/Diagnostics) remain unchanged.
-    X = pd.get_dummies(X_raw, drop_first=True).values
+    X = pd.get_dummies(X_raw, drop_first=True)
 
 
     # Label Preprocessing (y): PROCESS_OUTCOME

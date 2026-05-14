@@ -123,8 +123,8 @@ def run_interactive_cli() -> None:
             print("Enter activity names that signify a outcome (one per line).")
             print("Type 'done' when finished.")
             while True:
-                act = input("> ").lower().strip()
-                if act == 'done': break
+                act = input("> ").strip()
+                if act.lower() == 'done': break
                 if act: outcome_activities.append(act)
     except (ValueError, IndexError):
         print("Invalid choice. Defaulting to Future Conformance Deviations.")
@@ -168,9 +168,9 @@ def run_interactive_cli() -> None:
     # ML Algorithm Configuration
     
     print("\nWhich ML algorithm do you want to apply on your data?")
-    print("Decision Tree")
-    print("Algorithm 2")
-    print("Algorithm 3")
+    print("(1) Decision Tree")
+    print("(2) Algorithm 2")
+    print("(3) Algorithm 3")
     try:
         ml_choice = int(input("Select option (1-3): ").strip())
         if ml_choice == 1:
@@ -188,11 +188,11 @@ def run_interactive_cli() -> None:
             config.Algorithm.ALGORITHM_3,
         ][ml_choice - 1]
 
-    use_custom_ml = input("\nDo you want to configure the {ml_choice}? (y/n): ").lower().strip() == 'y'
+    use_custom_ml = input("\nDo you want to configure the Parameters yourself (y/n): ").lower().strip() == 'y'
 
     #here we put all the parameters together
     ml_params = {}
-    if use_custom_ml== "y" and ml_choice == 1:  # Decision Tree
+    if use_custom_ml and ml_choice == 1:  # Decision Tree
         print("\nConfiguring Decision Tree Parameters:")
         criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
         if criterion in ["gini", "entropy"]:

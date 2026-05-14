@@ -37,7 +37,9 @@ def run_conformance_prediction_pipeline(
     # 6. Evaluation (HL-16)
     print("--- Evaluating model ---")
 
-    # TODO: handle X_train X_test mismatch
+    # Align test columns to training columns — fills any activity/move seen only in
+    # one split with 0, preventing shape mismatches in the StandardScaler.
+    X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
     y_pred, y_prob = model_training.predict(trained_model, X_test)
     metrics = evaluation.compute_classification_metrics(y_test, y_pred, y_prob)
 
@@ -105,7 +107,7 @@ def extract_target_and_feature(
     model: Tuple[Any, Any, Any],
     log: pd.DataFrame,
     outcome_activities: Optional[List[str]] = None
-) -> Tuple[np.ndarray, np.ndarray, List[str]]:
+) -> Tuple[pd.DataFrame, np.ndarray, List[str]]:
     """
     Orchestrates the extraction of labels (y) and features (X).
     Ensures that the features and targets are aligned by case/prefix.
