@@ -2,68 +2,33 @@ from typing import Tuple, Optional, Dict, Any, List
 import pandas as pd
 import numpy as np
 from pm4py.objects.petri_net.obj import PetriNet, Marking
+import pm4py
 from src import io, config, feature_extraction, model_training, evaluation
+from sklearn.model_selection import train_test_split
 
 def run_conformance_prediction_pipeline(
-    log_path: str,
-    model_path: Optional[str] = None,
-    discovery_alg: Optional[config.Discovery_alg] = config.Discovery_alg.INDUCTIVE,
-    discovery_params: Optional[Dict[str, Any]] = None,
-    target: str = "1",
-    features: str = "1",
-    outcome_activities: Optional[List[str]] = None,
+    X_test=np.ndarray,
+    y_test=np.ndarray,
+    X_train=np.ndarray,
+    y_train=np.ndarray,
     ml_params: Optional[Dict[str, Any]] = None,
-    preloaded_model: Optional[Tuple[PetriNet, Marking, Marking]] = None,
-    preloaded_log: Optional[pd.DataFrame] = None
 ) -> Dict[str, Any]:
     """
     Main orchestration function for the entire pipeline.
     """
-    # 1. Map CLI choices to Enums
-    target_map = {"1": config.PredictionTarget.FUTURE_DEVIATIONS, "2": config.PredictionTarget.PROCESS_OUTCOME}
-    feature_map = {
-        "1": config.PredictionFeature.CONTROL_FLOW, 
-        "2": config.PredictionFeature.DIAGNOSTICS, 
-        "3": config.PredictionFeature.CASE_ATTRIBUTES,
-        "4": config.PredictionFeature.HYBRID
-    }
+
+    # # 4. Temporal Split (HL-15)
+    # print("--- Splitting data temporally ---")
+    # # This is a simplification; evaluation.temporal_split returns case IDs
+    # # For now, we assume X and y are indexed or aligned such that we can split them
+    # # In a real implementation, you'd filter X/y based on the returned case IDs
+    # train_ids, val_ids, test_ids = evaluation.temporal_split(log)
     
-    target_enum = target_map.get(target, config.PredictionTarget.FUTURE_DEVIATIONS)
-    feature_enum = feature_map.get(features, config.PredictionFeature.CONTROL_FLOW)
-
-    # 2. Prepare Data
-    if preloaded_model is not None and preloaded_log is not None:
-        model = preloaded_model
-        log = preloaded_log
-    else:
-        model, log = prepare_log_and_model(
-            log_path=log_path,
-            model_path=model_path,
-            discovery_alg=discovery_alg,
-            discovery_params=discovery_params
-        )
-
-    # 3. Feature Extraction
-    X, y = extract_target_and_feature(
-        target=target_enum,
-        feature=feature_enum,
-        model=model,
-        log=log,
-        outcome_activities=outcome_activities
-    )
-
-    # 4. Temporal Split (HL-15)
-    print("--- Splitting data temporally ---")
-    # This is a simplification; evaluation.temporal_split returns case IDs
-    # For now, we assume X and y are indexed or aligned such that we can split them
-    # In a real implementation, you'd filter X/y based on the returned case IDs
-    train_ids, val_ids, test_ids = evaluation.temporal_split(log)
-    
-    # Placeholder: filter X and y based on IDs (Richard's feature extraction should keep case IDs)
-    # X_train, y_train = X.loc[train_ids], y.loc[train_ids]
-    # X_test, y_test = X.loc[test_ids], y.loc[test_ids]
-    X_train, X_test = X[:int(0.8*len(X))], X[int(0.8*len(X)):] # Simple split for now
-    y_train, y_test = y[:int(0.8*len(y))], y[int(0.8*len(y)):]
+    # # Placeholder: filter X and y based on IDs (Richard's feature extraction should keep case IDs)
+    # # X_train, y_train = X.loc[train_ids], y.loc[train_ids]
+    # # X_test, y_test = X.loc[test_ids], y.loc[test_ids]
+    # X_train, X_test = X[:int(0.8*len(X))], X[int(0.8*len(X)):] # Simple split for now
+    # y_train, y_test = y[:int(0.8*len(y))], y[int(0.8*len(y)):]
 
     # 5. Model Training (HL-08, LL-08.2)
     print(f"--- Training model with parameters: {ml_params} ---")
@@ -71,6 +36,8 @@ def run_conformance_prediction_pipeline(
 
     # 6. Evaluation (HL-16)
     print("--- Evaluating model ---")
+
+    # TODO: handle X_train X_test mismatch
     y_pred, y_prob = model_training.predict(trained_model, X_test)
     metrics = evaluation.compute_classification_metrics(y_test, y_pred, y_prob)
     
@@ -126,7 +93,8 @@ def prepare_log_and_model(
             model_representation=vis_params['representation']
         )
         
-    return model, log
+    log_train, log_test= pm4py.split_train_test(log, train_percentage=0.75)
+    return model, log_train, log_test 
 
 
 def extract_target_and_feature(
