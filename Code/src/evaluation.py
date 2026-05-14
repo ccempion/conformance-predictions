@@ -79,14 +79,28 @@ def compute_classification_metrics(
     y_pred_proba: np.ndarray,
 ) -> Dict[str, float]:
     """Compute standard binary classification metrics."""
-    # Handle multi-class if necessary, but assume binary for now as per requirements
+    n_unique = len(np.unique(y_true))
+    # Use proba dimensionality (what the model produced) to decide binary vs multi-class,
+    # not y_true's unique count — the two can differ after a temporal split.
+    is_binary_proba = np.ndim(y_pred_proba) == 1
+
+    if n_unique <= 1:
+        roc_auc = 0.5
+    elif is_binary_proba:
+        roc_auc = float(metrics.roc_auc_score(y_true, y_pred_proba))
+    else:
+        try:
+            roc_auc = float(metrics.roc_auc_score(y_true, y_pred_proba, multi_class='ovr'))
+        except ValueError:
+            roc_auc = 0.0  # train/test class mismatch — model never saw all test classes
+
     return {
         "accuracy": float(metrics.accuracy_score(y_true, y_pred)),
         "precision": float(metrics.precision_score(y_true, y_pred, average='weighted', zero_division=0)),
         "recall": float(metrics.recall_score(y_true, y_pred, average='weighted', zero_division=0)),
         "f1": float(metrics.f1_score(y_true, y_pred, average='weighted', zero_division=0)),
-        "roc_auc": float(metrics.roc_auc_score(y_true, y_pred_proba, multi_class='ovr') if len(np.unique(y_true)) > 1 else 0.5),
-        "brier_score": float(metrics.brier_score_loss(y_true, y_pred_proba) if len(np.unique(y_true)) == 2 else 0.0)
+        "roc_auc": roc_auc,
+        "brier_score": float(metrics.brier_score_loss(y_true, y_pred_proba)) if (is_binary_proba and n_unique == 2) else 0.0
     }
 
 
