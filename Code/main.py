@@ -5,6 +5,7 @@ machine learning pipeline as specified in the Requirements Engineering document.
 """
 
 import sys
+import pm4py
 from typing import Optional
 from src import io, conformance, feature_extraction, model_training, evaluation, pipeline, config
 
@@ -18,7 +19,8 @@ def run_interactive_cli() -> None:
     has_model = input("Do you have a normative process model? (y/n): ").lower().strip() == 'y'
     
     log_path = input("Enter the path to the event log (XES/CSV): ").strip()
-    
+    discovery_alg = None
+    discovery_params = {}
     model_path: Optional[str] = None
     discovery_alg: Optional[config.Discovery_alg] = None
     discovery_params: dict = {}
@@ -82,10 +84,13 @@ def run_interactive_cli() -> None:
             vis_params['output_path'] = input("Enter the path to save the visualization (e.g., model.png): ").strip()
         else:
             vis_params['output_path'] = None  # This triggers the 'else' (view) in your io.py logic
+
+            
+    # TODO: ask for train percentage
     
     # Call Input + initial visualization pipeline -> read files, optionally disover model and visualize to user
     try:
-        model_tuple, log_df = pipeline.prepare_log_and_model(
+        model_tuple, log_train, log_test = pipeline.prepare_log_and_model(
             log_path=log_path,
             model_path=model_path,
             discovery_alg=discovery_alg,
@@ -143,6 +148,23 @@ def run_interactive_cli() -> None:
         print("Invalid choice. Defaulting to Control-flow.")
         feature = config.PredictionFeature.CONTROL_FLOW
 
+
+    # Call feature extraction pipeline -> read files, optionally disover model and visualize to user
+    X_train, y_train = pipeline.extract_target_and_feature(
+        target=target,
+        feature=feature,
+        model=model_tuple,
+        log=log_train,
+        outcome_activities=outcome_activities
+    )
+    X_test, y_test = pipeline.extract_target_and_feature(
+        target=target,
+        feature=feature,
+        model=model_tuple,
+        log=log_test,
+        outcome_activities=outcome_activities
+    )
+
     # ML Algorithm Configuration
     
     print("\nWhich ML algorithm do you want to apply on your data?")
@@ -191,16 +213,11 @@ def run_interactive_cli() -> None:
     try:
         # This calls the orchestration logic in src/pipeline.py
         results = pipeline.run_conformance_prediction_pipeline(
-            log_path=log_path,
-            model_path=model_path,
-            discovery_alg=discovery_alg,
-            discovery_params=discovery_params,
-            target=str(target_choice),
-            features=str(feature_choice),
-            outcome_activities=outcome_activities,
+            X_test=X_test,
+            y_test=y_test,
+            X_train=X_train,
+            y_train=y_train,
             ml_params=ml_params,
-            preloaded_model=model_tuple,
-            preloaded_log=log_df
         )
         print("\nPipeline completed successfully!")
         
