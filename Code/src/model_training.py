@@ -17,25 +17,32 @@ def create_model_pipeline(ml_params: Optional[Dict[str, Any]] = None) -> Pipelin
     
     Args:
         ml_params: Dictionary of hyperparameters for the DecisionTreeClassifier.
-                   If None, default parameters are used.
+                   If None, default parameters for full branching are used.
     
     Returns:
         A scikit-learn Pipeline object.
     """
-    if ml_params is None:
-        ml_params = {}
+    # 1. Default configurations for "complete branching" (MVP rule of thumb)
+    # Allows the tree to grow until all leaves are sufficiently pure.
+    model_defaults = {
+        'criterion': 'gini',
+        'max_depth': 4,
+        'min_samples_split': 2,
+        'min_samples_leaf': 1,
+        'random_state': 42  # Ensuring reproducibility
+    }
     
-    # 1. Preprocessing: Standardize features (LL-08.1)
-    # This ensures that scale-sensitive components (if added later) or 
-    # even the decision tree splits (though less sensitive) are handled consistently.
+    if ml_params is not None:
+        model_defaults.update(ml_params)
+    
+    # 2. Preprocessing: Standardize features (LL-08.1)
+    # This ensures that scale-sensitive components are handled consistently.
     scaler = StandardScaler()
     
-    # 2. Classifier: Decision Tree (HL-08, HL-09)
-    # The Decision Tree is the core requirement for the current sprint.
-    clf = DecisionTreeClassifier(**ml_params)
+    # 3. Classifier: Decision Tree (HL-08, HL-09)
+    clf = DecisionTreeClassifier(**model_defaults)
     
-    # Bundle into a Pipeline for clean integration and to prevent data leakage 
-    # during later cross-validation or deployment.
+    # Bundle into a Pipeline for clean integration and to prevent data leakage.
     pipeline = Pipeline([
         ('scaler', scaler),
         ('classifier', clf)
@@ -78,7 +85,13 @@ def predict(model: Pipeline, X: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     
     # Check if the classifier supports probability estimates
     if hasattr(model.named_steps['classifier'], "predict_proba"):
-        y_prob = model.predict_proba(X)[:, 1]
+        proba = model.predict_proba(X)
+        if proba.shape[1] == 1:
+            y_prob = proba[:, 0]       # degenerate: only one class seen in training
+        elif proba.shape[1] == 2:
+            y_prob = proba[:, 1]       # binary: probability of the positive class (1D)
+        else:
+            y_prob = proba             # multi-class: full (n_samples, n_classes) matrix
     else:
         # Fallback for models without predict_proba (not expected for DecisionTree)
         y_prob = y_pred.astype(float)
