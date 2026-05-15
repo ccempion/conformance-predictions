@@ -12,6 +12,7 @@ def run_conformance_prediction_pipeline(
     X_train=np.ndarray,
     y_train=np.ndarray,
     ml_params: Optional[Dict[str, Any]] = None,
+    preloaded_model=None,
 ) -> Dict[str, Any]:
     """
     Main orchestration function for the entire pipeline.
@@ -23,7 +24,7 @@ def run_conformance_prediction_pipeline(
     # # For now, we assume X and y are indexed or aligned such that we can split them
     # # In a real implementation, you'd filter X/y based on the returned case IDs
     # train_ids, val_ids, test_ids = evaluation.temporal_split(log)
-    
+
     # # Placeholder: filter X and y based on IDs (Richard's feature extraction should keep case IDs)
     # # X_train, y_train = X.loc[train_ids], y.loc[train_ids]
     # # X_test, y_test = X.loc[test_ids], y.loc[test_ids]
@@ -31,8 +32,12 @@ def run_conformance_prediction_pipeline(
     # y_train, y_test = y[:int(0.8*len(y))], y[int(0.8*len(y)):]
 
     # 5. Model Training (HL-08, LL-08.2)
-    print(f"--- Training model with parameters: {ml_params} ---")
-    trained_model = model_training.train_model(X_train, y_train, ml_params)
+    if preloaded_model is not None:
+        print("--- Using pre-trained model ---")
+        trained_model = preloaded_model
+    else:
+        print(f"--- Training model with parameters: {ml_params} ---")
+        trained_model = model_training.train_model(X_train, y_train, ml_params)
 
     # 6. Evaluation (HL-16)
     print("--- Evaluating model ---")

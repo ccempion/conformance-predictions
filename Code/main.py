@@ -181,14 +181,9 @@ def run_interactive_cli() -> None:
             print("Algorithm 3 selected.")
     except (ValueError, IndexError):
         print("Invalid choice. Defaulting to Decision Tree.")
-        ml_choice = int(input("Select option (1-3): ").strip())
-        feature = [
-            config.Algorithm.DECISION_TREE,
-            config.Algorithm.ALGORITHM_2,
-            config.Algorithm.ALGORITHM_3,
-        ][ml_choice - 1]
+        ml_choice = 1
 
-    use_custom_ml = input("\nDo you want to configure the Parameters yourself (y/n): ").lower().strip() == 'y'
+    use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/n): ").lower().strip() == 'y'
 
     #here we put all the parameters together
     ml_params = {}
@@ -197,19 +192,60 @@ def run_interactive_cli() -> None:
         criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
         if criterion in ["gini", "entropy"]:
             ml_params["criterion"] = criterion
-            
         max_depth = input("Max depth (int, default 4): ").strip()
         if max_depth:
             ml_params["max_depth"] = int(max_depth)
-            
         min_samples_split = input("Min samples split (int, default 20): ").strip()
         if min_samples_split:
             ml_params["min_samples_split"] = int(min_samples_split)
         min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
         if min_samples_leaf:
             ml_params["min_samples_leaf"] = int(min_samples_leaf)
-    # Call model training pipeline 
-    print("\nStarting execution pipeline...")
+
+    # Train initial model
+    print("\nTraining model...")
+    trained_model = model_training.train_model(X_train, y_train, ml_params)
+
+    # Decision Tree visualisation + reconfigure loop — only relevant for Decision Tree
+    if ml_choice == 1:
+        while True:
+            dt_vis_choice = input("\nDo you want the decision tree saved (s), displayed (d) or not shown (N)? (s/d/N): ").lower().strip()
+
+            if dt_vis_choice in ['s', 'd']:
+                dt_output_path = None
+                if dt_vis_choice == 's':
+                    dt_output_path = input("Enter the path to save the decision tree (e.g., tree.png): ").strip()
+                model_training.visualize_decision_tree(
+                    model=trained_model,
+                    feature_names=X_train.columns.tolist(),
+                    class_names=class_names,
+                    output_path=dt_output_path
+                )
+                if dt_vis_choice == 's':
+                    print(f"Decision tree saved to: {dt_output_path}")
+
+            if input("\nDo you want to reconfigure the hyperparameters and retrain? (y/n): ").lower().strip() == 'y':
+                ml_params = {}
+                print("\nConfiguring Decision Tree Parameters:")
+                criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
+                if criterion in ["gini", "entropy"]:
+                    ml_params["criterion"] = criterion
+                max_depth = input("Max depth (int, default 4): ").strip()
+                if max_depth:
+                    ml_params["max_depth"] = int(max_depth)
+                min_samples_split = input("Min samples split (int, default 20): ").strip()
+                if min_samples_split:
+                    ml_params["min_samples_split"] = int(min_samples_split)
+                min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
+                if min_samples_leaf:
+                    ml_params["min_samples_leaf"] = int(min_samples_leaf)
+                print("Retraining model...")
+                trained_model = model_training.train_model(X_train, y_train, ml_params)
+            else:
+                break
+
+    # Call evaluation pipeline (training already done above)
+    print("\nStarting evaluation pipeline...")
     try:
         # This calls the orchestration logic in src/pipeline.py
         results = pipeline.run_conformance_prediction_pipeline(
@@ -218,6 +254,7 @@ def run_interactive_cli() -> None:
             X_train=X_train,
             y_train=y_train,
             ml_params=ml_params,
+            preloaded_model=trained_model,
         )
         print("\nPipeline completed successfully!")
 
