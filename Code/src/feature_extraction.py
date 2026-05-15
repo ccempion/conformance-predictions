@@ -131,9 +131,9 @@ def extract_features(
                 # Determine the specific move type and activity
                 if log_move == model_move and log_move != '>>':
                     feat_name = f"sync_move_{log_move}"
-                elif model_move == '>>':
+                elif model_move == '>>' and log_move != None:
                     feat_name = f"log_move_{log_move}"
-                elif log_move == '>>':
+                elif log_move == '>>' and model_move != None:
                     feat_name = f"model_move_{model_move}"
                 else:
                     # Invisible transitions
@@ -171,21 +171,27 @@ def extract_features(
 
 from sklearn.preprocessing import LabelEncoder
 
-def preprocess_for_ml(X_raw: pd.DataFrame, y_raw: pd.Series) -> Tuple[np.ndarray, np.ndarray]:
+def preprocess_for_ml(X_raw: pd.DataFrame, y_raw: pd.Series) -> Tuple[pd.DataFrame, np.ndarray, List[str]]:
     """
     Encodes and scales the raw data for ML training.
+
+    Returns:
+        X: feature DataFrame (columns preserved for downstream alignment).
+        y: encoded label vector as numpy array.
+        class_names: ordered list of original class labels (index i maps to encoded integer i).
     """
-    
+
     # Feature Preprocessing (X)
     # Converts categorical Case Attributes (strings) into numeric One-Hot encoded columns.
     # Numerical features (Control Flow/Diagnostics) remain unchanged.
-    X = pd.get_dummies(X_raw, drop_first=True).values
+    X = pd.get_dummies(X_raw, drop_first=True)
 
 
     # Label Preprocessing (y): PROCESS_OUTCOME
     # Since labels are strings (e.g., 'Approve', 'uncertain_outcome'), we map them to integers (0, 1, 2...).
     le = LabelEncoder()
     y = le.fit_transform(y_raw)
+    class_names = [str(c) for c in le.classes_]
 
     # Handling for Remaining Time (Regression)
     # pass
@@ -193,4 +199,4 @@ def preprocess_for_ml(X_raw: pd.DataFrame, y_raw: pd.Series) -> Tuple[np.ndarray
     # Handling for Future Deviations (Binary)
     # pass
 
-    return X, y
+    return X, y, class_names

@@ -143,7 +143,145 @@ def compare_models(
 
 
 # ---------------------------------------------------------------------------
-# 3. Visualizations
+# 3. CLI display
+# ---------------------------------------------------------------------------
+
+def display_confusion_matrix_text(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    class_names: List[str],
+) -> None:
+    """Print a formatted confusion matrix to the terminal."""
+    cm = metrics.confusion_matrix(y_true, y_pred, labels=list(range(len(class_names))))
+    col_w = max(max(len(n) for n in class_names), 6) + 2
+    indent = " " * (col_w + 2)
+
+    print("\nConfusion Matrix (rows = Actual, cols = Predicted):")
+    print(indent + "".join(n.center(col_w) for n in class_names))
+    for i, name in enumerate(class_names):
+        row = name.ljust(col_w + 2) + "".join(
+            str(cm[i, j]).center(col_w) for j in range(len(class_names))
+        )
+        print(row)
+
+
+def display_per_class_stats(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    class_names: List[str],
+) -> None:
+    """Print per-class correct / incorrect percentages to the terminal."""
+    cm = metrics.confusion_matrix(y_true, y_pred, labels=list(range(len(class_names))))
+
+    print("\nPer-Class Prediction Breakdown:")
+    for i, name in enumerate(class_names):
+        total = int(cm[i].sum())
+        correct = int(cm[i, i])
+        wrong = total - correct
+        pct_c = correct / total * 100 if total > 0 else 0.0
+        pct_w = wrong / total * 100 if total > 0 else 0.0
+        print(f"  {name}: {pct_c:.1f}% correct ({correct}/{total}),  {pct_w:.1f}% incorrect ({wrong}/{total})")
+
+
+# ---------------------------------------------------------------------------
+# 4. Image output
+# ---------------------------------------------------------------------------
+
+def plot_confusion_matrix_image(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    class_names: List[str],
+    output_path: str,
+) -> None:
+    """Save a simple confusion-matrix heatmap to *output_path*."""
+    cm = metrics.confusion_matrix(y_true, y_pred, labels=list(range(len(class_names))))
+    n = len(class_names)
+
+    fig, ax = plt.subplots(figsize=(max(4, n * 1.2 + 1), max(4, n * 1.2)))
+    im = ax.imshow(cm, interpolation="nearest", cmap="Blues")
+    plt.colorbar(im, ax=ax)
+
+    ax.set_xticks(range(n))
+    ax.set_yticks(range(n))
+    ax.set_xticklabels(class_names, rotation=45, ha="right")
+    ax.set_yticklabels(class_names)
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Actual")
+    ax.set_title("Confusion Matrix")
+
+    thresh = cm.max() / 2.0
+    for i in range(n):
+        for j in range(n):
+            ax.text(
+                j, i, str(cm[i, j]),
+                ha="center", va="center",
+                color="white" if cm[i, j] > thresh else "black",
+            )
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close(fig)
+
+
+def plot_per_class_bar_chart(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    class_names: List[str],
+    output_path: str,
+) -> None:
+    """Save a stacked bar chart (green = correct, red = incorrect) per class."""
+    cm = metrics.confusion_matrix(y_true, y_pred, labels=list(range(len(class_names))))
+
+    correct_pcts, wrong_pcts = [], []
+    for i in range(len(class_names)):
+        total = int(cm[i].sum())
+        correct = int(cm[i, i])
+        correct_pcts.append(correct / total * 100 if total > 0 else 0.0)
+        wrong_pcts.append((total - correct) / total * 100 if total > 0 else 0.0)
+
+    x = list(range(len(class_names)))
+    fig, ax = plt.subplots(figsize=(max(5, len(class_names) * 1.4 + 1), 5))
+    ax.bar(x, correct_pcts, label="Correct", color="green", alpha=0.85)
+    ax.bar(x, wrong_pcts, bottom=correct_pcts, label="Incorrect", color="red", alpha=0.85)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(class_names, rotation=45, ha="right")
+    ax.set_ylabel("Percentage (%)")
+    ax.set_ylim(0, 100)
+    ax.set_title("Per-Class Prediction Accuracy")
+    ax.legend()
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close(fig)
+
+
+def save_evaluation_visuals(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    class_names: List[str],
+    base_dir: Optional[str] = None,
+) -> str:
+    """Create a timestamped folder and save confusion matrix + bar chart inside it.
+
+    Returns the absolute path of the created folder.
+    """
+    import pathlib
+    import datetime
+
+    root = pathlib.Path(base_dir) if base_dir else pathlib.Path.home() / "Downloads"
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    folder = root / f"conformance_results_{timestamp}"
+    folder.mkdir(parents=True, exist_ok=True)
+
+    plot_confusion_matrix_image(y_true, y_pred, class_names, str(folder / "confusion_matrix.png"))
+    plot_per_class_bar_chart(y_true, y_pred, class_names, str(folder / "per_class_accuracy.png"))
+
+    return str(folder)
+
+
+# ---------------------------------------------------------------------------
+# 5. Visualizations (stubs)
 # ---------------------------------------------------------------------------
 
 def plot_roc_curves(
