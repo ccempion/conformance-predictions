@@ -5,12 +5,15 @@ stages:
 
 test_modules:
   stage: test
-  image: python:3.14.4 
-  before_script:
+  # The 'image' tag is ignored since the 'shell' executor on my (Richard) local machine is used with python version 3.14.4.
+  script:
     - cd Code
+    # Create a temporary virtual environment for the CI job
+    - python3 -m venv .ci_venv
+    - source .ci_venv/bin/activate
     - pip install --upgrade pip
     - pip install -r requirements.txt
     - pip install pytest
-  script:
+    # Ensure 'src' is importable
     - export PYTHONPATH=$PYTHONPATH:$(pwd)
     - pytest tests/
