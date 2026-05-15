@@ -1,0 +1,19 @@
+# GitLab CI/CD Configuration for Conformance Predictions
+
+stages:
+  - test
+
+test_modules:
+  stage: test
+  image: python:3.14.4 
+  before_script:
+    - cd Code
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - pip install pytest
+  script:
+    - export PYTHONPATH=$PYTHONPATH:$(pwd)
+    - pytest tests/
+  only:
+    - main
+    - merge_requests
