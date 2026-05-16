@@ -6,6 +6,8 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{todonotes}
+\setuptodonotes{inline}
 
 \begin{document}
 \thispagestyle{empty}
@@ -14,7 +16,7 @@ Rheinisch-Westf\"alische Technische Hochschule Aachen \\
 Alessandro Berti\\[6ex]
 
 \LARGE
-	\textbf{Project Initialization: Implementation of "Conformance Predictions"} \\[6ex]
+	\textbf{Phase Review: 1st Sprint of the Implementation of "Conformance Predictions"} \\[6ex]
         \centering{Group 4:}\\
 	\textit{Richard Schuppener, Cem Colak} \\[6ex]
 \end{center}
@@ -24,83 +26,145 @@ Alessandro Berti\\[6ex]
 \tableofcontents
 \newpage
 
-\section{Introduction}
+\section{Summary of Sprint 1}
+\todo[inline]{Achievements of Sprint 1 (based on GitLab work-items) from high level perspective, short and no technical details}
 
-\section{Business Case} 
+\section{Requirements Coverage Status - Overview per Module}
 
-\subsection{Client}
-\subsection{Example Use Case 1:}
-\subsection{Example Use Case 2:}
+\subsection{Running Highlevel Requirements}
 
-\section{Feasibility Study}
+\subsection{IO}
+\textbf{Covered}
+\noindent \textbf{Planned in Sprint 2}
 
-\subsection{Theoretical Feasibility}
-\subsection{Technical Feasibility}
+\subsection{Conformance}
+\textbf{Covered} \\
 
-\section{Project Charter}\label{sec:charter} 
-
-\includegraphics[width=1\textwidth]{project_charter.png}
-\\\\
-The milestones and their respective deadlines for submission of the required materials are:
-\begin{itemize}
-	\item Project Setup:
-	\item Requirements Engineering: 
-	\item Sprint 1: 
-	\item Sprint 2: 
-	\item Sprint 3: 
-	\item Testing and Assessment: 
-\end{itemize}
-It is essential to acknowledge that the schedule presented here is preliminary and may be subject to adjustments. This flexibility accommodates unforeseen personal or professional circumstances that may arise during the project's execution, allowing team members to navigate challenges effectively. 
-
-\section{Tools}
-\subsection{Trello}
-In order to plan, organize, and track the development of our work, we rely on a project management tool called Trello. It is based on the concept of boards, lists, and cards, allowing us to break down complex tasks into smaller ones and distribute them among team members. We utilize features such as due dates and labels to further customize our tasks and distinguish them from one another. This web-based platform makes it easy for group members to monitor the progress of each task and identify their responsibilities. In conclusion, Trello's user-friendly interface and comprehensive features significantly contribute to the success of our project.
-\\\\
-Link to our Trello board: \href{https://trello.com/b/Hlx8Wp8m}{\textit{Group 4 Trello}}
-
-\subsection{Git and GitLab}
-Version control systems are indispensable for modern software development, especially in collaborative environments like academic projects. For our PM4PY based project we used Git and GitLab, which will be introduced in the following: \\ 
-\\
-\textit{Git}, at its core, is a distributed version control system that tracks changes in source code over time. Its key strengths lie in its ability to create branches for remote independent development, merge code easily, and revert to previous versions. This allows team members to work concurrently on different features or bug fixes without interfering with each other's progress. Remote repositories enable the developing team to get the most up-to-date version of the project and develop from there. \\
-\\
-\textit{GitLab} on the other hand, provides a web-based platform built around Git, extending its functionalities with a suite of project management and collaboration tools. These include issue tracking, code review, continuous integration/continuous delivery (CI/CD) pipelines, and wiki pages for documentation. By integrating these features, GitLab creates a centralized hub for project activity.
-\\\\
-
-\subsection{PM4Py}
-PM4Py is an open source library designed by the process mining group of the Frauenhofer Institute (FiT), which includes a plethora of state-of-the-art process mining algorithms. In regards to our project and the overall topic of Conformance Checking, PM4Py supports f.e. token-based, alignment-based and footprint-based conformance diagnostics, while also offering a lot of visualization techniques. Filtering event logs and extracting features is also supported, which makes pm4py it perfect for our project.
+\noindent \textbf{Planned in Sprint 2}
 
 
-\section{Team}
-\subsection{Personal Description}
-\subsubsection{Richard Schuppener}
-\subsubsection{Cem Colak}
+\subsection{Feature Extraction}
+\textbf{Covered} \\
 
-\section{Roles}
+\noindent \textbf{Planned in Sprint 2}
 
-\underline{Scrum Master}: 
-\\\\
-\underline{Official Communication/Product Owner}: 
-\\\\
-\underline{Tools Administration}: 
-\\\\
-\underline{Theory Expert}: 
-\\\\
-\underline{Software Expert}: 
-\\\\
-\underline{Test Management}: 
+\subsection{Conformance}
+\textbf{Covered} \\
+
+\noindent \textbf{Planned in Sprint 2}
+
+\subsection{Model Training}
+\textbf{Covered} \\
+
+\noindent \textbf{Planned in Sprint 2}
+
+\subsection{Evaluation}
+
+\textbf{Covered}\\
+
+\noindent \textbf{Planned in Sprint 2}
+
+\subsection{Config & Pipeline}
+
+\textbf{Covered} \\
+
+\noindent \textbf{Planned in Sprint 2}
+
+\subsection{Project Infrastructure \& Testing}
+\textbf{Covered} \\
+
+\noindent \textbf{Planned in Sprint 2}
 
 
-\section{Phase review}
+LL-01.1
+LL-01.2
+LL-03.1
+HL-03 Partially: Missing comformance deviations prediction as target and case attributes as features
+HL-04: Reporting errors, preprocessing failures, and training failures in CLI
+HL-05: loading and preprocessing event log
+LL-05.1: Parsing of csv event logs supported for CSV and xes
+LL-05-2: Partially: Petri net loading works
+LL-05.3: Representation of event log with Petri net, BPMN & Process Tree by missing provision of a normative model
+HL-06: Partially: alignment based diagnostics in preprecessing covered
+LL-06.1: Raw alignment dictionaries for events against the normative model
+LL-06.2: Cumulative alignment costs for each prefix
+HL-07: Partially: log-based and conformance-based features implemented in preprocessing
+LL-07.3: Control-flow extracted features for each event log case
+HL-08: Partially: Supervised prediction pipeline implemented, but only with decision tree
+LL-08.1: Standardization of features through standard scaler in machine learning module
+HL-09: Baseline and conformance aware model implemented
+HL-10: End-to-End experiment runner implemented
+HL-12: 
+
+Conformance:
+HL-13: cached conformance analysis results for repeated use during feature generation
+HL-18: Used PM4Py for conformance checking and feature extraction and scikit learn for model training alongside pandas, numpy and matplotlib
+HL-19: We decided to put conformance and feature extraction into feature extraction module
+
+Evaluation
+H-15: Partially: temporal train/test split for evaluation. Left out validation split and time order based splits
+HL-16: Additional evaluation metrics for predictive performance (e.g., precision, recall, F1-score, ROC-AUC)
+HL-20: 
+Top-Level requirements
+HL-12: Usage of Mathplotlib
+HL-19: Modular structure of the project, usage of gith for version control
+HL-20: Readme file 
+
+\section{ Plan for next sprint and remaining requirements}
+\todo[inline]{HL-02: inclusion of case attributes}
+HL-01, HL-03, conformance deviations prediction as target variable
+HL-03 Comformance deviations as target variable
+LL-05.2: Loading of BPMN and process tree models
+HL-06: maybe distance to completion indicators 
+LL-07.1: Truncating event logs to prefixes of varying lengths
+LL-07.2: Formatting numerical features for remaining time predictions
+LL-08.2: Fitted predictive model capapable of mapping the feature matrix to the deviation risk target
+HL-08: Case final alignment costs
+HL-11: Automated testing via a single command
+LL-11.1: Isolated and predictable testing environments containing synthetic process data
+LL-11.2: Automated assertion of correctness for the core conformance logic.
+LL-11.3: Automated verification of the prefic generation to prevent data leakage
+
+
+Feature_extraction:
+LL-13.1: Disk-based persisitence of intermediate alignment results
+
+Evaluation:
+LL-13.1: Identification and usage of prefix length calculation to avoid redundancies
+HL-14: Measuring and reporting runtime and resource requirements of conformance checking and feature generation
+LL-14.1: High precision metrics on the execution duration of critical script segments
+LL-14.2: Tracking of peak memory footprint during data preprocessing and alignment
+LL-14.3: Start and End recording for execution of conformance checking and feature geneeration per individual data batch
+LL-14.4: Aggregation and reporting of runtime and resource usage statistics in the console and final evaluation report
+HL-15: Left out validation split and time order based splits
+HL-16:conformance checking (e.g., fitness, precision, generalization, simplicity) for the normative model
+LL-16.2: MAE/RMSE for regression tasks as evaluation metrics for predictive performance
+HL-17: Analysis and reporting for prefix length based performance evaluation
+
+
+Requirements that are to be implemented (that have not been implemented in Sprint 1)
+Functionalities that we did not specify as requirements but would still be nice to have
+
+\section{User Guide}
+\todo[inline]{Refer to existing user guide and that we will maintain the user guide throughout the sprints.}
+
+\section{Team settings and Workflow}
+
+\subsection{Changes in Responsibilities}
+\todo[inline]{Mention that we will change the responbilities for the next sprint to enhance the learning experience and gain more insights in boths modules}
+
+\subsection{Workflow Improvements for the next sprint}
+\todo[inline]{mention our aim towards a more granular breakdown of the work items: specific and better traceable requirements coverage. 
+Mention that we will maintain the breakdown of the requirements per module listed here in the review document and update it after each sprint to keep track of the coverage status.}
+
+\section{Exemplary Visualisations and Outputs from the Tool}
+\todo[inline]{Exemplary visualizations (from IO, Evaluation module) and numerical results e.g. accuracy, class accuracy (from Evaluation module)}
+
+\section{Sprint review}
 \subsection{Richard Schuppener}
 \subsection{Cem Colak}
 
-\paragraph{}
-\begin{thebibliography}{10}
 
-\bibitem{denisov2018performance}
-Denisov, V., Belkina, E., Fahland, D., van der Aalst, W. M. (2018, September). The Performance Spectrum Miner: Visual Analytics for Fine-Grained Performance Analysis of Processes. In BPM (Dissertation/Demos/Industry) (pp. 96-100).
-
-\end{thebibliography}
 
 
 \end{document}
