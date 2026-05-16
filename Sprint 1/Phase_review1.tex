@@ -29,18 +29,20 @@ Alessandro Berti\\[6ex]
 \section{Summary of Sprint 1}
 \todo[inline]{Achievements of Sprint 1 (based on GitLab work-items) from high level perspective, short and no technical details}
 
-\section{Codebase Structure and CLI Methodology}
+\section{Codebase Structure}
 We designed the structure of the codebase in the following philosophy: modules for each step of the process that encapsulate all raw functionalities, pipelines that combine the modules functionalities bundled in a pipeline module and a descriptive, concise and powerful CLI that guides the user through the whole process and cleverly calls the pipelines with the data and options selected by the user.  
 We decomposed the modules into the following categories: 
 \begin{enumerate}
 	\item IO: Handle inputs and outputs, such as reading of event logs, normative models, visualization of process models etc.
-	\item Feature Extraction:
-	\item Model Training:
-	\item Evaluation:
-	\item Config: 
-	\item Pipeline: 
-	\item Main / CLI: 
+	\item Feature Extraction: Perform conformance checking (only alignments, thus no separate conformance module), extract features related to alignments, control flow and case attributes and preprocess for ML training (e.g. scaling of numerical values).
+	\item Model Training: Properly train a model (as specified by the user) based on the given target and feature vector from the Feature Extraction step. This module also includes the capability to predict unseen data (test data or new data).
+	\item Evaluation: Creation of evaluation metrics such as accuracy, precision, recall / fitness, confusion matrix, ROC etc.
+	\item Config: Collection of Enums that correspond to the options presented to the user via the CLI. Helps to make the codebase cleaner and better to manage.
+	\item Pipeline: In this module, the bigger "steps" of the process bundle functionalities from the previously mentioned modules. Here, based on the choices the user selected, the correct functions are called and inputs, outputs are streamlined together.
+	\item Main / CLI: This is the entry point of our program and also serves as the guide and options selector for the user. The CLI presents the user with options, numerical metrics and comprehensive error messages.
 \end{enumerate}
+We want to note, that the module structure of this project is still evolving. For example, we plan to extract all visualization capabilities that are currently scattered through the individual modules and bundle them to together into a new \textit{Visualization} module.
+Also, we removed the \textit{Conformance} module, because we currently (and do not plan otherwise in the future) only utilize alignments, since they are most accurate, descriptive and offer real paths through the model. Alignments are by far the most expressive conformance checking metric, that is readily available. We do not see any gain in integrating Token-Based-Replay or Footprint-Based conformance metrics for predictive purposes.
 
 \section{Requirements Coverage Status - Overview per Module}
 
