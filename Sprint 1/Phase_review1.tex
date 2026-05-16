@@ -173,7 +173,38 @@ Functionalities that we did not specify as requirements but would still be nice 
 Mention that we will maintain the breakdown of the requirements per module listed here in the review document and update it after each sprint to keep track of the coverage status.}
 
 \section{Exemplary Visualizations and Outputs}
-\todo[inline]{Exemplary visualizations (from IO, Evaluation module) and numerical results e.g. accuracy, class accuracy (from Evaluation module)}
+In this section a select sample of visualizations is included. The pipeline was run with the \textit{sepsis-cases} event log and following parameters:
+\begin{itemize}
+	\item Discovery Algorithm: Inductive Miner (noise threshold = 0.1)
+	\item Target: Process outcome
+	\item Outcome activities: Release A-E
+	\item ML-Algorithm: Decision Tree
+\end{itemize}
+The confusion matrix was derived from a run with $prefix length = 8$, \textit{control flow} as feature and decision tree depth of 4. 
+The decision tree stems from a run with $prefix length = 5$, \textit{control flow}, and the decision tree depth being capped to 3.
+The graph depicting average class accuracy was derived from a run with $prefix length = 8$ and \textit{Diagnostics} (= Control Flow + Alignments) as feature and decision tree depth of 4.
+Interestingly, including information about alignments helped the decision tree correctly classify other outcomes than the majority label, but did not necessarily greatly improve overall accuracy. In general, having longer prefixes greatly improved the evaluation metrics. We believe this has to do with the following:
+\begin{enumerate}
+	\item Process outcome is more likely to be actually contained in the trace prefix (data leakage $\rightarrow$ currently no countermeasure implemented)
+	\item Smaller prefixes reduce the number of variants greatly $\rightarrow$ smaller training set.
+\end{enumerate}
+We also integrated the PM4Py visualization of \textit{Process Trees} and \textit{BPMN}.
+\begin{figure}
+	\includegraphics{figures/confusion_matrix.png}
+	\caption{Confusion matrix visualization.}
+\end{figure}
+\begin{figure}
+	\includegraphics{figures/decision_tree.png}
+	\caption{Decision tree visualization.}
+\end{figure}
+\begin{figure}
+	\includegraphics{figures/per_class_accuracy.png}
+	\caption{Accuracy per class graph.}
+\end{figure}
+\begin{figure}
+	\includegraphics{figures/process_model.png}
+	\caption{PM4Py petri net visualization.}
+\end{figure}
 
 \section{Sprint review}
 \subsection{Richard Schuppener}
