@@ -28,10 +28,8 @@ Alessandro Berti\\[6ex]
 \section{Motivation}
 % short and concise motivation to why requirement engineering is important and useful
 Requirements engineering (RE) is a critical phase in the software development lifecycle that involves the systematic process of eliciting, analyzing, documenting, and managing the requirements of a software system before it is build. It serves as the foundation for successful software development by ensuring that the needs and expectations of stakeholders are accurately captured and translated into actionable specifications to develop software. Especially in a complex project, involving multiple stakeholders and specific functionalities as Dr. Berti described in the project document, it allows us to align our understanding with the stakeholders e.g. the client, user (business analyst) and supervisors. As a result, we will use the RE to allocate responsibilities within our group, specify the functionality and technical constraints of our software artifact, and to manage the requirements throughout the project lifecycle. This will help us to ensure that we are building the right product, meet the stakeholders' needs, and can effectively track changes and progress during development.
-Requirements engineering (RE) is a critical phase in the software development lifecycle that involves the systematic process of eliciting, analyzing, documenting, and managing the requirements of a software system before it is build. It serves as the foundation for successful software development by ensuring that the needs and expectations of stakeholders are accurately captured and translated into actionable specifications to develop software. Especially in a complex project, involving multiple stakeholders and specific functionalities as Dr. Berti described in the project document, it allows us to align our understanding with the stakeholders e.g. the client, user (business analyst) and supervisors. As a result, we will use the RE to allocate responsibilities within our group, specify the functionality and technical constraints of our software artifact, and to manage the requirements throughout the project lifecycle. This will help us to ensure that we are building the right product, meet the stakeholders' needs, and can effectively track changes and progress during development.
-
 \section{Requirements}
-The requirements  we have identified were split into four top-level categories, which are visualized in \ref{fig:requirements_overview}. These categories are: Stakeholder Requirements, Functional Requirements, Non-Functional Requirements, and Technical Constraints. Each of these categories encompasses specific requirements that are crucial for the successful implementation of our project. The stakeholder requirements focus on the needs and expectations of the users and business, hence being a core aspect of our requirement analysis. The functional requirements specify the core functionalities that our software must provide. The non-functional requirements address performance and usability aspects, and the technical constraints outline the limitations and standards we need to adhere to during development.
+The requirements we have identified were split into four top-level categories, which are visualized in \ref{fig:requirements_overview}. These categories are: Stakeholder Requirements, Functional Requirements, Non-Functional Requirements, and Technical Constraints. Each of these categories encompasses specific requirements that are crucial for the successful implementation of our project. The stakeholder requirements focus on the needs and expectations of the users and business, hence being a core aspect of our requirement analysis. The functional requirements specify the core functionalities that our software must provide. The non-functional requirements address performance and usability aspects, and the technical constraints outline the limitations and standards we need to adhere to during development.
 
 \begin{figure}[t]
 	\includegraphics[width=1\textwidth]{figures/requirements_overview.png}
@@ -81,7 +79,6 @@ The following requirements are structured such that they are clear and understan
  \textbf{Optional:} No
     \item \textbf{Description:}
     \begin{itemize}
-        \item \textbf{Goal:} The Python script must provide an interactive command-line interface that guides the user (a business analyst employed by company F) through all configuration steps - including providing event log and model paths, selecting the prediction target, choosing the feature basis, and optionally configuring the ML algorithm - without requiring deep process mining expertise.
         \item \textbf{Goal:} The Python script must provide an interactive command-line interface that guides the user (a business analyst employed by company F) through all configuration steps - including providing event log and model paths, selecting the prediction target, choosing the feature basis, and optionally configuring the ML algorithm - without requiring deep process mining expertise.
         \item \textbf{Reasoning:} The primary user is a business analyst, not a process mining specialist. A guided, interactive interface ensures correct usage and broad adoption of the tool within company F.
     \end{itemize}
@@ -223,11 +220,11 @@ The following requirements are structured such that they are clear and understan
 \item \textbf{ID:} HL-12
  \textbf{Importance:} 3
  \textbf{Optional:} Yes
-\item \textbf{Description:}
-\begin{itemize}
-\item \textbf{Goal:} The system utilizes Matplotlib to generate comprehensive visualizations, including confusion matrices for classification performance, resource usage plots, and charts comparing elapsed time against varying log sizes.
-\item \textbf{Reasoning:} Visual analytics are essential for the comparative analysis of prediction models, as well as for discussing the computational feasibility of the pipeline. An evaluation will be conducted anyways after the final sprint.
-\end{itemize}
+    \item \textbf{Description:}
+    \begin{itemize}
+        \item \textbf{Goal:} The system utilizes Matplotlib to generate comprehensive visualizations, including confusion matrices for classification performance, resource usage plots, and charts comparing elapsed time against varying log sizes.
+        \item \textbf{Reasoning:} Visual analytics are essential for the comparative analysis of prediction models, as well as for discussing the computational feasibility of the pipeline. An evaluation will be conducted anyways after the final sprint.
+    \end{itemize}
 \end{itemize}
 \vspace{1.5em}
 
@@ -511,6 +508,7 @@ The following requirements are structured such that they are clear and understan
         \item \textbf{Implementation:} These metrics are standard for evaluating regression performance and are explicitly required by the assignment to ensure a comprehensive assessment of the predictive models.
     \end{itemize}
 \end{itemize}
+ \vspace{1.5em}
 
 \subsection{Technical Constraints}
 
@@ -729,14 +727,11 @@ The requirement management process is crucial for the successful implementation 
 Both of us are responsible for the general project management, including documentation, testing, and integration of the two modules, which we will specify in the following subsection.
 \subsection{Organization in Group 4}
 For the implementation of the software artifact, we decided to split the work into two main modules alongside the general project management: the \textbf{conformance analysis} and the \textbf{machine learning} module. both modules include specific submodules for specific tasks. The conformance analysis module is responsible for loading and preprocessing the data, performing the conformance checking, and generating the features. The machine learning module is responsible for building the prediction model based on the generated features and applying it to new data and evaluating it. We decided to allocate the responsibility for the conformance analysis module to Richard, while Cem is responsible for the machine learning module.
-For the implementation of the software artifact, we decided to split the work into two main modules alongside the general project management: the \textbf{conformance analysis} and the \textbf{machine learning} module. both modules include specific submodules for specific tasks. The conformance analysis module is responsible for loading and preprocessing the data, performing the conformance checking, and generating the features. The machine learning module is responsible for building the prediction model based on the generated features and applying it to new data and evaluating it. We decided to allocate the responsibility for the conformance analysis module to Richard, while Cem is responsible for the machine learning module.
 
 To ensure, that both modules are well integrated and that the overall project management is handled effectively, we will maintain regular communication and coordination between us, as well as with our supervisor. 
 
-\subsection{GitLabs Requirements Management}
-% describe the builtin functionality provided by gitlab, why we chose it over other tools such as "Jira" etc.
+\subsection{GitLab's Requirements Management}
 We have decided to use GitLab's built-in requirement management functionality \cite{gitlab2026} to manage our requirements. This allows us to create a clear and structured overview of all requirements, their status, and their allocation to different modules, milestones and team members. For that reason we won't use a traceability matrix, because the use case will be the same but the interconnection between modules, sprints and changes will be managed directly within gitlab. Additionally, using gitlab for requirement management allows us to integrate it seamlessly with our code repository, making it easier to link requirements to specific work items and code changes. 
-% describe why we chose it over other tools such as "Jira" etc.
 \section{Event Logs}
 Following the recommendation of our supervisor Dr. Berti, we adopt a three-tier event log setup that satisfies the core criteria for this assignment: support for prefix generation, meaningful deviation and compliance labels, and the availability of a process model for alignment.
 
@@ -762,7 +757,6 @@ Richard and I also aligned on using GitLab's requirements management tool to str
 
 On the downside, we had intended to use this phase to collect feedback from Dr. Berti, but between the national holiday on May 1st and my own engagement on Friday, I was not able to contribute as much toward the end of the week as planned. Looking back, we should have sent the draft version that was ready on Friday - that would have given us a head start on incorporating feedback. This is a lesson I will take into the next sprint.
 
-\paragraph{}
 \begin{thebibliography}{10}
 % nasa guide to requirement engineering?
 % BPMN citation / SBPM citation
