@@ -111,7 +111,8 @@ def extract_target_and_feature(
     feature: config.PredictionFeature,
     model: Tuple[Any, Any, Any],
     log: pd.DataFrame,
-    outcome_activities: Optional[List[str]] = None
+    outcome_activities: Optional[List[str]] = None,
+    prefix_length: Optional[int] = None
 ) -> Tuple[pd.DataFrame, np.ndarray, List[str]]:
     """
     Orchestrates the extraction of labels (y) and features (X).
@@ -123,29 +124,38 @@ def extract_target_and_feature(
         class_names: ordered list of original class labels.
     """
     # Determine if alignments are required
-    needs_alignments = (
-        feature in [config.PredictionFeature.DIAGNOSTICS, config.PredictionFeature.HYBRID] or
+    needs_alignments_for_feature = (
+        feature in [config.PredictionFeature.DIAGNOSTICS, config.PredictionFeature.HYBRID]
+    )
+    needs_alignments_for_label = (
         target == config.PredictionTarget.FUTURE_DEVIATIONS
     )
 
-    alignments = feature_extraction.compute_alignments(log, model) if needs_alignments else None
-
-    # Extract Labels
+    # Extract Labels from FULL log
     print(f"--- Extracting target: {target.name} ---")
+    label_alignments = feature_extraction.compute_alignments(log, model) if needs_alignments_for_label else None
     y_raw = feature_extraction.extract_label(
         log=log,
         target_type=target,
         outcome_activities=outcome_activities,
-        alignments=alignments
+        alignments=label_alignments
     )
 
-    # Extract Features
+    # Slicing
+    if prefix_length is not None:
+        print(f"--- Slicing log to prefix length: {prefix_length} ---")
+        log_to_feature = pm4py.get_prefixes_from_log(log, length=prefix_length, case_id_key='case:concept:name')
+    else:
+        log_to_feature = log
+
+    # Extract Features from SLICED log
     print(f"--- Extracting features: {feature.name} ---")
+    feature_alignments = feature_extraction.compute_alignments(log_to_feature, model) if needs_alignments_for_feature else None
     X_raw = feature_extraction.extract_features(
-        log=log,
+        log=log_to_feature,
         feature_type=feature,
         model=model,
-        alignments=alignments
+        alignments=feature_alignments
     )
 
     # Preprocessing

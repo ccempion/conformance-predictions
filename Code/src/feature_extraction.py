@@ -86,8 +86,7 @@ def extract_label(
     else:
         raise NotImplementedError(f"Target type {target_type} is not supported.")
         
-def extract_features(
-    log: pd.DataFrame, 
+def extract_features(    log: pd.DataFrame, 
     feature_type: PredictionFeature,
     model: Optional[Tuple] = None,
     alignments: Optional[List[Dict[str, Any]]] = None

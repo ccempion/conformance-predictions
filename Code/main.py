@@ -7,7 +7,7 @@ machine learning pipeline as specified in the Requirements Engineering document.
 import sys
 import pm4py
 from typing import Optional
-from src import io, conformance, feature_extraction, model_training, evaluation, pipeline, config
+from src import io, feature_extraction, model_training, evaluation, pipeline, config
 
 def run_interactive_cli() -> None:
     """
@@ -85,7 +85,13 @@ def run_interactive_cli() -> None:
         else:
             vis_params['output_path'] = None  # This triggers the 'else' (view) in your io.py logic
 
-            
+    prefix_input = input("\nEnter the prefix length for prediction (e.g., 6). Leave empty for full traces: ").strip()
+    try:
+        prefix_length = int(prefix_input) if prefix_input else None
+    except ValueError:
+        print("Invalid input. Defaulting to full traces.")
+        prefix_length = None
+
     # TODO: ask for train percentage
     
     # Call Input + initial visualization pipeline -> read files, optionally disover model and visualize to user
@@ -155,14 +161,16 @@ def run_interactive_cli() -> None:
         feature=feature,
         model=model_tuple,
         log=log_train,
-        outcome_activities=outcome_activities
+        outcome_activities=outcome_activities,
+        prefix_length=prefix_length
     )
     X_test, y_test, _ = pipeline.extract_target_and_feature(
         target=target,
         feature=feature,
         model=model_tuple,
         log=log_test,
-        outcome_activities=outcome_activities
+        outcome_activities=outcome_activities,
+        prefix_length=prefix_length
     )
 
     # ML Algorithm Configuration
