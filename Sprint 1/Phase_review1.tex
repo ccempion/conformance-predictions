@@ -1,0 +1,170 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{todonotes}
+\setuptodonotes{inline}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+Rheinisch-Westf\"alische Technische Hochschule Aachen \\
+Alessandro Berti\\[6ex]
+
+\LARGE
+	\textbf{Phase Review: 1st Sprint of the Implementation of "Conformance Predictions"} \\[6ex]
+        \centering{Group 4:}\\
+	\textit{Richard Schuppener, Cem Colak} \\[6ex]
+\end{center}
+
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Summary of Sprint 1}
+\todo[inline]{Achievements of Sprint 1 (based on GitLab work-items) from high level perspective, short and no technical details}
+
+\section{Requirements Coverage Status - Overview per Module}
+
+\subsection{Running Highlevel Requirements}
+
+\subsection{IO}
+\textbf{Covered}
+\noindent \textbf{Planned in Sprint 2}
+
+\subsection{Conformance}
+\textbf{Covered} \\
+
+\noindent \textbf{Planned in Sprint 2}
+
+
+\subsection{Feature Extraction}
+\textbf{Covered} \\
+
+\noindent \textbf{Planned in Sprint 2}
+
+\subsection{Conformance}
+\textbf{Covered} \\
+
+\noindent \textbf{Planned in Sprint 2}
+
+\subsection{Model Training}
+\textbf{Covered} \\
+
+\noindent \textbf{Planned in Sprint 2}
+
+\subsection{Evaluation}
+
+\textbf{Covered}\\
+
+\noindent \textbf{Planned in Sprint 2}
+
+\subsection{Config & Pipeline}
+
+\textbf{Covered} \\
+
+\noindent \textbf{Planned in Sprint 2}
+
+\subsection{Project Infrastructure \& Testing}
+\textbf{Covered} \\
+
+\noindent \textbf{Planned in Sprint 2}
+
+
+LL-01.1
+LL-01.2
+LL-03.1
+HL-03 Partially: Missing comformance deviations prediction as target and case attributes as features
+HL-04: Reporting errors, preprocessing failures, and training failures in CLI
+HL-05: loading and preprocessing event log
+LL-05.1: Parsing of csv event logs supported for CSV and xes
+LL-05-2: Partially: Petri net loading works
+LL-05.3: Representation of event log with Petri net, BPMN & Process Tree by missing provision of a normative model
+HL-06: Partially: alignment based diagnostics in preprecessing covered
+LL-06.1: Raw alignment dictionaries for events against the normative model
+LL-06.2: Cumulative alignment costs for each prefix
+HL-07: Partially: log-based and conformance-based features implemented in preprocessing
+LL-07.3: Control-flow extracted features for each event log case
+HL-08: Partially: Supervised prediction pipeline implemented, but only with decision tree
+LL-08.1: Standardization of features through standard scaler in machine learning module
+HL-09: Baseline and conformance aware model implemented
+HL-10: End-to-End experiment runner implemented
+HL-12: 
+
+Conformance:
+HL-13: cached conformance analysis results for repeated use during feature generation
+HL-18: Used PM4Py for conformance checking and feature extraction and scikit learn for model training alongside pandas, numpy and matplotlib
+HL-19: We decided to put conformance and feature extraction into feature extraction module
+
+Evaluation
+H-15: Partially: temporal train/test split for evaluation. Left out validation split and time order based splits
+HL-16: Additional evaluation metrics for predictive performance (e.g., precision, recall, F1-score, ROC-AUC)
+HL-20: 
+Top-Level requirements
+HL-12: Usage of Mathplotlib
+HL-19: Modular structure of the project, usage of gith for version control
+HL-20: Readme file 
+
+\section{ Plan for next sprint and remaining requirements}
+\todo[inline]{HL-02: inclusion of case attributes}
+HL-01, HL-03, conformance deviations prediction as target variable
+HL-03 Comformance deviations as target variable
+LL-05.2: Loading of BPMN and process tree models
+HL-06: maybe distance to completion indicators 
+LL-07.1: Truncating event logs to prefixes of varying lengths
+LL-07.2: Formatting numerical features for remaining time predictions
+LL-08.2: Fitted predictive model capapable of mapping the feature matrix to the deviation risk target
+HL-08: Case final alignment costs
+HL-11: Automated testing via a single command
+LL-11.1: Isolated and predictable testing environments containing synthetic process data
+LL-11.2: Automated assertion of correctness for the core conformance logic.
+LL-11.3: Automated verification of the prefic generation to prevent data leakage
+
+
+Feature_extraction:
+LL-13.1: Disk-based persisitence of intermediate alignment results
+
+Evaluation:
+LL-13.1: Identification and usage of prefix length calculation to avoid redundancies
+HL-14: Measuring and reporting runtime and resource requirements of conformance checking and feature generation
+LL-14.1: High precision metrics on the execution duration of critical script segments
+LL-14.2: Tracking of peak memory footprint during data preprocessing and alignment
+LL-14.3: Start and End recording for execution of conformance checking and feature geneeration per individual data batch
+LL-14.4: Aggregation and reporting of runtime and resource usage statistics in the console and final evaluation report
+HL-15: Left out validation split and time order based splits
+HL-16:conformance checking (e.g., fitness, precision, generalization, simplicity) for the normative model
+LL-16.2: MAE/RMSE for regression tasks as evaluation metrics for predictive performance
+HL-17: Analysis and reporting for prefix length based performance evaluation
+
+
+Requirements that are to be implemented (that have not been implemented in Sprint 1)
+Functionalities that we did not specify as requirements but would still be nice to have
+
+\section{User Guide}
+\todo[inline]{Refer to existing user guide and that we will maintain the user guide throughout the sprints.}
+
+\section{Team settings and Workflow}
+
+\subsection{Changes in Responsibilities}
+\todo[inline]{Mention that we will change the responbilities for the next sprint to enhance the learning experience and gain more insights in boths modules}
+
+\subsection{Workflow Improvements for the next sprint}
+\todo[inline]{mention our aim towards a more granular breakdown of the work items: specific and better traceable requirements coverage. 
+Mention that we will maintain the breakdown of the requirements per module listed here in the review document and update it after each sprint to keep track of the coverage status.}
+
+\section{Exemplary Visualisations and Outputs from the Tool}
+\todo[inline]{Exemplary visualizations (from IO, Evaluation module) and numerical results e.g. accuracy, class accuracy (from Evaluation module)}
+
+\section{Sprint review}
+\subsection{Richard Schuppener}
+\subsection{Cem Colak}
+
+
+
+
+\end{document}

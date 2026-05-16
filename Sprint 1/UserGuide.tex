@@ -1,0 +1,303 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+Rheinisch-Westf\"alische Technische Hochschule Aachen \\
+Alessandro Berti\\[6ex]
+
+\LARGE
+	\textbf{User Guide For "Conformance Predictions"} \\[6ex]
+        \centering{Group 4:}\\
+	\textit{Richard Schuppener, Cem Colak} \\[6ex]
+\end{center}
+
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+In this document we will provide a user guide for the "Conformance Predictions" project. The user guide is split into several sections. 
+First, we will provide a guide for the installation of our project, followed by a guide for the usage of our software artifact. 
+
+\section{Installation Guide}
+In our past Requirements Engineering document we have already outlined the Installation procedure for our project. 
+In the following section we will provide the guide for completeness.
+
+\subsection{Excerpt: Installation Guide from Requirements Engineering Document}
+To use our \textbf{Python script}, the following set-up steps are required. 
+First, the user should check whether all prerequisites are met: 
+Our project requires a working \textbf{Python} installation of version \textit{3.14.4} (currently the latest available Python version where all required packages are supported). 
+Also, a proper installation of \textbf{Git} is required.
+
+First, the repository needs to be cloned:
+\begin{center}
+\texttt{git clone https://git.rwth-aachen.de/schuppenerr/conformance-predictions.git}
+\end{center}
+
+Then, we suggest entering the cloned directory and creating a virtual environment for the Python packages:
+\begin{center}
+\texttt{python -m venv .venv}
+\end{center}
+
+Alternatively (not recommended), this step can be skipped and the required packages can be globally installed on the PC.
+
+The next step is to install all packages from the \textit{requirements.txt} file:
+\begin{center}
+\texttt{pip install -r requirements.txt}
+\end{center}
+
+Now, the script can be launched via the terminal from the directory containing \textit{main.py}:
+\begin{center}
+\texttt{python main.py}
+\end{center}
+
+Note that this aims only to roughly sketch the installation process and neither depicts correct BPMN nor comprehensively describes the script setup.
+
+\section{User Guide}
+
+% -------------------------------------------------------
+\subsection{Step 1: Event Log and Normative Model}
+
+\subsubsection{Has model?}
+\begin{verbatim}
+Do you have a normative process model? (y/n):
+\end{verbatim}
+Answer \texttt{y} if you have a pre-built model file ready, or \texttt{n} to let the tool discover a model automatically from the event log.
+
+\subsubsection{Event log path}
+\begin{verbatim}
+Enter the path to the event log (XES/CSV):
+\end{verbatim}
+Enter the absolute or relative path to your event log. Two file formats are accepted:
+\begin{itemize}
+    \item \textbf{XES} (\texttt{.xes}) --- the standard process mining log format; loaded directly via PM4Py.
+    \item \textbf{CSV} (\texttt{.csv}) --- the file must contain columns with exactly the names \verb|case:concept:name|, \verb|concept:name|, and \verb|time:timestamp|. Any other column naming will cause a loading error.
+\end{itemize}
+
+\subsubsection{Option A: Loading a Pre-Built Model}
+If you answered \texttt{y} in the first prompt:
+\begin{verbatim}
+Enter the path to the normative model (Petri net/BPMN):
+\end{verbatim}
+Two formats are accepted:
+\begin{itemize}
+    \item \textbf{Petri net} (\texttt{.pnml}) --- loaded directly.
+    \item \textbf{BPMN} (\texttt{.bpmn}) --- converted to a Petri net internally before use.
+\end{itemize}
+Any other file extension will cause an error.
+
+\subsubsection{Option B: Discovering a Model}
+If you answered \texttt{n}, the tool prints:
+\begin{verbatim}
+Model discovery will be used.
+
+Which discovery algorithm should be used?
+1. Inductive Miner (recommended)
+2. Alpha Miner
+3. Genetic Miner
+Select option (1-3):
+\end{verbatim}
+
+\textbf{Option 1 --- Inductive Miner} is the recommended choice for most logs. Two additional parameters are requested:
+\begin{verbatim}
+Noise threshold (default 0.0):
+Disable fall-throughs? (y/n, default n):
+\end{verbatim}
+The noise threshold (a value between 0.0 and 1.0) controls how aggressively infrequent behaviour is filtered out before model construction. A value of 0.0 keeps all behaviour; higher values produce simpler models. Press \texttt{Enter} to accept the defaults.
+
+\textbf{Option 2 --- Alpha Miner} has no configurable parameters. The tool will confirm this and continue:
+\begin{verbatim}
+Alpha Miner has no configurable parameters.
+\end{verbatim}
+
+\textbf{Option 3 --- Genetic Miner} requests six parameters:
+\begin{verbatim}
+Population size (default 500):
+Elitism rate (default 0.01):
+Crossover rate (default 1.0):
+Mutation rate (default 0.01):
+Generations (default 100):
+Elitism min sample (default 5):
+\end{verbatim}
+Press \texttt{Enter} on any field to keep its default value.
+
+% -------------------------------------------------------
+\subsection{Step 2: Normative Model Visualisation (Optional)}
+After the model is loaded or discovered, the tool asks:
+\begin{verbatim}
+Do you want a visualization of the [discovered/provided]
+normative model saved (s) or directly displayed (d) or not (N)?
+(s/d/N):
+\end{verbatim}
+We recommend you to visualise the model at least once in the beginning to get a better understanding of the process structure. Especially for the prediction outcome target (option 2 in Step 3), it is important to know which activities signify the different outcomes. The visualisation can be skipped in later runs once you are familiar with the model.
+\begin{itemize}
+    \item \textbf{s --- Save:} the model is rendered and written to a file. Two further prompts follow. First, choose the representation format:
+    \begin{verbatim}
+Choose model representation for visualization:
+1. Petri Net
+2. BPMN
+3. Process Tree
+Select option (1-3):
+    \end{verbatim}
+    Then provide the output file path:
+    \begin{verbatim}
+Enter the path to save the visualization (e.g., model.png):
+    \end{verbatim}
+
+    \item \textbf{d --- Display:} the same representation prompt is shown, then the figure(png) is opened in an interactive window. No file is written.
+
+    \item \textbf{N --- Skip:} no visualisation is produced and the pipeline continues immediately.
+\end{itemize}
+
+% -------------------------------------------------------
+\subsection{Step 3: Prediction Target}
+\begin{verbatim}
+What should be predicted?
+1. Future conformance deviations
+2. Process outcome
+3. Remaining time
+Select option (1-3):
+\end{verbatim}
+
+\textbf{Option 1 --- Future conformance deviations} predicts whether a case will exhibit at least one further deviation from the normative model. The label is binary: 0 means no further deviations are expected, 1 means at least one is expected. \textit{Not implemented yet.}
+
+\textbf{Option 2 --- Process outcome} predicts which of several predefined outcomes a case will reach. After selecting this option, the following prompt appears:
+\begin{verbatim}
+Define the target outcome:
+Enter activity names that signify a outcome (one per line).
+Type 'done' when finished.
+>
+\end{verbatim}
+Enter each outcome activity name \textbf{exactly as it appears in the event log}, including capitalisation, one name per line. Type \texttt{done} and press \texttt{Enter} when finished. Each case is labelled with the outcome activity that appears in it, provided exactly one of the specified activities is present. Cases containing none or more than one of the specified activities receive the label \verb|uncertain_outcome|. These uncertain cases indicate, that the chosen outcome activities are not given. \textit{Fully implemented.}
+
+\textbf{Option 3 --- Remaining time.} \textbf{Not implemented in Sprint 1.} The option is visible in the menu but selecting it will cause the pipeline to fail with an error.
+
+% -------------------------------------------------------
+\subsection{Step 4: Feature Type}
+\begin{verbatim}
+What should the prediction be based upon?
+1. Plain trace (control-flow)
+2. Trace and alignment-based diagnostics
+3. Case features
+4. Mixture of all available information
+Select option (1-4):
+\end{verbatim}
+
+\textbf{Option 1 --- Control-flow} uses a bag-of-activities representation. For each case the feature vector contains the count of each activity observed in the log. \textit{Fully implemented.}
+
+\textbf{Option 2 --- Alignment-based diagnostics} runs optimal alignment between the log and the model and encodes, for each case, the counts of synchronous moves, log-only moves, and model-only moves per activity. This is computationally more expensive than option 1 for large logs. \textit{Fully implemented.}
+
+\textbf{Option 3 --- Case features.} \textbf{Not implemented in Sprint 1.} This option is intended to use static case-level attributes (e.g.\ a patient's age or admission department) stored in the event log. Selecting it will cause the pipeline to fail. It will be addressed in a future sprint.
+
+\textbf{Option 4 --- Hybrid} combines the features from options 1 and 2. Case attributes (option 3) are not yet included in the hybrid. \textit{Partially implemented.}
+
+% -------------------------------------------------------
+\subsection{Step 5: ML Algorithm and Hyperparameters}
+\begin{verbatim}
+Which ML algorithm do you want to apply on your data?
+(1) Decision Tree
+(2) Algorithm 2
+(3) Algorithm 3
+Select option (1-3):
+\end{verbatim}
+
+\textbf{Option 1 --- Decision Tree} trains a \texttt{DecisionTreeClassifier} from scikit-learn. It supports binary and multi-class prediction targets. \textit{Fully implemented.}
+
+\textbf{Options 2 and 3} are placeholders. Selecting either will print a confirmation but will internally fall back to a Decision Tree with default parameters. The dedicated visualisation and reconfiguration loop (Step 7) will also be skipped. These algorithms will be implemented in future sprints.
+
+After selecting an algorithm:
+\begin{verbatim}
+Do you want to configure the parameters yourself? (y/n):
+\end{verbatim}
+
+If you answer \texttt{y} and have selected the Decision Tree (option 1), four parameters can be set:
+\begin{verbatim}
+Criterion (gini/entropy, default gini):
+Max depth (int, default 4):
+Min samples split (int, default 20):
+Min samples leaf (int, default 1):
+\end{verbatim}
+Press \texttt{Enter} on any field to keep its default value. If you answer \texttt{n}, or if you selected option 2 or 3, the default parameters are applied automatically.
+
+% -------------------------------------------------------
+\subsection{Step 6: Decision Tree Visualisation and Refinement}
+\textit{This step only appears when the Decision Tree (option 1) is selected.} We recommend to visualise the trained tree at least once to understand how the decision tree looks like with the default parameters and specfied hyperparameters. After each visualisation, you have the option to reconfigure the hyperparameters and retrain the model, such that you can interatively refine the tree structure and inspect the changes after each iteration.
+
+After the initial training, the tool asks:
+\begin{verbatim}
+Do you want the decision tree saved (s),
+displayed (d) or not shown (N)? (s/d/N):
+\end{verbatim}
+\begin{itemize}
+    \item \textbf{s --- Save:} provide a file path (e.g.\ \texttt{/Users/you/tree.png}). The tree is rendered with feature names and class labels and saved as an image file.
+    \item \textbf{d --- Display:} the tree is opened in an interactive matplotlib window.
+    \item \textbf{N --- Skip:} no visualisation is produced.
+\end{itemize}
+
+Immediately after the visualisation choice, the tool asks:
+\begin{verbatim}
+Do you want to reconfigure the hyperparameters and retrain? (y/n):
+\end{verbatim}
+
+If you answer \texttt{y}, the full Decision Tree parameter prompt from Step 6 is shown again. The model is retrained with the new settings and the visualisation prompt is repeated, allowing you to inspect the new tree before deciding again. This loop continues until you answer \texttt{n}.
+
+% -------------------------------------------------------
+\subsection{Step 7: Evaluation Results}
+Once the final model is confirmed, evaluation runs automatically. The terminal displays two outputs:
+
+\begin{enumerate}
+    \item A \textbf{confusion matrix} printed as a text table, with rows representing actual class labels and columns representing predicted class labels.
+    \item A \textbf{per-class accuracy breakdown} listing, for each class, the percentage of cases that were correctly predicted and the percentage that were not.
+\end{enumerate}
+
+Additionally, a summary line prints the scalar metrics: accuracy, precision, recall, F1-score, and ROC-AUC.
+
+% -------------------------------------------------------
+\subsection{Step 8: Saving Evaluation Visuals}
+\begin{verbatim}
+Save confusion matrix and accuracy chart? (y/n):
+\end{verbatim}
+
+If you answer \texttt{y}:
+\begin{verbatim}
+Folder to save in (press Enter for Downloads):
+\end{verbatim}
+Press \texttt{Enter} to save to your system's \texttt{Downloads} folder, or type a custom folder path. The tool creates a timestamped subfolder (e.g.\ \verb|conformance_results_2026-05-15_14-30-00|) inside the chosen location and saves two image files:
+\begin{itemize}
+    \item \texttt{confusion\_matrix.png} --- a colour-coded heatmap of the confusion matrix.
+    \item \texttt{per\_class\_accuracy.png} --- a stacked bar chart with green segments (correct predictions) and red segments (incorrect predictions) per class.
+\end{itemize}
+
+% -------------------------------------------------------
+\subsection{Step 9: Predictions on New Data}
+\begin{verbatim}
+Do you want to perform predictions on new data? (y/n):
+\end{verbatim}
+
+\textbf{Not implemented in Sprint 1.} Answering \texttt{y} will prompt for a file path, but no predictions will be computed. The program exits after this step regardless of the answer.
+
+% -------------------------------------------------------
+\subsection{Known Limitations of Sprint 1}
+The following features are visible in the CLI but not yet functional. Attempting to use them may cause the pipeline to produce incorrect results or terminate with an error.
+
+\begin{itemize}
+    \item \textbf{Remaining time prediction} (target option 3) --- not implemented; causes a pipeline error if selected.
+    \item \textbf{Case attribute features} (feature option 3) --- not implemented; causes a pipeline error if selected.
+    \item \textbf{ML Algorithms 2 and 3} (options 2 and 3 in the algorithm menu) --- placeholders only; the tool silently falls back to a Decision Tree with default parameters.
+    \item \textbf{Hybrid features} (feature option 4) --- functional for the combination of control-flow and diagnostics, but case attributes are not yet included.
+    \item \textbf{Prediction on new data} (final step) --- the prompt appears but no prediction logic is executed.
+    \item \textbf{CSV log format} --- only supported if the file uses the exact column names \verb|case:concept:name|, \verb|concept:name|, and \verb|time:timestamp|.
+    \item \textbf{Multi-outcome cases} --- if a case contains more than one of the specified outcome activities, it receives the label \verb|uncertain_outcome| rather than a specific class.
+    \item \textbf{Train/test split ratio} --- the log is always split 75\,\% training / 25\,\% test using a temporal split by case end time. This ratio cannot be configured in Sprint 1.
+\end{itemize}
+
+\end{document}
