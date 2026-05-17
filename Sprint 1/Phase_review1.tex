@@ -27,7 +27,7 @@ Alessandro Berti\\[6ex]
 \newpage
 
 \section{Summary of Sprint 1}
-\todo[inline]{Achievements of Sprint 1 (based on GitLab work-items) from high level perspective, short and no technical details}
+In this initial Sprint, we focused on building a modular codebase structure and an initial end-to-end pipeline. The main achievements include the implementation of core I/O, control-flow and alignment-based feature extraction, decision tree training, a rich evaluation module and a functional CLI, all supported by automated testing and CI.
 
 \section{Codebase Structure}
 We designed the structure of the codebase in the following philosophy: modules for each step of the process that encapsulate all raw functionalities, pipelines that combine the modules functionalities bundled in a pipeline module and a descriptive, concise and powerful CLI that guides the user through the whole process and cleverly calls the pipelines with the data and options selected by the user.  
@@ -46,131 +46,126 @@ Also, we removed the \textit{Conformance} module, because we currently (and do n
 
 \section{Requirements Coverage Status - Overview per Module}
 
-\subsection{Running High-level Requirements}
-
 \subsection{IO}
 \textbf{Covered}
+\begin{itemize}
+    \item \textbf{LL-01.1}: \texttt{io.discover\_process\_model()} supports Inductive, Alpha, and Genetic Miner via PM4Py, enabling automatic model discovery when no normative model is available.
+    \item \textbf{LL-01.2}: \texttt{io.visualize\_process\_model()} renders the model as Petri net, BPMN, or Process Tree, with optional file saving or direct display.
+    \item \textbf{HL-05}: Event log loading, model import, and model discovery all functional; the foundational data acquisition step of the pipeline is complete.
+    \item \textbf{LL-05.1}: \texttt{pm4py.read\_xes} for XES logs; \texttt{pd.read\_csv} combined with \texttt{pm4py.format\_dataframe} for CSV logs in \texttt{io.load\_event\_log()}.
+    \item \textbf{LL-05.2} (partially): Petri net loading via \texttt{pm4py.read\_pnml} implemented; BPMN files loaded via \texttt{pm4py.read\_bpmn} and internally converted to a Petri net.
+    \item \textbf{LL-05.3}: Inductive, Alpha, and Genetic Miner available as fallback discovery algorithms when no normative model file is provided.
+    \item \textbf{HL-04}: \texttt{try/except} blocks in \texttt{main.py} catch and report setup errors, preprocessing failures, and pipeline exceptions to \texttt{stderr} with descriptive labels.
+\end{itemize}
+
 \noindent \textbf{Planned in Sprint 2}
-
-\subsection{Conformance}
-\textbf{Covered} \\
-
-\noindent \textbf{Planned in Sprint 2}
-
+\begin{itemize}
+    \item \textbf{HL-01}: End-to-end prediction of conformance deviations as a fully operational business deliverable not yet achieved; requires conformance deviation prediction target to be fully wired through the complete pipeline.
+    \item \textbf{LL-05.2}: Standalone loading of BPMN and Process Tree model files as direct model inputs (without forced internal conversion).
+\end{itemize}
 
 \subsection{Feature Extraction}
-\textbf{Covered} \\
+
+\textbf{Covered}
+\begin{itemize}
+    \item \textbf{HL-06} (partially): \texttt{feature\_extraction.compute\_alignments()} invokes \texttt{pm4py.conformance\_diagnostics\_alignments}; log-moves, model-moves, and synchronous moves extracted per case. Distance-to-completion indicators not yet included.
+    \item \textbf{LL-06.1}: PM4Py alignment dictionaries computed for every trace against the normative Petri net using the standard cost function.
+    \item \textbf{LL-06.2}: Alignment moves parsed in \texttt{extract\_label()} to detect and count deviations (log-skips and model-skips) per case; cumulative alignment cost extracted.
+    \item \textbf{HL-07} (partially): \texttt{feature\_extraction.extract\_features()} supports control-flow features (Bag-of-Activities), alignment-based diagnostic features (Bag-of-move-types per activity), and a hybrid combination. Case attribute extraction is defined in the code but commented out.
+    \item \textbf{LL-07.3}: Control-flow frequency matrix constructed via \texttt{pd.crosstab} over case IDs and activity names, producing a per-case Bag-of-Activities feature matrix.
+    \item \textbf{HL-13}: Alignment results computed once per run and stored in-memory; passed as a variable to avoid redundant re-computation within a single pipeline execution.
+\end{itemize}
+
 
 \noindent \textbf{Planned in Sprint 2}
-
-\subsection{Conformance}
-\textbf{Covered} \\
-
-\noindent \textbf{Planned in Sprint 2}
+\begin{itemize}
+    \item \textbf{HL-02}: Full integration of structured case attributes (e.g., claimant demographics, claim amount) as predictive features alongside process-level signals.
+    \item \textbf{HL-06}: Addition of distance-to-completion indicators (e.g., remaining enabled transitions, token distance to final marking).
+    \item \textbf{LL-07.1}: Prefix generation loop that slices event sequences to varying lengths $k$ for prefix-level prediction.
+    \item \textbf{LL-07.2}: Numerical feature matrix construction tailored to remaining time regression targets.
+    \item \textbf{LL-13.1}: Hash-based caching of prefix activity sequences to deterministically identify and skip redundant alignment computations.
+    \item \textbf{LL-13.2}: Disk-based persistence of alignment results via \texttt{joblib}.
+\end{itemize}
 
 \subsection{Model Training}
-\textbf{Covered} \\
+\textbf{Covered}
+\begin{itemize}
+    \item \textbf{HL-08} (partially): \texttt{model\_training.create\_model\_pipeline()} wraps a Decision Tree classifier in a \texttt{sklearn.Pipeline}. Only one algorithm (Decision Tree) currently supported; final alignment cost as deviation threshold not yet used.
+    \item \textbf{LL-08.1}: \texttt{StandardScaler} integrated as the first step in the sklearn Pipeline, ensuring scale-consistent feature distributions.
+    \item \textbf{HL-09}: Baseline (control-flow features only) and conformance-aware (diagnostics or hybrid features) model variants both supported via the \texttt{PredictionFeature} configuration.
+\end{itemize}
 
 \noindent \textbf{Planned in Sprint 2}
+\begin{itemize}
+    \item \textbf{HL-08}: Use of case final alignment cost as the deviation threshold for defining the binary classification target.
+    \item \textbf{LL-08.2}: Additional ML algorithms beyond the Decision Tree (e.g., Random Forest, Logistic Regression) for the controlled comparison.
+\end{itemize}
 
 \subsection{Evaluation}
 
-\textbf{Covered}\\
+\textbf{Covered}
+\begin{itemize}
+    \item \textbf{HL-15} (partially): \texttt{evaluation.temporal\_split()} implemented, partitioning cases by end-time into train/val/test sets. The main pipeline currently uses a simplified \texttt{pm4py.split\_train\_test} 75/25 split rather than the full temporal split.
+    \item \textbf{HL-16} (partially): \texttt{evaluation.compute\_classification\_metrics()} computes accuracy, precision, recall, F1-score, ROC-AUC, and Brier score for binary and multi-class classification targets.
+    \item \textbf{HL-12}: Confusion matrix heatmap and per-class accuracy bar chart generated via Matplotlib in \texttt{evaluation.save\_evaluation\_visuals()}.
+\end{itemize}
 
 \noindent \textbf{Planned in Sprint 2}
+\begin{itemize}
+    \item \textbf{HL-15}: Full integration of \texttt{evaluation.temporal\_split()} into the main pipeline; enforcement of strict temporal case ordering with train, validation, and test sets.
+    \item \textbf{HL-16}: Conformance quality metrics for the normative model (fitness, precision, generalization, simplicity).
+    \item \textbf{LL-16.2}: MAE and RMSE evaluation metrics for remaining time regression targets.
+    \item \textbf{HL-17}: Prefix-length performance analysis using \texttt{evaluation.evaluate\_by\_prefix\_length()} (function stub already present).
+\end{itemize}
 
 \subsection{Config \& Pipeline}
 
-\textbf{Covered} \\
+\textbf{Covered}
+\begin{itemize}
+    \item \textbf{HL-03} (partially): \texttt{main.py} provides an interactive CLI guiding the user through model path/discovery selection, prediction target (future deviations, process outcome, remaining time), feature basis, and ML algorithm configuration. Conformance deviations as target and case attributes as feature basis not fully functional end-to-end.
+    \item \textbf{LL-03.1} (partially): Prediction target and feature basis options fully defined in \texttt{config.py} and selectable in the CLI; case attribute extraction and conformance deviation target not yet fully wired through the pipeline.
+    \item \textbf{HL-10}: \texttt{main.py} combined with \texttt{pipeline.py} forms an end-to-end runner from raw data and model input to evaluation output, without manual intermediate steps.
+\end{itemize}
 
 \noindent \textbf{Planned in Sprint 2}
+\begin{itemize}
+    \item \textbf{HL-03}: Full CLI support for conformance deviations as prediction target and case attributes as feature basis.
+    \item \textbf{HL-14}: Runtime and resource measurement wrapping conformance checking and feature generation steps.
+    \item \textbf{LL-14.1}: \texttt{time.perf\_counter()} timing instrumented around alignment computation and model training calls.
+    \item \textbf{LL-14.2}: \texttt{psutil.Process().memory\_info()} peak RAM tracking during preprocessing and alignment.
+    \item \textbf{LL-14.3}: Millisecond-level start/end timestamps recorded per batch for the combined conformance checking and feature generation steps.
+    \item \textbf{LL-14.4}: Runtime and resource metrics printed to the console and persisted in a structured log file (CSV or JSON).
+\end{itemize}
 
 \subsection{Project Infrastructure \& Testing}
-\textbf{Covered} \\
+\textbf{Covered}
+\begin{itemize}
+    \item \textbf{HL-18}: PM4Py, scikit-learn, pandas, NumPy, and Matplotlib used as the primary library stack throughout all modules.
+    \item \textbf{HL-19 \& LL-19.1-19.2}: Project organized into \texttt{io}, \texttt{feature\_extraction}, \texttt{model\_training}, \texttt{evaluation}, \texttt{pipeline}, and centralized \texttt{config} modules; Git used for version control. Note: conformance logic currently consolidated into \texttt{feature\_extraction} rather than a dedicated \texttt{conformance} module. Branching strategy for each module not considered, as we are working on two branches for each team member.
+    \item \textbf{HL-20}: \texttt{requirements.txt} and \texttt{README.md} present in the repository.
+    \item \textbf{HL-20.1}: \texttt{requirements.txt} as a plain text file implemented and considered satisfactory for dependency management so far.
+\end{itemize}
 
 \noindent \textbf{Planned in Sprint 2}
-
-
-LL-01.1
-LL-01.2
-LL-03.1
-HL-03 Partially: Missing conformance deviations prediction as target and case attributes as features
-HL-04: Reporting errors, preprocessing failures, and training failures in CLI
-HL-05: loading and preprocessing event log
-LL-05.1: Parsing of CSV event logs supported for CSV and XES
-LL-05-2: Partially: petri net loading works
-LL-05.3: Representation of event log with petri net, BPMN \& Process Tree by missing provision of a normative model
-HL-06: Partially: alignment based diagnostics in preprocessing covered
-LL-06.1: Raw alignment dictionaries for events against the normative model
-LL-06.2: Cumulative alignment costs for each prefix
-HL-07: Partially: log-based and conformance-based features implemented in preprocessing
-LL-07.3: Control-flow extracted features for each event log case
-HL-08: Partially: Supervised prediction pipeline implemented, but only with decision tree
-LL-08.1: Standardization of features through standard scaler in machine learning module
-HL-09: Baseline and conformance aware model implemented
-HL-10: End-to-End experiment runner implemented
-HL-12: 
-
-Conformance:
-HL-13: cached conformance analysis results for repeated use during feature generation
-HL-18: Used PM4Py for conformance checking and feature extraction and scikit-learn for model training alongside pandas, numpy and matplotlib
-HL-19: We decided to put conformance and feature extraction into feature extraction module
-
-Evaluation
-H-15: Partially: temporal train/test split for evaluation. Left out validation split and time order based splits
-HL-16: Additional evaluation metrics for predictive performance (e.g., precision, recall, F1-score, ROC-AUC)
-HL-20: 
-Top-Level requirements
-HL-12: Usage of Matplotlib
-HL-19: Modular structure of the project, usage of git for version control
-HL-20: README file 
-
-\section{ Plan for next sprint and remaining requirements}
-\todo[inline]{HL-02: inclusion of case attributes}
-HL-01, HL-03, conformance deviations prediction as target variable
-HL-03 Conformance deviations as target variable
-LL-05.2: Loading of BPMN and process tree models
-HL-06: maybe distance to completion indicators 
-LL-07.1: Truncating event logs to prefixes of varying lengths
-LL-07.2: Formatting numerical features for remaining time predictions
-LL-08.2: Fitted predictive model capable of mapping the feature matrix to the deviation risk target
-HL-08: Case final alignment costs
-HL-11: Automated testing via a single command
-LL-11.1: Isolated and predictable testing environments containing synthetic process data
-LL-11.2: Automated assertion of correctness for the core conformance logic.
-LL-11.3: Automated verification of the prefix generation to prevent data leakage
-
-
-Feature extraction:
-LL-13.1: Disk-based persistence of intermediate alignment results
-
-Evaluation:
-LL-13.1: Identification and usage of prefix length calculation to avoid redundancies
-HL-14: Measuring and reporting runtime and resource requirements of conformance checking and feature generation
-LL-14.1: High precision metrics on the execution duration of critical script segments
-LL-14.2: Tracking of peak memory footprint during data preprocessing and alignment
-LL-14.3: Start and End recording for execution of conformance checking and feature generation per individual data batch
-LL-14.4: Aggregation and reporting of runtime and resource usage statistics in the console and final evaluation report
-HL-15: Left out validation split and time order based splits
-HL-16:conformance checking (e.g., fitness, precision, generalization, simplicity) for the normative model
-LL-16.2: MAE/RMSE for regression tasks as evaluation metrics for predictive performance
-HL-17: Analysis and reporting for prefix length based performance evaluation
-
-
-Requirements that are to be implemented (that have not been implemented in Sprint 1)
-Functionalities that we did not specify as requirements but would still be nice to have
+\begin{itemize}
+    \item \textbf{HL-11}: Automated pytest test suite executable via a single command.
+    \item \textbf{LL-11.1}: Pytest fixtures providing a synthetic, fully conforming XES log and corresponding Petri net.
+    \item \textbf{LL-11.2}: Test assertion that alignment cost equals $0.0$ on fully conforming synthetic data.
+    \item \textbf{LL-11.3}: Test assertion that a prefix of length $k$ contains strictly only the first $k$ events of the original trace.
+    \item \textbf{HL-21}: Technical documentation of system architecture, data and model flow, conformance checking strategy, feature design, and main implementation choices. An architecture diagram is considered as a key component of this documentation.
+\end{itemize}
 
 \section{User Guide}
-\todo[inline]{Refer to existing user guide and that we will maintain the user guide throughout the sprints.}
+To faciliate the usage of our tool, we have created a user guide, which provides the user with step-by-step instructions on how to run the tool and what its limits are. For an end-user and tester of our tool, the user guide is an essential resource to really see the functionality of our software artifact. We will update the user guide after each sprint to reflect the current state of the tool. In the submissions for each sprint, we will include the user guide as a separate document, which is also available in our GitLab repository. User can find it under each sprint folder, e.g. \texttt{Sprint 1/UserGuide.pdf}.
 
 \section{Team settings and Workflow}
-
 \subsection{Changes in Responsibilities}
-\todo[inline]{Mention that we will change the responsibilities for the next sprint to enhance the learning experience and gain more insights in both modules}
+For the next sprint, we will switch some of the responsibilites for the modules to enhance boths understanding for each module. This is still under discussion and we will decide on the final allocation of the responsibilities for the next sprint in the next call. 
 
 \subsection{Workflow Improvements for the next sprint}
-\todo[inline]{Mention our aim towards a more granular breakdown of the work items: specific and better traceable requirement coverage. 
-Mention that we will maintain the breakdown of the requirements per module listed here in the review document and update it after each sprint to keep track of the coverage status.}
+In GitLab we used the work items to consolidate the requirements, such that we have an overview of all the requirements for specific modules. That helped us a lot for the first sprint, to not lose track of the overall picture of the modules. For the next sprints we planned to improve the workflow by formulating them in a more granular and specific manner. This strategy arises by the fact, that we now want to focus more on specific requirements and track the progress in a clear and traceable manner.
+
+Furthermore, we will maintain the breakdown of the requirements per module listed here in the review document and update it after each sprint to keep track of the coverage status. This way, we can easily identify which requirements are still open and need to be addressed in the next sprints.
 
 \section{Exemplary Visualizations and Outputs}
 In this section a select sample of visualizations is included. The pipeline was run with the \textit{sepsis-cases} event log and following parameters:
@@ -189,20 +184,24 @@ Interestingly, including information about alignments helped the decision tree c
 	\item Smaller prefixes reduce the number of variants greatly $\rightarrow$ smaller training set.
 \end{enumerate}
 We also integrated the PM4Py visualization of \textit{Process Trees} and \textit{BPMN}.
-\begin{figure}
-	\includegraphics{figures/confusion_matrix.png}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/confusion_matrix.png}
 	\caption{Confusion matrix visualization.}
 \end{figure}
-\begin{figure}
-	\includegraphics{figures/decision_tree.png}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/decision_tree.png}
 	\caption{Decision tree visualization.}
 \end{figure}
-\begin{figure}
-	\includegraphics{figures/per_class_accuracy.png}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/per_class_accuracy.png}
 	\caption{Accuracy per class graph.}
 \end{figure}
-\begin{figure}
-	\includegraphics{figures/process_model.png}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/process_model.png}
 	\caption{PM4Py petri net visualization.}
 \end{figure}
 
@@ -213,8 +212,7 @@ Also, I think our "User Guide" document is very descriptive and might help new u
 In my perspective the current state of the program is more than sufficient for the first sprint. In the second sprint, we will focus on improving the module structure (new Visualization module), code quality, testing and implementation of further requirements, such as more ML algorithms, more visualizations etc.
 To conclude, I am very content with our progress, our output of deliverables, the communication and interaction between Cem and me and I have the feeling that I am learning more than ever before about software development and working in a team.
 \subsection{Cem Colak}
-
-
-
+This phase was the most challenging to me, since I had no prior experience with building software artifacts. Especially the dependencies of the different modules, the connection to the CLI and the pipeline were completely new to me. This bottleneck was very well handled by Richard, who set up the code infrastructure and explained me the dependencies within the modularity, such that I was able to work properly on my modules. Towards the end of the second week, I noticed a huge learning curve regarding my understanding of the dependecies of each module, because I became able to implement more options into the CLI (e.g. the choice of the Algorithms) and embedded it into the whole pipeline. Our communication was seamless, especially because we both have some lectures in common and used the time after the lectures to work on our project. Despite that, we have a regular call each Friday morning where we discuss next steps and prepare our work allocation for the weekend. On Friday the 16th we talked about the status of our work and our time contstaints during the incoming weekend. I was very happy that Richard suggested to ask Alessandro if we could postpone the submission by one day - giving us more time to deliver quality work. 
+In the next sprint, I will travel in the second week. This could impact and challenge our progress, but I am confident that we can adapt and manage our timetable accordingly. I am very satisfied and thankful with Richards contribution and support in this phase, hence I am looking forward to the next sprint, where we will be able to build more functionalities on the strong foundation we have build in this sprint.
 
 \end{document}
