@@ -85,14 +85,6 @@ def run_interactive_cli() -> None:
         else:
             vis_params['output_path'] = None  # This triggers the 'else' (view) in your io.py logic
 
-    prefix_input = input("\nEnter the prefix length for prediction (e.g., 6). Leave empty for full traces: ").strip()
-    try:
-        prefix_length = int(prefix_input) if prefix_input else None
-    except ValueError:
-        print("Invalid input. Defaulting to full traces.")
-        prefix_length = None
-
-    # TODO: ask for train percentage
     
     # Call Input + initial visualization pipeline -> read files, optionally disover model and visualize to user
     try:
@@ -107,6 +99,9 @@ def run_interactive_cli() -> None:
     except Exception as e:
         print(f"\n[SETUP ERROR]: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+    # TODO: ask for train test split-ratio
 
     # Target and Feature Configuration
     print("\nWhat should be predicted?")
@@ -153,6 +148,14 @@ def run_interactive_cli() -> None:
     except (ValueError, IndexError):
         print("Invalid choice. Defaulting to Control-flow.")
         feature = config.PredictionFeature.CONTROL_FLOW
+
+    prefix_length = None
+    if target == config.PredictionTarget.PROCESS_OUTCOME and feature != config.PredictionFeature.CASE_ATTRIBUTES:
+        prefix_input = input("\nEnter the prefix length for prediction (e.g., 6). Leave empty for full traces: ").strip()
+        try:
+            prefix_length = int(prefix_input) if prefix_input else None
+        except ValueError:
+            print("Invalid input. Defaulting to full traces.")
 
 
     # Call feature extraction pipeline -> read files, optionally disover model and visualize to user
