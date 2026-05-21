@@ -369,3 +369,25 @@ def plot_resource_usage(
         Summary DataFrame (step x [mean_seconds, mean_memory_mb]) for the report.
     """
     ...
+
+
+def compute_mse(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+) -> np.float64:
+    n = len(y_true)
+    return (1/n)*(sum((y_true-y_pred)**2))
+
+def compute_rmse(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+) -> np.float64:
+    mse = compute_mse(y_true, y_pred)
+    return np.sqrt(mse)
+
+def compute_mae(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+) -> np.float64:
+    n = len(y_true)
+    return (1/n)*(sum(np.abs(y_true-y_pred)))
