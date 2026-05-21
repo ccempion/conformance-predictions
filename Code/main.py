@@ -5,6 +5,7 @@ machine learning pipeline as specified in the Requirements Engineering document.
 """
 
 import sys
+import pm4py
 from typing import Optional
 from src import io, conformance, feature_extraction, model_training, evaluation, pipeline, config
 
@@ -18,13 +19,15 @@ def run_interactive_cli() -> None:
     has_model = input("Do you have a normative process model? (y/n): ").lower().strip() == 'y'
     
     log_path = input("Enter the path to the event log (XES/CSV): ").strip()
-    
+    discovery_alg = None
+    discovery_params = {}
     model_path: Optional[str] = None
+    discovery_alg: Optional[config.Discovery_alg] = None
+    discovery_params: dict = {}
     if has_model:
         model_path = input("Enter the path to the normative model (Petri net/BPMN): ").strip()
     else:
         print("Model discovery will be used.")
-        discovery_params = {}
         # Prompt for discovery algorithm & noise thresholds
         print("\nWhich discovery algorithm should be used?")
         print("1. Inductive Miner (recommended)")
@@ -33,16 +36,19 @@ def run_interactive_cli() -> None:
         choice = int(input("Select option (1-3): ").strip())
         # Map to config.Discovery_alg Enum
         discovery_alg = [
-            config.Discovery_alg.INDUCTIVE, 
-            config.Discovery_alg.ALPHA, 
+            config.Discovery_alg.INDUCTIVE,
+            config.Discovery_alg.ALPHA,
             config.Discovery_alg.GENETIC
         ][choice - 1]
 
-        if discovery_alg == config.Discovery_alg.INDUCTIVE:  # Inductive
+        if discovery_alg == config.Discovery_alg.INDUCTIVE:
             discovery_params['noise_threshold'] = float(input("Noise threshold (default 0.0): ") or 0.0)
             discovery_params['disable_fallthroughs'] = input("Disable fall-throughs? (y/n, default n): ").lower() == 'y'
-        
-        elif discovery_alg == config.Discovery_alg.GENETIC:  # Genetic
+
+        elif discovery_alg == config.Discovery_alg.ALPHA:
+            print("Alpha Miner has no configurable parameters.")
+
+        elif discovery_alg == config.Discovery_alg.GENETIC:
             discovery_params['population_size'] = int(input("Population size (default 500): ") or 500)
             discovery_params['elitism_rate'] = float(input("Elitism rate (default 0.01): ") or 0.01)
             discovery_params['crossover_rate'] = float(input("Crossover rate (default 1.0): ") or 1.0)
@@ -78,10 +84,13 @@ def run_interactive_cli() -> None:
             vis_params['output_path'] = input("Enter the path to save the visualization (e.g., model.png): ").strip()
         else:
             vis_params['output_path'] = None  # This triggers the 'else' (view) in your io.py logic
+
+            
+    # TODO: ask for train percentage
     
     # Call Input + initial visualization pipeline -> read files, optionally disover model and visualize to user
     try:
-        model_tuple, log_df = pipeline.prepare_log_and_model(
+        model_tuple, log_train, log_test = pipeline.prepare_log_and_model(
             log_path=log_path,
             model_path=model_path,
             discovery_alg=discovery_alg,
@@ -139,41 +148,129 @@ def run_interactive_cli() -> None:
         print("Invalid choice. Defaulting to Control-flow.")
         feature = config.PredictionFeature.CONTROL_FLOW
 
+
+    # Call feature extraction pipeline -> read files, optionally disover model and visualize to user
+    X_train, y_train, class_names = pipeline.extract_target_and_feature(
+        target=target,
+        feature=feature,
+        model=model_tuple,
+        log=log_train,
+        outcome_activities=outcome_activities
+    )
+    X_test, y_test, _ = pipeline.extract_target_and_feature(
+        target=target,
+        feature=feature,
+        model=model_tuple,
+        log=log_test,
+        outcome_activities=outcome_activities
+    )
+
     # ML Algorithm Configuration
-    use_custom_ml = input("\nDo you want to configure the ML algorithm? (y/n): ").lower().strip() == 'y'
+    
+    print("\nWhich ML algorithm do you want to apply on your data?")
+    print("(1) Decision Tree")
+    print("(2) Algorithm 2")
+    print("(3) Algorithm 3")
+    try:
+        ml_choice = int(input("Select option (1-3): ").strip())
+        if ml_choice == 1:
+            print("Decision Tree selected.")
+        elif ml_choice == 2:
+            print("Algorithm 2 selected.")
+        elif ml_choice == 3:
+            print("Algorithm 3 selected.")
+    except (ValueError, IndexError):
+        print("Invalid choice. Defaulting to Decision Tree.")
+        ml_choice = 1
+
+    use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/n): ").lower().strip() == 'y'
+
+    #here we put all the parameters together
     ml_params = {}
-    if use_custom_ml:
+    if use_custom_ml and ml_choice == 1:  # Decision Tree
         print("\nConfiguring Decision Tree Parameters:")
         criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
         if criterion in ["gini", "entropy"]:
             ml_params["criterion"] = criterion
-            
-        max_depth = input("Max depth (int, default None): ").strip()
+        max_depth = input("Max depth (int, default 4): ").strip()
         if max_depth:
             ml_params["max_depth"] = int(max_depth)
-            
-        min_samples_split = input("Min samples split (int, default 2): ").strip()
+        min_samples_split = input("Min samples split (int, default 20): ").strip()
         if min_samples_split:
             ml_params["min_samples_split"] = int(min_samples_split)
+        min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
+        if min_samples_leaf:
+            ml_params["min_samples_leaf"] = int(min_samples_leaf)
 
-    # Call model training pipeline 
-    print("\nStarting execution pipeline...")
+    # Train initial model
+    print("\nTraining model...")
+    trained_model = model_training.train_model(X_train, y_train, ml_params)
+
+    # Decision Tree visualisation + reconfigure loop — only relevant for Decision Tree
+    if ml_choice == 1:
+        while True:
+            dt_vis_choice = input("\nDo you want the decision tree saved (s), displayed (d) or not shown (N)? (s/d/N): ").lower().strip()
+
+            if dt_vis_choice in ['s', 'd']:
+                dt_output_path = None
+                if dt_vis_choice == 's':
+                    dt_output_path = input("Enter the path to save the decision tree (e.g., tree.png): ").strip()
+                model_training.visualize_decision_tree(
+                    model=trained_model,
+                    feature_names=X_train.columns.tolist(),
+                    class_names=class_names,
+                    output_path=dt_output_path
+                )
+                if dt_vis_choice == 's':
+                    print(f"Decision tree saved to: {dt_output_path}")
+
+            if input("\nDo you want to reconfigure the hyperparameters and retrain? (y/n): ").lower().strip() == 'y':
+                ml_params = {}
+                print("\nConfiguring Decision Tree Parameters:")
+                criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
+                if criterion in ["gini", "entropy"]:
+                    ml_params["criterion"] = criterion
+                max_depth = input("Max depth (int, default 4): ").strip()
+                if max_depth:
+                    ml_params["max_depth"] = int(max_depth)
+                min_samples_split = input("Min samples split (int, default 20): ").strip()
+                if min_samples_split:
+                    ml_params["min_samples_split"] = int(min_samples_split)
+                min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
+                if min_samples_leaf:
+                    ml_params["min_samples_leaf"] = int(min_samples_leaf)
+                print("Retraining model...")
+                trained_model = model_training.train_model(X_train, y_train, ml_params)
+            else:
+                break
+
+    # Call evaluation pipeline (training already done above)
+    print("\nStarting evaluation pipeline...")
     try:
         # This calls the orchestration logic in src/pipeline.py
         results = pipeline.run_conformance_prediction_pipeline(
-            log_path=log_path,
-            model_path=model_path,
-            discovery_alg=discovery_alg,
-            discovery_params=discovery_params,
-            target=str(target_choice),
-            features=str(feature_choice),
-            outcome_activities=outcome_activities,
+            X_test=X_test,
+            y_test=y_test,
+            X_train=X_train,
+            y_train=y_train,
             ml_params=ml_params,
-            preloaded_model=model_tuple,
-            preloaded_log=log_df
+            preloaded_model=trained_model,
         )
         print("\nPipeline completed successfully!")
-        
+
+        # Display confusion matrix and per-class stats in the CLI
+        y_pred = results["y_pred"]
+        y_test_arr = results["y_test"]
+        evaluation.display_confusion_matrix_text(y_test_arr, y_pred, class_names)
+        evaluation.display_per_class_stats(y_test_arr, y_pred, class_names)
+
+        # Offer to save both visualisations
+        if input("\nSave confusion matrix and accuracy chart? (y/n): ").lower().strip() == 'y':
+            path_input = input("Folder to save in (press Enter for Downloads): ").strip()
+            base_dir = path_input if path_input else None
+            saved_to = evaluation.save_evaluation_visuals(y_test_arr, y_pred, class_names, base_dir)
+            print(f"Results saved to: {saved_to}")
+
         # 5. Prediction on new data
         if input("\nDo you want to perform predictions on new data? (y/n): ").lower().strip() == 'y':
             new_data_path = input("Enter the path to the file containing trace prefixes: ").strip()
