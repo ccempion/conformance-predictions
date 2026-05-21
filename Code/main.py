@@ -5,9 +5,9 @@ machine learning pipeline as specified in the Requirements Engineering document.
 """
 
 import sys
-import pm4py
 from typing import Optional
-from src import io, feature_extraction, model_training, evaluation, pipeline, config
+from src import model_training, pipeline, config
+from src import visualization as vis
 
 def run_interactive_cli() -> None:
     """
@@ -226,7 +226,7 @@ def run_interactive_cli() -> None:
                 dt_output_path = None
                 if dt_vis_choice == 's':
                     dt_output_path = input("Enter the path to save the decision tree (e.g., tree.png): ").strip()
-                model_training.visualize_decision_tree(
+                vis.visualize_decision_tree(
                     model=trained_model,
                     feature_names=X_train.columns.tolist(),
                     class_names=class_names,
@@ -272,14 +272,14 @@ def run_interactive_cli() -> None:
         # Display confusion matrix and per-class stats in the CLI
         y_pred = results["y_pred"]
         y_test_arr = results["y_test"]
-        evaluation.display_confusion_matrix_text(y_test_arr, y_pred, class_names)
-        evaluation.display_per_class_stats(y_test_arr, y_pred, class_names)
+        vis.display_confusion_matrix_text(y_test_arr, y_pred, class_names)
+        vis.display_per_class_stats(y_test_arr, y_pred, class_names)
 
         # Offer to save both visualisations
         if input("\nSave confusion matrix and accuracy chart? (y/n): ").lower().strip() == 'y':
             path_input = input("Folder to save in (press Enter for Downloads): ").strip()
             base_dir = path_input if path_input else None
-            saved_to = evaluation.save_evaluation_visuals(y_test_arr, y_pred, class_names, base_dir)
+            saved_to = vis.save_evaluation_visuals(y_test_arr, y_pred, class_names, base_dir)
             print(f"Results saved to: {saved_to}")
 
         # 5. Prediction on new data
