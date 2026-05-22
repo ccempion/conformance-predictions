@@ -197,6 +197,35 @@ def plot_pr_curves(
     ...
 
 
+def plot_evaluate_by_prefix_length(
+    results_df: pd.DataFrame,
+    output_path: Optional[str] = None,
+) -> None:
+    """
+    Plots the results of evaluate_by_prefix_length.
+    X-axis: prefix_length
+    Y-axis: accuracy and f1 scores
+    """
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    ax.plot(results_df["prefix_length"], results_df["accuracy"], marker='o', label="Accuracy", color="blue")
+    ax.plot(results_df["prefix_length"], results_df["f1"], marker='o', label="F1 Score", color="green")
+    
+    ax.set_xlabel("Prefix Length")
+    ax.set_ylabel("Score")
+    ax.set_title("Model Performance by Prefix Length")
+    ax.set_ylim(0, 1.05)
+    ax.legend()
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
+
+
 def plot_metrics_by_prefix(
     baseline_prefix_df: pd.DataFrame,
     conformance_prefix_df: pd.DataFrame,
