@@ -21,7 +21,8 @@ def test_compute_classification_metrics():
 def test_evaluate_by_prefix_length():
     data = {'case:concept:name': [], 'concept:name': [], 'time:timestamp': []}
     ts = pd.Timestamp('2023-01-01 10:00')
-    for i in range(10):
+
+    for i in range(20):
         data['case:concept:name'].extend([str(i)] * 3)
         data['concept:name'].extend(['A', 'B', 'C'])
         data['time:timestamp'].extend([ts, ts + pd.Timedelta(minutes=5), ts + pd.Timedelta(minutes=10)])

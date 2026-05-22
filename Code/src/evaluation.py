@@ -96,6 +96,9 @@ def evaluate_by_prefix_length(
     results = []
     log_train, log_test= pm4py.split_train_test(log, train_percentage=0.75)
 
+    if log_train.empty or log_test.empty:
+        return pd.DataFrame(columns=["prefix_length", "accuracy", "f1"])
+
     for prefix_length in prefix_range:
         X_train, y_train, class_names = pipeline.extract_target_and_feature(
             target=target,
