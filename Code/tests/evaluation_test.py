@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 import os
-from src.evaluation import compute_classification_metrics, temporal_split, evaluate_by_prefix_length
+from src.evaluation import compute_classification_metrics, evaluate_by_prefix_length
 from src import config, io
 
 def test_compute_classification_metrics():
@@ -18,28 +18,11 @@ def test_compute_classification_metrics():
     # 3 out of 4 labels are corretly predicted
     assert metrics['accuracy'] == 0.75
 
-def test_temporal_split():
-    # create sample log
-    case_ids = [str(i) for i in range(10)]
-    timestamps = pd.to_datetime([f'2023-01-{i+1:02d}' for i in range(10)])
-    df = pd.DataFrame({
-        'case:concept:name': case_ids,
-        'time:timestamp': timestamps
-    })
-    
-    train, val, test = temporal_split(df, train_ratio=0.6, val_ratio=0.2)
-    
-    assert len(train) == 6
-    assert len(val) == 2
-    assert len(test) == 2
-    assert train.isdisjoint(val)
-    assert val.isdisjoint(test)
-    assert len(train | val | test) == 10
-
 def test_evaluate_by_prefix_length():
     data = {'case:concept:name': [], 'concept:name': [], 'time:timestamp': []}
     ts = pd.Timestamp('2023-01-01 10:00')
-    for i in range(10):
+
+    for i in range(20):
         data['case:concept:name'].extend([str(i)] * 3)
         data['concept:name'].extend(['A', 'B', 'C'])
         data['time:timestamp'].extend([ts, ts + pd.Timedelta(minutes=5), ts + pd.Timedelta(minutes=10)])

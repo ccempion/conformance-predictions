@@ -3,7 +3,6 @@ Evaluation module for the conformance-aware predictive monitoring pipeline.
 
 Responsibilities:
   1. Infrastructure utilities (called by pipeline.py during execution):
-       - temporal_split: case-level train/val/test partitioning by time
        - measure_runtime / measure_memory: wrappers around conformance and feature steps
 
   2. Reporting (called by pipeline.py after predictions are collected):
@@ -25,32 +24,6 @@ import sklearn.metrics as metrics
 from src import pipeline
 from src import config
 
-# ---------------------------------------------------------------------------
-# 1. Infrastructure utilities
-# ---------------------------------------------------------------------------
-
-def temporal_split(
-    log: pd.DataFrame,
-    train_ratio: float = 0.6,
-    val_ratio: float = 0.2,
-    case_id_col: str = "case:concept:name",
-    timestamp_col: str = "time:timestamp",
-) -> Tuple[Set[str], Set[str], Set[str]]:
-    """Partition cases into train / val / test strictly by case end-time."""
-    # Find the last timestamp for each case
-    case_ends = log.groupby(case_id_col)[timestamp_col].max().sort_values()
-    
-    n_cases = len(case_ends)
-    n_train = int(n_cases * train_ratio)
-    n_val = int(n_cases * val_ratio)
-    
-    train_case_ids = set(case_ends.index[:n_train])
-    val_case_ids = set(case_ends.index[n_train:n_train + n_val])
-    test_case_ids = set(case_ends.index[n_train + n_val:])
-    
-    return train_case_ids, val_case_ids, test_case_ids
-
-
 def measure_runtime(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, float]:
     """Call *func* and return its result together with wall-clock seconds elapsed."""
     start_time = time.perf_counter()
@@ -67,10 +40,6 @@ def measure_memory(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, floa
     mem_after = process.memory_info().rss / (1024 * 1024)
     return result, max(0.0, mem_after - mem_before)
 
-
-# ---------------------------------------------------------------------------
-# 2. Metrics
-# ---------------------------------------------------------------------------
 
 def compute_classification_metrics(
     y_true: np.ndarray,
@@ -126,6 +95,9 @@ def evaluate_by_prefix_length(
     prefix_range = range(prefix_range_start, prefix_range_end + 1) 
     results = []
     log_train, log_test= pm4py.split_train_test(log, train_percentage=0.75)
+
+    if log_train.empty or log_test.empty:
+        return pd.DataFrame(columns=["prefix_length", "accuracy", "f1"])
 
     for prefix_length in prefix_range:
         X_train, y_train, class_names = pipeline.extract_target_and_feature(
