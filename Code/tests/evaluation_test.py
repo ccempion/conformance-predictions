@@ -84,3 +84,20 @@ def test_evaluate_by_prefix_length():
     assert "prefix_length" in results_default.columns
     assert "accuracy" in results_default.columns
     assert "f1" in results_default.columns
+
+def test_plot_evaluate_by_prefix_length(tmp_path):
+    from src.visualization import plot_evaluate_by_prefix_length
+    
+    # Create dummy results
+    df = pd.DataFrame({
+        "prefix_length": [1, 2, 3],
+        "accuracy": [0.7, 0.8, 0.9],
+        "f1": [0.65, 0.75, 0.85]
+    })
+    
+    # Test saving to a temporary file
+    output_file = tmp_path / "prefix_plot.png"
+    plot_evaluate_by_prefix_length(df, output_path=str(output_file))
+    
+    assert os.path.exists(output_file)
+    assert os.path.getsize(output_file) > 0
