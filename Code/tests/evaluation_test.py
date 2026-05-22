@@ -1,7 +1,8 @@
 import pytest
 import numpy as np
 import pandas as pd
-from src.evaluation import compute_classification_metrics, temporal_split
+from src.evaluation import compute_classification_metrics, temporal_split, evaluate_by_prefix_length
+from src import config, io
 
 def test_compute_classification_metrics():
     y_true = np.array([0, 1, 0, 1])
@@ -33,3 +34,44 @@ def test_temporal_split():
     assert train.isdisjoint(val)
     assert val.isdisjoint(test)
     assert len(train | val | test) == 10
+
+def test_evaluate_by_prefix_length():
+    # Load real log
+    log_path = "data/roadtraffic100traces.xes"
+    log = io.load_event_log(log_path)
+    
+    # Discover model for alignment-based target (Future Deviations)
+    model = io.discover_process_model(log, config.Discovery_alg.INDUCTIVE)
+    
+    # Configure target and feature
+    target = config.PredictionTarget.FUTURE_DEVIATIONS
+    feature = config.PredictionFeature.CONTROL_FLOW
+    
+    # 1. Test with explicit range
+    results = evaluate_by_prefix_length(
+        target=target,
+        feature=feature,
+        model=model,
+        log=log,
+        prefix_range_start=2,
+        prefix_range_end=4
+    )
+    
+    assert isinstance(results, pd.DataFrame)
+    assert list(results.columns) == ["prefix_length", "accuracy", "f1"]
+    assert len(results) == 3
+    assert results["prefix_length"].iloc[0] == 2
+    
+    # 2. Test with default range (quantiles)
+    results_default = evaluate_by_prefix_length(
+        target=target,
+        feature=feature,
+        model=model,
+        log=log
+    )
+    
+    assert isinstance(results_default, pd.DataFrame)
+    assert not results_default.empty
+    assert "prefix_length" in results_default.columns
+    assert "accuracy" in results_default.columns
+    assert "f1" in results_default.columns
