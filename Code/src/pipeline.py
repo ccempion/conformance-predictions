@@ -4,7 +4,7 @@ import numpy as np
 from pm4py.objects.petri_net.obj import PetriNet, Marking
 import pm4py
 from src import io, config, feature_extraction, model_training, evaluation
-from sklearn.model_selection import train_test_split
+from src import visualization as vis
 
 def run_conformance_prediction_pipeline(
     X_test=np.ndarray,
@@ -96,7 +96,7 @@ def prepare_log_and_model(
     # Handle Initial Visualization
     if vis_params:
         print(f"--- Generating visualization ({vis_params['representation'].name}) ---")
-        io.visualize_process_model(
+        vis.visualize_process_model(
             model=model,
             path=vis_params.get('output_path'),
             model_representation=vis_params['representation']

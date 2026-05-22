@@ -5,11 +5,10 @@ Implements scikit-learn-style objects for preprocessing and prediction.
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.tree import DecisionTreeClassifier, plot_tree
-from typing import Dict, Any, List, Tuple, Optional
+from sklearn.tree import DecisionTreeClassifier
+from typing import Dict, Any, Tuple, Optional
 
 
 def create_model_pipeline(ml_params: Optional[Dict[str, Any]] = None) -> Pipeline:
@@ -115,30 +114,3 @@ def get_feature_importance(model: Pipeline, feature_names: list) -> pd.Series:
     importances = model.named_steps['classifier'].feature_importances_
     return pd.Series(importances, index=feature_names).sort_values(ascending=False)
 
-
-def visualize_decision_tree(
-    model: Pipeline,
-    feature_names: List[str],
-    class_names: List[str],
-    output_path: Optional[str] = None,
-) -> None:
-    """
-    Renders the fitted Decision Tree from the pipeline.
-    If output_path is given, saves to that file; otherwise opens an interactive window.
-    """
-    clf = model.named_steps['classifier']
-    fig, ax = plt.subplots(figsize=(20, 10))
-    plot_tree(
-        clf,
-        feature_names=feature_names,
-        class_names=class_names,
-        filled=True,
-        rounded=True,
-        ax=ax
-    )
-    plt.tight_layout()
-    if output_path:
-        plt.savefig(output_path, dpi=150, bbox_inches='tight')
-        plt.close(fig)
-    else:
-        plt.show()
