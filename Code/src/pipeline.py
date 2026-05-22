@@ -18,20 +18,6 @@ def run_conformance_prediction_pipeline(
     Main orchestration function for the entire pipeline.
     """
 
-    # # 4. Temporal Split (HL-15)
-    # print("--- Splitting data temporally ---")
-    # # This is a simplification; evaluation.temporal_split returns case IDs
-    # # For now, we assume X and y are indexed or aligned such that we can split them
-    # # In a real implementation, you'd filter X/y based on the returned case IDs
-    # train_ids, val_ids, test_ids = evaluation.temporal_split(log)
-
-    # # Placeholder: filter X and y based on IDs (Richard's feature extraction should keep case IDs)
-    # # X_train, y_train = X.loc[train_ids], y.loc[train_ids]
-    # # X_test, y_test = X.loc[test_ids], y.loc[test_ids]
-    # X_train, X_test = X[:int(0.8*len(X))], X[int(0.8*len(X)):] # Simple split for now
-    # y_train, y_test = y[:int(0.8*len(y))], y[int(0.8*len(y)):]
-
-    # 5. Model Training (HL-08, LL-08.2)
     if preloaded_model is not None:
         print("--- Using pre-trained model ---")
         trained_model = preloaded_model
@@ -102,8 +88,7 @@ def prepare_log_and_model(
             model_representation=vis_params['representation']
         )
         
-    log_train, log_test= pm4py.split_train_test(log, train_percentage=0.75)
-    return model, log_train, log_test 
+    return model, log
 
 
 def extract_target_and_feature(

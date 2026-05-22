@@ -5,16 +5,18 @@ machine learning pipeline as specified in the Requirements Engineering document.
 """
 
 import sys
-from typing import Optional
-from src import model_training, pipeline, config
+import json
+from typing import Optional, Tuple, List, Any
+from src import model_training, pipeline, config, evaluation
 from src import visualization as vis
+import pm4py
 
-def run_interactive_cli() -> None:
+def run_interactive_cli() -> List[Tuple[str, float]]:
     """
     Guides the user through configuration steps as an interactive command-line-interface program: (HL-03) & triggers the pipeline.
     """
     print("=== Conformance Predictions ===")
-    
+
     # Data and Model Input
     has_model = input("Do you have a normative process model? (y/n): ").lower().strip() == 'y'
     
@@ -88,7 +90,8 @@ def run_interactive_cli() -> None:
     
     # Call Input + initial visualization pipeline -> read files, optionally disover model and visualize to user
     try:
-        model_tuple, log_train, log_test = pipeline.prepare_log_and_model(
+        (model_tuple, log), prep_time = evaluation.measure_runtime(
+            pipeline.prepare_log_and_model,
             log_path=log_path,
             model_path=model_path,
             discovery_alg=discovery_alg,
@@ -101,7 +104,6 @@ def run_interactive_cli() -> None:
         sys.exit(1)
 
 
-    # TODO: ask for train test split-ratio
 
     # Target and Feature Configuration
     print("\nWhat should be predicted?")
@@ -158,8 +160,18 @@ def run_interactive_cli() -> None:
             print("Invalid input. Defaulting to full traces.")
 
 
+    # TODO: ask for train test split-ratio
+    try:
+        split_value = float(input("\nEnter a split value for the train- / test-split (default=0.7): ").strip())
+    except (ValueError):
+        print("Invalid choice. Defaulting to 0.7")
+        split_value = 0.7
+
+    log_train, log_test = pm4py.split_train_test(log, split_value)
+
     # Call feature extraction pipeline -> read files, optionally disover model and visualize to user
-    X_train, y_train, class_names = pipeline.extract_target_and_feature(
+    (X_train, y_train, class_names), extract_train_time = evaluation.measure_runtime(
+        pipeline.extract_target_and_feature,
         target=target,
         feature=feature,
         model=model_tuple,
@@ -167,7 +179,8 @@ def run_interactive_cli() -> None:
         outcome_activities=outcome_activities,
         prefix_length=prefix_length
     )
-    X_test, y_test, _ = pipeline.extract_target_and_feature(
+    (X_test, y_test, _), extract_test_time = evaluation.measure_runtime(
+        pipeline.extract_target_and_feature,
         target=target,
         feature=feature,
         model=model_tuple,
@@ -200,7 +213,7 @@ def run_interactive_cli() -> None:
     ml_params = {}
     if use_custom_ml and ml_choice == 1:  # Decision Tree
         print("\nConfiguring Decision Tree Parameters:")
-        criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
+        criterion = input("Criterion (gini/entropy, default==ini): ").strip().lower()
         if criterion in ["gini", "entropy"]:
             ml_params["criterion"] = criterion
         max_depth = input("Max depth (int, default 4): ").strip()
@@ -215,7 +228,12 @@ def run_interactive_cli() -> None:
 
     # Train initial model
     print("\nTraining model...")
-    trained_model = model_training.train_model(X_train, y_train, ml_params)
+    trained_model, train_time = evaluation.measure_runtime(
+        model_training.train_model, 
+        X_train, 
+        y_train, 
+        ml_params
+    )
 
     # Decision Tree visualisation + reconfigure loop — only relevant for Decision Tree
     if ml_choice == 1:
@@ -251,7 +269,12 @@ def run_interactive_cli() -> None:
                 if min_samples_leaf:
                     ml_params["min_samples_leaf"] = int(min_samples_leaf)
                 print("Retraining model...")
-                trained_model = model_training.train_model(X_train, y_train, ml_params)
+                trained_model, train_time = evaluation.measure_runtime(
+                    model_training.train_model, 
+                    X_train, 
+                    y_train, 
+                    ml_params
+                )
             else:
                 break
 
@@ -259,7 +282,8 @@ def run_interactive_cli() -> None:
     print("\nStarting evaluation pipeline...")
     try:
         # This calls the orchestration logic in src/pipeline.py
-        results = pipeline.run_conformance_prediction_pipeline(
+        results, eval_time = evaluation.measure_runtime(
+            pipeline.run_conformance_prediction_pipeline,
             X_test=X_test,
             y_test=y_test,
             X_train=X_train,
@@ -291,5 +315,37 @@ def run_interactive_cli() -> None:
         print(f"\nError: {e}", file=sys.stderr)
         sys.exit(1)
 
+    return [
+        ("Read and Discovery", prep_time), 
+        ("Alignment & Feature Extraction (Train split)", extract_train_time), 
+        ("Alignment & Feature Extraction (Test split)", extract_test_time), 
+        ("Model Training", train_time),
+        ("Evaluation", eval_time)
+    ]
+    
 if __name__ == "__main__":
-    run_interactive_cli()
+    time_list, mem_peak = evaluation.measure_memory(run_interactive_cli)
+    print(f"The program consumed {mem_peak} MB memory in peak.")
+    total_time = 0
+    for (name, duration) in time_list:
+        print("---------------------------------------")
+        print(f"The program took {duration:.4f} seconds to execute the following step: \n{name}")
+        total_time += duration
+   
+    print("---------------------------------------")
+    print(f"In total, it took {total_time:.4f} seconds from start to finish (processing time only).")
+
+    # Save as JSON (on user selection after last step of CLI)
+    if input("\nDo you want to save the runtime and memory measurements as JSON? (y/n): ").lower().strip() == 'y':
+        report_path = input("Enter filename (default: report.json): ").strip() or "report.json"
+        report_data = {
+            "runtimes": {name: duration for name, duration in time_list},
+            "peak_memory_mb": mem_peak,
+            "total_processing_time": total_time
+        }
+        try:
+            with open(report_path, 'w') as f:
+                json.dump(report_data, f, indent=4)
+            print(f"Report saved to: {report_path}")
+        except Exception as e:
+            print(f"Failed to save report: {e}", file=sys.stderr)
