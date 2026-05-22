@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
+import os
 from src.evaluation import compute_classification_metrics, temporal_split, evaluate_by_prefix_length
 from src import config, io
 
@@ -37,7 +38,8 @@ def test_temporal_split():
 
 def test_evaluate_by_prefix_length():
     # Load real log
-    log_path = "data/roadtraffic100traces.xes"
+    base_dir = os.path.dirname(os.path.dirname(__file__))
+    log_path = os.path.join(base_dir, "data", "roadtraffic100traces.xes")
     log = io.load_event_log(log_path)
     
     # Discover model for alignment-based target (Future Deviations)
@@ -47,7 +49,7 @@ def test_evaluate_by_prefix_length():
     target = config.PredictionTarget.FUTURE_DEVIATIONS
     feature = config.PredictionFeature.CONTROL_FLOW
     
-    # 1. Test with explicit range
+    # Test with explicit range
     results = evaluate_by_prefix_length(
         target=target,
         feature=feature,
@@ -62,7 +64,7 @@ def test_evaluate_by_prefix_length():
     assert len(results) == 3
     assert results["prefix_length"].iloc[0] == 2
     
-    # 2. Test with default range (quantiles)
+    # Test with default range (quantiles)
     results_default = evaluate_by_prefix_length(
         target=target,
         feature=feature,
