@@ -183,11 +183,17 @@ def preprocess_for_ml(X_raw: pd.DataFrame, y_raw: pd.Series) -> Tuple[pd.DataFra
     # Feature Preprocessing (X)
     # Converts categorical Case Attributes (strings) into numeric One-Hot encoded columns.
     # Numerical features (Control Flow/Diagnostics) remain unchanged.
-    X = pd.get_dummies(X_raw, drop_first=True)
+    if X_raw.empty or len(X_raw.columns) == 0:
+        X = X_raw.copy()
+    else:
+        X = pd.get_dummies(X_raw, drop_first=True)
 
 
     # Label Preprocessing (y): PROCESS_OUTCOME
     # Since labels are strings (e.g., 'Approve', 'uncertain_outcome'), we map them to integers (0, 1, 2...).
+    if y_raw.empty:
+        return X, np.array([]), []
+
     le = LabelEncoder()
     y = le.fit_transform(y_raw)
     class_names = [str(c) for c in le.classes_]
