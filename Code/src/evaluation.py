@@ -72,6 +72,43 @@ def compute_classification_metrics(
     }
 
 
+def metrics_by_prefix_length(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_prob: np.ndarray,
+    prefix_lengths: np.ndarray,
+    min_group_size: int = 10,
+) -> pd.DataFrame:
+    """Slice ONE pooled model's predictions by prefix length and compute metrics per length.
+
+    This is the pooled counterpart to evaluate_by_prefix_length (which retrains a separate
+    model per length); here a single model trained on varying-length prefixes is evaluated,
+    then its predictions are grouped by the prefix length of each test instance (HL-17).
+
+    Args:
+        y_true, y_pred, y_prob: aligned prediction arrays for the pooled test set.
+        prefix_lengths: prefix length of each test instance (row-aligned to the arrays).
+        min_group_size: groups with fewer samples are dropped to avoid unstable estimates.
+
+    Returns:
+        DataFrame with one row per prefix_length and the columns produced by
+        compute_classification_metrics, sorted by prefix_length.
+    """
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+    y_prob = np.asarray(y_prob)
+    prefix_lengths = np.asarray(prefix_lengths)
+
+    rows = []
+    for k in sorted(np.unique(prefix_lengths)):
+        mask = prefix_lengths == k
+        if int(mask.sum()) < min_group_size:
+            continue
+        m = compute_classification_metrics(y_true[mask], y_pred[mask], y_prob[mask])
+        rows.append({"prefix_length": int(k), "n": int(mask.sum()), **m})
+
+    cols = ["prefix_length", "n", "accuracy", "precision", "recall", "f1", "roc_auc", "brier_score"]
+    return pd.DataFrame(rows, columns=cols)
 
 
 def evaluate_by_prefix_length(

@@ -7,7 +7,7 @@ machine learning pipeline as specified in the Requirements Engineering document.
 import sys
 import json
 from typing import Optional, Tuple, List, Any
-from src import model_training, pipeline, config, evaluation
+from src import model_training, pipeline, config, evaluation, feature_extraction
 from src import visualization as vis
 import pm4py
 
@@ -151,13 +151,57 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
         print("Invalid choice. Defaulting to Control-flow.")
         feature = config.PredictionFeature.CONTROL_FLOW
 
-    prefix_length = None
-    if target == config.PredictionTarget.PROCESS_OUTCOME and feature != config.PredictionFeature.CASE_ATTRIBUTES:
-        prefix_input = input("\nEnter the prefix length for prediction (e.g., 6). Leave empty for full traces: ").strip()
-        try:
-            prefix_length = int(prefix_input) if prefix_input else None
-        except ValueError:
-            print("Invalid input. Defaulting to full traces.")
+    # Case-attribute listing + selection (only when case features are involved)
+    selected_case_attributes = None
+    if feature in (config.PredictionFeature.CASE_ATTRIBUTES, config.PredictionFeature.HYBRID):
+        available = feature_extraction.list_case_attributes(log)
+        if not available:
+            print("\nNo case-level attributes found in the log.")
+        else:
+            summary = feature_extraction.summarize_case_attributes(log)
+            print("\nAvailable case-level attributes:")
+            for i, r in enumerate(summary.itertuples(index=False), 1):
+                print(f"  {i}. {r.attribute}  (type={r.dtype}, unique={r.n_unique}, e.g. {r.example})")
+            raw = input("\nSelect attributes (comma-separated numbers, or 'all'): ").strip().lower()
+            if raw in ("", "all"):
+                selected_case_attributes = available
+            else:
+                try:
+                    idx = [int(x) - 1 for x in raw.split(",") if x.strip()]
+                    selected_case_attributes = [available[i] for i in idx if 0 <= i < len(available)]
+                except ValueError:
+                    print("Invalid input. Using all attributes.")
+                    selected_case_attributes = available
+            print(f"Selected: {selected_case_attributes}")
+
+    # Prefix configuration. Default = no prefixing (one row per case, cheapest path:
+    # at most one alignment per full case, never per prefix). Prefix work is opt-in only.
+    prefix_mode = "none"
+    prefix_min, prefix_max, prefix_step = None, None, 1
+    if feature != config.PredictionFeature.CASE_ATTRIBUTES and target in (
+        config.PredictionTarget.PROCESS_OUTCOME, config.PredictionTarget.FUTURE_DEVIATIONS,
+    ):
+        print("\nPrefix mode?")
+        print("  [Enter] none      (default - one row per case, cheapest; no per-prefix alignments)")
+        print("  1)      exactly k (one prefix per case at length k)")
+        print("  2)      varying 1..k (pooled - prefixes of length 1..k)")
+        choice = input("Select (Enter/1/2): ").strip()
+        if choice == "1":
+            try:
+                k = int(input("  prefix length k: ").strip())
+                prefix_mode, prefix_min, prefix_max, prefix_step = "exactly", k, k, 1
+            except ValueError:
+                print("Invalid input. Defaulting to no prefixing.")
+        elif choice == "2":
+            try:
+                km = input("  max length k (blank = median case length): ").strip()
+                ks = input("  step (default 1): ").strip()
+                prefix_max = int(km) if km else int(log.groupby("case:concept:name").size().median())
+                prefix_step = int(ks) if ks else 1
+                prefix_min, prefix_mode = 1, "varying"
+                print(f"  using varying prefixes 1..{prefix_max}, step={prefix_step}")
+            except ValueError:
+                print("Invalid input. Defaulting to no prefixing.")
 
 
     # TODO: ask for train test split-ratio
@@ -169,25 +213,53 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
 
     log_train, log_test = pm4py.split_train_test(log, split_value)
 
-    # Call feature extraction pipeline -> read files, optionally disover model and visualize to user
-    (X_train, y_train, class_names), extract_train_time = evaluation.measure_runtime(
-        pipeline.extract_target_and_feature,
-        target=target,
-        feature=feature,
-        model=model_tuple,
-        log=log_train,
-        outcome_activities=outcome_activities,
-        prefix_length=prefix_length
-    )
-    (X_test, y_test, _), extract_test_time = evaluation.measure_runtime(
-        pipeline.extract_target_and_feature,
-        target=target,
-        feature=feature,
-        model=model_tuple,
-        log=log_test,
-        outcome_activities=outcome_activities,
-        prefix_length=prefix_length
-    )
+    # Feature extraction. Default (no prefix) uses the per-case path; the opt-in prefix modes
+    # use the pooled path, which also returns each row's prefix length for by-length analysis.
+    test_prefix_lengths = None
+    if prefix_mode == "none":
+        (X_train, y_train, class_names), extract_train_time = evaluation.measure_runtime(
+            pipeline.extract_target_and_feature,
+            target=target,
+            feature=feature,
+            model=model_tuple,
+            log=log_train,
+            outcome_activities=outcome_activities,
+            selected_case_attributes=selected_case_attributes,
+        )
+        (X_test, y_test, _), extract_test_time = evaluation.measure_runtime(
+            pipeline.extract_target_and_feature,
+            target=target,
+            feature=feature,
+            model=model_tuple,
+            log=log_test,
+            outcome_activities=outcome_activities,
+            selected_case_attributes=selected_case_attributes,
+        )
+    else:
+        (X_train, y_train, class_names, _), extract_train_time = evaluation.measure_runtime(
+            pipeline.extract_target_and_feature_over_prefixes,
+            target=target,
+            feature=feature,
+            model=model_tuple,
+            log=log_train,
+            outcome_activities=outcome_activities,
+            selected_case_attributes=selected_case_attributes,
+            min_length=prefix_min,
+            max_length=prefix_max,
+            step=prefix_step,
+        )
+        (X_test, y_test, _, test_prefix_lengths), extract_test_time = evaluation.measure_runtime(
+            pipeline.extract_target_and_feature_over_prefixes,
+            target=target,
+            feature=feature,
+            model=model_tuple,
+            log=log_test,
+            outcome_activities=outcome_activities,
+            selected_case_attributes=selected_case_attributes,
+            min_length=prefix_min,
+            max_length=prefix_max,
+            step=prefix_step,
+        )
 
     # ML Algorithm Configuration
     
@@ -290,6 +362,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             y_train=y_train,
             ml_params=ml_params,
             preloaded_model=trained_model,
+            test_prefix_lengths=test_prefix_lengths,
         )
         print("\nPipeline completed successfully!")
 
@@ -298,6 +371,14 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
         y_test_arr = results["y_test"]
         vis.display_confusion_matrix_text(y_test_arr, y_pred, class_names)
         vis.display_per_class_stats(y_test_arr, y_pred, class_names)
+
+        # Prefix-length performance breakdown (HL-17) — only meaningful when lengths vary.
+        if test_prefix_lengths is not None and len(set(test_prefix_lengths)) > 1:
+            by_len = evaluation.metrics_by_prefix_length(
+                y_test_arr, y_pred, results["y_prob"], test_prefix_lengths
+            )
+            print("\nMetrics by prefix length:")
+            print(by_len.to_string(index=False))
 
         # Offer to save both visualisations
         if input("\nSave confusion matrix and accuracy chart? (y/n): ").lower().strip() == 'y':

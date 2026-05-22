@@ -17,6 +17,81 @@ def compute_alignments(log: pd.DataFrame, model: Tuple[PetriNet, Marking, Markin
     (net, im, fm) = model
     return pm4py.conformance_diagnostics_alignments(log, net, im, fm)
 
+
+def generate_prefixes(
+    log: pd.DataFrame,
+    min_length: int = 1,
+    max_length: Optional[int] = None,
+    step: int = 1,
+    gate_activities: Optional[List[str]] = None,
+    case_id_key: str = "case:concept:name",
+    timestamp_key: str = "time:timestamp",
+    activity_key: str = "concept:name",
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Expand each case into varying-length prefix pseudo-cases (LL-07.1).
+
+    For each case and each k in range(min_length, max_length+1, step) with k <= case length,
+    the first k events (time-ordered) become a pseudo-case whose id is f"{orig}@@k{k}".
+    This lets all existing feature/alignment/label code (which keys off case_id_key) run
+    unchanged — each prefix simply looks like another case.
+
+    Leakage gating: if gate_activities is given (PROCESS_OUTCOME), only prefixes that end
+    strictly before the first occurrence of any gate activity are emitted, so the outcome is
+    never already inside the prefix.
+
+    Returns:
+        prefix_log:   event-level DataFrame, case_id_key replaced by the unique prefix id,
+                      every other column (events, case attributes, timestamp) preserved.
+        prefix_index: DataFrame [prefix_id, orig_case_id, prefix_length].
+    """
+    # Order events within each case; mergesort keeps original order for equal timestamps.
+    g = log.sort_values([case_id_key, timestamp_key], kind="mergesort").copy()
+    g["_ev"] = g.groupby(case_id_key).cumcount()          # 0-based event position
+    case_len = g.groupby(case_id_key)["_ev"].max() + 1     # Series indexed by case id
+
+    # Per-case cap on prefix length. With gating, cap at the position of the first outcome
+    # event: a length-k prefix covers events 0..k-1, so k <= first_pos excludes the outcome.
+    if gate_activities:
+        is_gate = g[activity_key].isin(set(gate_activities))
+        gate_pos = g.loc[is_gate].groupby(case_id_key)["_ev"].min()
+        cap = case_len.copy()
+        cap.loc[gate_pos.index] = gate_pos
+    else:
+        cap = case_len
+
+    # Build the set of valid (case, k) pairs.
+    specs = []
+    for case_id, c_cap in cap.items():
+        hi = int(c_cap) if max_length is None else min(int(max_length), int(c_cap))
+        for k in range(min_length, hi + 1, step):
+            specs.append((case_id, k))
+
+    if not specs:
+        return (
+            pd.DataFrame(columns=list(log.columns)),
+            pd.DataFrame(columns=["prefix_id", "orig_case_id", "prefix_length"]),
+        )
+
+    spec = pd.DataFrame(specs, columns=[case_id_key, "_k"])
+
+    # Expand: each event joins every valid k of its case, keep events strictly inside the prefix.
+    merged = g.merge(spec, on=case_id_key)
+    merged = merged[merged["_ev"] < merged["_k"]].copy()
+
+    merged["orig_case_id"] = merged[case_id_key]
+    merged[case_id_key] = merged[case_id_key].astype(str) + "@@k" + merged["_k"].astype(str)
+
+    prefix_index = (
+        merged[[case_id_key, "orig_case_id", "_k"]]
+        .drop_duplicates()
+        .rename(columns={case_id_key: "prefix_id", "_k": "prefix_length"})
+        .reset_index(drop=True)
+    )
+    # Keep prefix_length out of the event log so it can never leak into the feature matrix.
+    prefix_log = merged.drop(columns=["_ev", "_k", "orig_case_id"]).reset_index(drop=True)
+    return prefix_log, prefix_index
+
+
 def extract_label(
     log: pd.DataFrame, 
     target_type: PredictionTarget, 
@@ -86,10 +161,69 @@ def extract_label(
     else:
         raise NotImplementedError(f"Target type {target_type} is not supported.")
         
-def extract_features(    log: pd.DataFrame, 
+# Standard XES event-level / system columns that are never case attributes,
+# even when they happen to be constant within a case (e.g. an all-"complete"
+# lifecycle:transition). Used to filter the constant-per-case detection below.
+_EVENT_LEVEL_COLS = {
+    "concept:name", "time:timestamp", "start_timestamp",
+    "lifecycle:transition", "lifecycle:state",
+    "org:resource", "org:group", "org:role",
+    "@@index", "@@case_index",
+}
+
+
+def list_case_attributes(log: pd.DataFrame) -> List[str]:
+    """Return the case-level (trace) attribute column names present in the log.
+
+    A column is treated as case-level if it is either explicitly prefixed
+    'case:' (as PM4Py does for CSV logs) or — for XES logs, where PM4Py
+    flattens trace attributes into unprefixed columns mixed with event
+    attributes — its value is constant within every case. Standard event/
+    system columns (concept:name, time:timestamp, lifecycle:transition, ...)
+    are always excluded.
+    """
+    case_id_key = 'case:concept:name'
+    cols = [c for c in log.columns if c != case_id_key]
+
+    # nunique per case, computed in a single groupby pass.
+    per_case_nunique = log.groupby(case_id_key).nunique(dropna=True)
+
+    keep = set()
+    for c in cols:
+        if c.startswith('case:'):
+            keep.add(c)                       # explicitly a case attribute
+        elif c in _EVENT_LEVEL_COLS:
+            continue                          # known event/system column
+        elif c in per_case_nunique.columns and per_case_nunique[c].max() <= 1:
+            keep.add(c)                       # constant within every case -> trace attribute
+
+    return [c for c in cols if c in keep]     # preserve original column order
+
+
+def summarize_case_attributes(log: pd.DataFrame) -> pd.DataFrame:
+    """Small summary table for CLI display: one row per case-level attribute
+    with columns [attribute, dtype, n_unique, example]. Helps the analyst
+    choose meaningful attributes (HL-03/HL-04)."""
+    case_id_key = 'case:concept:name'
+    rows = []
+    for col in list_case_attributes(log):
+        per_case = log.groupby(case_id_key)[col].first()
+        example = per_case.dropna().iloc[0] if per_case.notna().any() else ""
+        rows.append({
+            "attribute": col,
+            "dtype": str(per_case.dtype),
+            "n_unique": int(per_case.nunique(dropna=True)),
+            "example": example,
+        })
+    return pd.DataFrame(rows, columns=["attribute", "dtype", "n_unique", "example"])
+
+
+def extract_features(
+    log: pd.DataFrame,
     feature_type: PredictionFeature,
     model: Optional[Tuple] = None,
-    alignments: Optional[List[Dict[str, Any]]] = None
+    alignments: Optional[List[Dict[str, Any]]] = None,
+    selected_case_attributes: Optional[List[str]] = None,
 ) -> pd.DataFrame:
     """
     Extracts features. 
@@ -146,19 +280,26 @@ def extract_features(    log: pd.DataFrame,
         diag_df = pd.DataFrame(diag_records).set_index('case_id').fillna(0).astype(int)
         feature_matrices.append(diag_df)
 
-    # # CASE_ATTRIBUTES: Static trace-level data
-    # if feature_type in [config.PredictionFeature.CASE_ATTRIBUTES, config.PredictionFeature.HYBRID]:
-    #     # Find all columns that start with 'case:' (standard PM4Py notation)
-    #     case_cols = [col for col in log.columns if col.startswith('case:') and col != case_id_key]
-        
-    #     if case_cols:
-    #         # Since trace attributes are static, taking the first value per case is sufficient
-    #         ca_df = log.groupby(case_id_key)[case_cols].first()
-    #     else:
-    #         # Fallback if the log has no case attributes
-    #         ca_df = pd.DataFrame(index=log[case_id_key].unique())
-            
-    #     feature_matrices.append(ca_df)
+    # CASE_ATTRIBUTES: Static trace-level data
+    if feature_type in [config.PredictionFeature.CASE_ATTRIBUTES, config.PredictionFeature.HYBRID]:
+        # None => default to all available case attributes; [] => explicitly none.
+        cols = selected_case_attributes if selected_case_attributes is not None else list_case_attributes(log)
+        cols = [c for c in cols if c in log.columns and c != case_id_key]
+
+        if cols:
+            # Case attributes are static per case -> take the first observed value per case.
+            ca_df = log.groupby(case_id_key)[cols].first()
+            # Numeric attributes absent for some cases would feed NaN into StandardScaler;
+            # fill with 0. Categorical NaN is handled by get_dummies (becomes all-zero).
+            num_cols = ca_df.select_dtypes(include="number").columns
+            ca_df[num_cols] = ca_df[num_cols].fillna(0)
+            # Prefix mirrors cf_act_ to avoid naming collisions in the hybrid concat.
+            ca_df.columns = [f"ca_{c}" for c in ca_df.columns]
+        else:
+            # Fallback if the log has no (selected) case attributes.
+            ca_df = pd.DataFrame(index=log[case_id_key].unique())
+
+        feature_matrices.append(ca_df)
 
     if not feature_matrices:
         raise ValueError(f"Unsupported feature type: {feature_type}")
