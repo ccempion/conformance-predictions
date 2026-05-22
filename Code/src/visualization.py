@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,9 +12,6 @@ from pm4py.objects.petri_net.obj import PetriNet, Marking
 from typing import Dict, Any, List, Tuple, Optional
 
 from src.config import ModelRepresentation
-
-from __future__ import annotations
-
 
 
 # ------------------------------------------
