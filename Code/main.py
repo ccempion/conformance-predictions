@@ -9,6 +9,7 @@ import json
 from typing import Optional, Tuple, List, Any
 from src import model_training, pipeline, config, evaluation
 from src import visualization as vis
+import pm4py
 
 def run_interactive_cli() -> List[Tuple[str, float]]:
     """
@@ -89,7 +90,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
     
     # Call Input + initial visualization pipeline -> read files, optionally disover model and visualize to user
     try:
-        (model_tuple, log_train, log_test), prep_time = evaluation.measure_runtime(
+        (model_tuple, log), prep_time = evaluation.measure_runtime(
             pipeline.prepare_log_and_model,
             log_path=log_path,
             model_path=model_path,
@@ -103,7 +104,6 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
         sys.exit(1)
 
 
-    # TODO: ask for train test split-ratio
 
     # Target and Feature Configuration
     print("\nWhat should be predicted?")
@@ -160,6 +160,15 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             print("Invalid input. Defaulting to full traces.")
 
 
+    # TODO: ask for train test split-ratio
+    try:
+        split_value = float(input("\nEnter a split value for the train- / test-split (default=0.7): ").strip())
+    except (ValueError):
+        print("Invalid choice. Defaulting to 0.7")
+        split_value = 0.7
+
+    log_train, log_test = pm4py.split_train_test(log, split_value)
+
     # Call feature extraction pipeline -> read files, optionally disover model and visualize to user
     (X_train, y_train, class_names), extract_train_time = evaluation.measure_runtime(
         pipeline.extract_target_and_feature,
@@ -204,7 +213,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
     ml_params = {}
     if use_custom_ml and ml_choice == 1:  # Decision Tree
         print("\nConfiguring Decision Tree Parameters:")
-        criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
+        criterion = input("Criterion (gini/entropy, default==ini): ").strip().lower()
         if criterion in ["gini", "entropy"]:
             ml_params["criterion"] = criterion
         max_depth = input("Max depth (int, default 4): ").strip()

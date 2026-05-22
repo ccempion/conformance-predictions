@@ -88,8 +88,7 @@ def prepare_log_and_model(
             model_representation=vis_params['representation']
         )
         
-    log_train, log_test= pm4py.split_train_test(log, train_percentage=0.75)
-    return model, log_train, log_test 
+    return model, log
 
 
 def extract_target_and_feature(
