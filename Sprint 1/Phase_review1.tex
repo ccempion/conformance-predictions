@@ -27,12 +27,24 @@ Alessandro Berti\\[6ex]
 \newpage
 
 \section{Summary of Sprint 1}
-\todo[inline]{Achievements of Sprint 1 (based on GitLab work-items) from high level perspective, short and no technical details}
+In this initial Sprint, we focused on building a modular codebase structure and an initial end-to-end pipeline. The main achievements include the implementation of core I/O, control-flow and alignment-based feature extraction, decision tree training, a rich evaluation module and a functional CLI, all supported by automated testing and CI.
+
+\section{Codebase Structure}
+We designed the structure of the codebase in the following philosophy: modules for each step of the process that encapsulate all raw functionalities, pipelines that combine the modules functionalities bundled in a pipeline module and a descriptive, concise and powerful CLI that guides the user through the whole process and cleverly calls the pipelines with the data and options selected by the user.  
+We decomposed the modules into the following categories: 
+\begin{enumerate}
+	\item IO: Handle inputs and outputs, such as reading of event logs, normative models, visualization of process models etc.
+	\item Feature Extraction: Perform conformance checking (only alignments, thus no separate conformance module), extract features related to alignments, control flow and case attributes and preprocess for ML training (e.g. scaling of numerical values).
+	\item Model Training: Properly train a model (as specified by the user) based on the given target and feature vector from the Feature Extraction step. This module also includes the capability to predict unseen data (test data or new data).
+	\item Evaluation: Creation of evaluation metrics such as accuracy, precision, recall / fitness, confusion matrix, ROC etc.
+	\item Config: Collection of Enums that correspond to the options presented to the user via the CLI. Helps to make the codebase cleaner and better to manage.
+	\item Pipeline: In this module, the bigger "steps" of the process bundle functionalities from the previously mentioned modules. Here, based on the choices the user selected, the correct functions are called and inputs, outputs are streamlined together.
+	\item Main / CLI: This is the entry point of our program and also serves as the guide and options selector for the user. The CLI presents the user with options, numerical metrics and comprehensive error messages.
+\end{enumerate}
+We want to note, that the module structure of this project is still evolving. For example, we plan to extract all visualization capabilities that are currently scattered through the individual modules and bundle them to together into a new \textit{Visualization} module.
+Also, we removed the \textit{Conformance} module, because we currently (and do not plan otherwise in the future) only utilize alignments, since they are most accurate, descriptive and offer real paths through the model. Alignments are by far the most expressive conformance checking metric, that is readily available. We do not see any gain in integrating Token-Based-Replay or Footprint-Based conformance metrics for predictive purposes.
 
 \section{Requirements Coverage Status - Overview per Module}
-
-\subsection{Running Highlevel Requirements}
-\todo[inline]{Add a high-level status overview of the top-level HL requirements across all modules (e.g., as a table with status: covered / partially covered / planned).}
 
 \subsection{IO}
 \textbf{Covered}
@@ -155,11 +167,50 @@ In GitLab we used the work items to consolidate the requirements, such that we h
 
 Furthermore, we will maintain the breakdown of the requirements per module listed here in the review document and update it after each sprint to keep track of the coverage status. This way, we can easily identify which requirements are still open and need to be addressed in the next sprints.
 
-\section{Exemplary Visualisations and Outputs from the Tool}
-\todo[inline]{Exemplary visualizations (from IO, Evaluation module) and numerical results e.g. accuracy, class accuracy (from Evaluation module)}
+\section{Exemplary Visualizations and Outputs}
+In this section a select sample of visualizations is included. The pipeline was run with the \textit{sepsis-cases} event log and following parameters:
+\begin{itemize}
+	\item Discovery Algorithm: Inductive Miner (noise threshold = 0.1)
+	\item Target: Process outcome
+	\item Outcome activities: Release A-E
+	\item ML-Algorithm: Decision Tree
+\end{itemize}
+The confusion matrix was derived from a run with $prefix length = 8$, \textit{control flow} as feature and decision tree depth of 4. 
+The decision tree stems from a run with $prefix length = 5$, \textit{control flow}, and the decision tree depth being capped to 3.
+The graph depicting average class accuracy was derived from a run with $prefix length = 8$ and \textit{Diagnostics} (= Control Flow + Alignments) as feature and decision tree depth of 4.
+Interestingly, including information about alignments helped the decision tree correctly classify other outcomes than the majority label, but did not necessarily greatly improve overall accuracy. In general, having longer prefixes greatly improved the evaluation metrics. We believe this has to do with the following:
+\begin{enumerate}
+	\item Process outcome is more likely to be actually contained in the trace prefix (data leakage $\rightarrow$ currently no countermeasure implemented)
+	\item Smaller prefixes reduce the number of variants greatly $\rightarrow$ smaller training set.
+\end{enumerate}
+We also integrated the PM4Py visualization of \textit{Process Trees} and \textit{BPMN}.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/confusion_matrix.png}
+	\caption{Confusion matrix visualization.}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/decision_tree.png}
+	\caption{Decision tree visualization.}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/per_class_accuracy.png}
+	\caption{Accuracy per class graph.}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/process_model.png}
+	\caption{PM4Py petri net visualization.}
+\end{figure}
 
 \section{Sprint review}
 \subsection{Richard Schuppener}
+I believe our progress in this first sprint was significant. We established a sensible codebase structure, implemented a working path through the program, many different evaluation and visualization functionalities, already the complete (to be after Sprint 3) CLI, preliminary tests for all modules and a local GitLab runner that runs our testing pipeline whenever my PC is online.
+Also, I think our "User Guide" document is very descriptive and might help new users understand the purpose and structure of our program - it also shows on of the already implemented \textit{happy paths}. I also enjoyed the communication with Cem and the way we utilized GitLabs built-in Work Items (the transition from Trello underwent smoothly).
+In my perspective the current state of the program is more than sufficient for the first sprint. In the second sprint, we will focus on improving the module structure (new Visualization module), code quality, testing and implementation of further requirements, such as more ML algorithms, more visualizations etc.
+To conclude, I am very content with our progress, our output of deliverables, the communication and interaction between Cem and me and I have the feeling that I am learning more than ever before about software development and working in a team.
 \subsection{Cem Colak}
 This phase was the most challenging to me, since I had no prior experience with building software artifacts. Especially the dependencies of the different modules, the connection to the CLI and the pipeline were completely new to me. This bottleneck was very well handled by Richard, who set up the code infrastructure and explained me the dependencies within the modularity, such that I was able to work properly on my modules. Towards the end of the second week, I noticed a huge learning curve regarding my understanding of the dependecies of each module, because I became able to implement more options into the CLI (e.g. the choice of the Algorithms) and embedded it into the whole pipeline. Our communication was seamless, especially because we both have some lectures in common and used the time after the lectures to work on our project. Despite that, we have a regular call each Friday morning where we discuss next steps and prepare our work allocation for the weekend. On Friday the 16th we talked about the status of our work and our time contstaints during the incoming weekend. I was very happy that Richard suggested to ask Alessandro if we could postpone the submission by one day - giving us more time to deliver quality work. 
 In the next sprint, I will travel in the second week. This could impact and challenge our progress, but I am confident that we can adapt and manage our timetable accordingly. I am very satisfied and thankful with Richards contribution and support in this phase, hence I am looking forward to the next sprint, where we will be able to build more functionalities on the strong foundation we have build in this sprint.
