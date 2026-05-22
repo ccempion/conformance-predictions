@@ -15,12 +15,15 @@ Responsibilities:
 from __future__ import annotations
 
 import time
-from typing import Any, Callable, Dict, Set, Tuple
+from typing import Any, Callable, Dict, Set, Tuple, Optional, List
 
+import pm4py
 import numpy as np
 import pandas as pd
 import psutil
 import sklearn.metrics as metrics
+from src import pipeline
+from src import config
 
 # ---------------------------------------------------------------------------
 # 1. Infrastructure utilities
@@ -103,22 +106,59 @@ def compute_classification_metrics(
 
 
 def evaluate_by_prefix_length(
-    prefix_results: pd.DataFrame,
+    target: config.PredictionTarget,
+    feature: config.PredictionFeature,
+    model: Tuple[Any, Any, Any],
+    log: pd.DataFrame,
+    outcome_activities: Optional[List[str]] = None,
+    prefix_range_start: Optional[int] = None,
+    prefix_range_end: Optional[int] = None,
 ) -> pd.DataFrame:
-    """Compute metrics grouped by prefix length for early-vs-late warning analysis.
+    case_id_col = "case:concept:name"
+    
+    if prefix_range_start is None or prefix_range_end is None:
+        case_lengths = log.groupby(case_id_col).size()
+        if prefix_range_start is None:
+            prefix_range_start = max(1, int(case_lengths.quantile(0.25)))
+        if prefix_range_end is None:
+            prefix_range_end = int(case_lengths.median())
 
-    Args:
-        prefix_results: DataFrame with columns
-            [case_id, prefix_length, y_true, y_pred, y_pred_proba].
-            prefix_length is a grouping key, not a model feature.
+    prefix_range = range(prefix_range_start, prefix_range_end + 1) 
+    results = []
+    log_train, log_test= pm4py.split_train_test(log, train_percentage=0.75)
 
-    Returns:
-        DataFrame indexed by prefix_length; columns are the same metric names
-        as compute_classification_metrics produces. Groups with fewer than
-        10 samples are dropped to avoid unstable estimates.
-    """
-    ...
-
+    for prefix_length in prefix_range:
+        X_train, y_train, class_names = pipeline.extract_target_and_feature(
+            target=target,
+            feature=feature,
+            model=model,
+            log=log_train,
+            outcome_activities=outcome_activities,
+            prefix_length=prefix_length
+        )
+        X_test, y_test, _ = pipeline.extract_target_and_feature(
+            target=target,
+            feature=feature,
+            model=model,
+            log=log_test,
+            outcome_activities=outcome_activities,
+            prefix_length=prefix_length
+        )
+        result = pipeline.run_conformance_prediction_pipeline(
+            X_test=X_test,
+            y_test=y_test,
+            X_train=X_train,
+            y_train=y_train,
+            # ml_params=ml_params, --> for now use the default values
+        )
+        metrics = result.get("metrics", {})
+        results.append({
+            "prefix_length": prefix_length,
+            "accuracy": metrics.get("accuracy"),
+            "f1": metrics.get("f1")
+        })
+    
+    return pd.DataFrame(results)
 
 def compare_models(
     baseline_results: Dict[int, Dict[str, float]],
