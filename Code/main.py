@@ -204,7 +204,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
                 print("Invalid input. Defaulting to no prefixing.")
 
 
-    # TODO: ask for train test split-ratio
+    #ask for train test split-ratio
     try:
         split_value = float(input("\nEnter a split value for the train- / test-split (default=0.7): ").strip())
     except (ValueError):

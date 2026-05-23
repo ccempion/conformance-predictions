@@ -46,6 +46,10 @@ def load_process_model(file_path: str) -> Tuple[PetriNet, Marking, Marking]:
         # Internally converts BPMN to Petri net for conformance checking
         bpmn_graph = pm4py.read_bpmn(file_path)
         return pm4py.convert_to_petri_net(bpmn_graph)
+    elif file_path.endswith('.ptml'):
+        # Internally converts Process Tree to Petri net for conformance checking
+        ptml_graph= pm4py.read_ptml(file_path)
+        return pm4py.convert_to_petri_net(ptml_graph)
     else:
         raise ValueError(f"Unsupported model format: {file_path}")
 
