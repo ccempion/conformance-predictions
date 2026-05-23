@@ -111,16 +111,18 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
     print("2. Process outcome")
     print("3. Remaining time")
     
+    # Defined up-front so the 'invalid choice' fallback below can never leave them unset
+    # — they are passed as kwargs to feature extraction regardless of the chosen target.
+    outcome_activities = []
+    deviation_cost_threshold = 0
     try:
         target_choice = int(input("Select option (1-3): ").strip())
         target = [
-            config.PredictionTarget.FUTURE_DEVIATIONS, 
-            config.PredictionTarget.PROCESS_OUTCOME, 
+            config.PredictionTarget.FUTURE_DEVIATIONS,
+            config.PredictionTarget.PROCESS_OUTCOME,
             config.PredictionTarget.REMAINING_TIME
         ][target_choice - 1]
-        
-        # for target == outcome
-        outcome_activities = []
+
         if target == config.PredictionTarget.PROCESS_OUTCOME:
             print("\nDefine the target outcome:")
             print("Enter activity names that signify a outcome (one per line).")
@@ -129,9 +131,21 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
                 act = input("> ").strip()
                 if act.lower() == 'done': break
                 if act: outcome_activities.append(act)
+        elif target == config.PredictionTarget.FUTURE_DEVIATIONS:
+            # HL-08: a case is "deviant" if its real alignment cost (count of genuine
+            # log-/visible-model-moves; silent routing excluded) exceeds T. T=0 => "any
+            # real deviation"; raise T to tolerate minor deviations.
+            raw = input("\nDeviation cost threshold T (default 0): ").strip()
+            try:
+                deviation_cost_threshold = int(raw) if raw else 0
+            except ValueError:
+                print("Invalid input. Using T=0.")
+                deviation_cost_threshold = 0
     except (ValueError, IndexError):
         print("Invalid choice. Defaulting to Future Conformance Deviations.")
         target = config.PredictionTarget.FUTURE_DEVIATIONS
+
+    is_future_deviations = (target == config.PredictionTarget.FUTURE_DEVIATIONS)
 
     print("\nWhat should the prediction be based upon?")
     print("1. Plain trace (control-flow)")
@@ -178,7 +192,35 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
     # at most one alignment per full case, never per prefix). Prefix work is opt-in only.
     prefix_mode = "none"
     prefix_min, prefix_max, prefix_step = None, None, 1
-    if feature != config.PredictionFeature.CASE_ATTRIBUTES and target in (
+
+    is_remaining_time = (target == config.PredictionTarget.REMAINING_TIME)
+    median_len = int(log.groupby("case:concept:name").size().median())
+
+    if is_remaining_time:
+        # Remaining time is undefined on a complete case (it is 0), so prefixing is
+        # mandatory — "none" is not offered. Default to pooled varying 1..median.
+        print("\nPrefix mode (required for remaining time)?")
+        print(f"  [Enter] varying 1..median ({median_len})  (pooled - prefixes of length 1..k)")
+        print("  1)      exactly k          (one prefix per case at length k)")
+        choice = input("Select (Enter/1): ").strip()
+        if choice == "1":
+            try:
+                k = int(input("  prefix length k: ").strip())
+                prefix_mode, prefix_min, prefix_max, prefix_step = "exactly", k, k, 1
+            except ValueError:
+                print(f"Invalid input. Using varying 1..{median_len}.")
+                prefix_mode, prefix_min, prefix_max = "varying", 1, median_len
+        else:
+            try:
+                km = input(f"  max length k (blank = median {median_len}): ").strip()
+                ks = input("  step (default 1): ").strip()
+                prefix_max = int(km) if km else median_len
+                prefix_step = int(ks) if ks else 1
+            except ValueError:
+                prefix_max, prefix_step = median_len, 1
+            prefix_min, prefix_mode = 1, "varying"
+            print(f"  using varying prefixes 1..{prefix_max}, step={prefix_step}")
+    elif feature != config.PredictionFeature.CASE_ATTRIBUTES and target in (
         config.PredictionTarget.PROCESS_OUTCOME, config.PredictionTarget.FUTURE_DEVIATIONS,
     ):
         print("\nPrefix mode?")
@@ -196,7 +238,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             try:
                 km = input("  max length k (blank = median case length): ").strip()
                 ks = input("  step (default 1): ").strip()
-                prefix_max = int(km) if km else int(log.groupby("case:concept:name").size().median())
+                prefix_max = int(km) if km else median_len
                 prefix_step = int(ks) if ks else 1
                 prefix_min, prefix_mode = 1, "varying"
                 print(f"  using varying prefixes 1..{prefix_max}, step={prefix_step}")
@@ -225,6 +267,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             log=log_train,
             outcome_activities=outcome_activities,
             selected_case_attributes=selected_case_attributes,
+            deviation_cost_threshold=deviation_cost_threshold,
         )
         (X_test, y_test, _), extract_test_time = evaluation.measure_runtime(
             pipeline.extract_target_and_feature,
@@ -234,6 +277,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             log=log_test,
             outcome_activities=outcome_activities,
             selected_case_attributes=selected_case_attributes,
+            deviation_cost_threshold=deviation_cost_threshold,
         )
     else:
         (X_train, y_train, class_names, _), extract_train_time = evaluation.measure_runtime(
@@ -247,6 +291,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             min_length=prefix_min,
             max_length=prefix_max,
             step=prefix_step,
+            deviation_cost_threshold=deviation_cost_threshold,
         )
         (X_test, y_test, _, test_prefix_lengths), extract_test_time = evaluation.measure_runtime(
             pipeline.extract_target_and_feature_over_prefixes,
@@ -259,56 +304,153 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             min_length=prefix_min,
             max_length=prefix_max,
             step=prefix_step,
+            deviation_cost_threshold=deviation_cost_threshold,
         )
 
     # ML Algorithm Configuration
-    
-    print("\nWhich ML algorithm do you want to apply on your data?")
-    print("(1) Decision Tree")
-    print("(2) Algorithm 2")
-    print("(3) Algorithm 3")
-    try:
-        ml_choice = int(input("Select option (1-3): ").strip())
-        if ml_choice == 1:
-            print("Decision Tree selected.")
-        elif ml_choice == 2:
-            print("Algorithm 2 selected.")
-        elif ml_choice == 3:
-            print("Algorithm 3 selected.")
-    except (ValueError, IndexError):
-        print("Invalid choice. Defaulting to Decision Tree.")
-        ml_choice = 1
-
-    use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/n): ").lower().strip() == 'y'
-
-    #here we put all the parameters together
     ml_params = {}
-    if use_custom_ml and ml_choice == 1:  # Decision Tree
-        print("\nConfiguring Decision Tree Parameters:")
-        criterion = input("Criterion (gini/entropy, default==ini): ").strip().lower()
-        if criterion in ["gini", "entropy"]:
-            ml_params["criterion"] = criterion
-        max_depth = input("Max depth (int, default 4): ").strip()
-        if max_depth:
-            ml_params["max_depth"] = int(max_depth)
-        min_samples_split = input("Min samples split (int, default 20): ").strip()
-        if min_samples_split:
-            ml_params["min_samples_split"] = int(min_samples_split)
-        min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
-        if min_samples_leaf:
-            ml_params["min_samples_leaf"] = int(min_samples_leaf)
+    regression_algorithm = None      # set only for REMAINING_TIME
+    classification_algorithm = None  # set only for FUTURE_DEVIATIONS
 
-    # Train initial model
-    print("\nTraining model...")
-    trained_model, train_time = evaluation.measure_runtime(
-        model_training.train_model, 
-        X_train, 
-        y_train, 
-        ml_params
+    if is_remaining_time:
+        # Regression menu — the "Algorithm 1/2/3" slots map to concrete regressors.
+        print("\nWhich regression algorithm do you want to apply?")
+        print("(1) Decision Tree Regressor")
+        print("(2) Random Forest Regressor")
+        print("(3) Gradient Boosting Regressor")
+        try:
+            ml_choice = int(input("Select option (1-3): ").strip())
+            regression_algorithm = [
+                config.RegressionAlgorithm.DECISION_TREE,
+                config.RegressionAlgorithm.RANDOM_FOREST,
+                config.RegressionAlgorithm.GRADIENT_BOOSTING,
+            ][ml_choice - 1]
+        except (ValueError, IndexError):
+            print("Invalid choice. Defaulting to Decision Tree Regressor.")
+            ml_choice = 1
+            regression_algorithm = config.RegressionAlgorithm.DECISION_TREE
+        print(f"{regression_algorithm.value} selected.")
+
+        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/n): ").lower().strip() == 'y'
+        if use_custom_ml and regression_algorithm == config.RegressionAlgorithm.DECISION_TREE:
+            print("\nConfiguring Decision Tree Regressor Parameters:")
+            max_depth = input("Max depth (int, default 4): ").strip()
+            if max_depth:
+                ml_params["max_depth"] = int(max_depth)
+            min_samples_split = input("Min samples split (int, default 2): ").strip()
+            if min_samples_split:
+                ml_params["min_samples_split"] = int(min_samples_split)
+            min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
+            if min_samples_leaf:
+                ml_params["min_samples_leaf"] = int(min_samples_leaf)
+        elif use_custom_ml:
+            print("\nConfiguring ensemble parameters:")
+            n_estimators = input("Number of estimators (int, default 100): ").strip()
+            if n_estimators:
+                ml_params["n_estimators"] = int(n_estimators)
+            max_depth = input("Max depth (int, blank = default): ").strip()
+            if max_depth:
+                ml_params["max_depth"] = int(max_depth)
+
+        print("\nTraining model...")
+        trained_model, train_time = evaluation.measure_runtime(
+            model_training.train_regression_model,
+            X_train,
+            y_train,
+            regression_algorithm,
+            ml_params,
+        )
+    elif is_future_deviations:
+        # FUTURE_DEVIATIONS is risk classification: probabilistic classifiers whose
+        # predict_proba gives a calibrated-ish deviation risk score.
+        print("\nWhich classification algorithm do you want to apply?")
+        print("(1) Logistic Regression")
+        print("(2) Gradient Boosting")
+        try:
+            ml_choice = int(input("Select option (1-2): ").strip())
+            classification_algorithm = [
+                config.ClassificationAlgorithm.LOGISTIC_REGRESSION,
+                config.ClassificationAlgorithm.GRADIENT_BOOSTING,
+            ][ml_choice - 1]
+        except (ValueError, IndexError):
+            print("Invalid choice. Defaulting to Logistic Regression.")
+            ml_choice = 1
+            classification_algorithm = config.ClassificationAlgorithm.LOGISTIC_REGRESSION
+        print(f"{classification_algorithm.value} selected.")
+
+        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/n): ").lower().strip() == 'y'
+        if use_custom_ml and classification_algorithm == config.ClassificationAlgorithm.LOGISTIC_REGRESSION:
+            print("\nConfiguring Logistic Regression Parameters:")
+            c_val = input("Inverse regularization strength C (float, default 1.0): ").strip()
+            if c_val:
+                ml_params["C"] = float(c_val)
+        elif use_custom_ml:  # Gradient Boosting
+            print("\nConfiguring Gradient Boosting Parameters:")
+            n_estimators = input("Number of estimators (int, default 100): ").strip()
+            if n_estimators:
+                ml_params["n_estimators"] = int(n_estimators)
+            max_depth = input("Max depth (int, default 3): ").strip()
+            if max_depth:
+                ml_params["max_depth"] = int(max_depth)
+
+        print("\nTraining model...")
+        trained_model, train_time = evaluation.measure_runtime(
+            model_training.train_classification_model,
+            X_train,
+            y_train,
+            classification_algorithm,
+            ml_params,
+        )
+    else:
+        print("\nWhich ML algorithm do you want to apply on your data?")
+        print("(1) Decision Tree")
+        print("(2) Algorithm 2")
+        print("(3) Algorithm 3")
+        try:
+            ml_choice = int(input("Select option (1-3): ").strip())
+            if ml_choice == 1:
+                print("Decision Tree selected.")
+            elif ml_choice == 2:
+                print("Algorithm 2 selected.")
+            elif ml_choice == 3:
+                print("Algorithm 3 selected.")
+        except (ValueError, IndexError):
+            print("Invalid choice. Defaulting to Decision Tree.")
+            ml_choice = 1
+
+        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/n): ").lower().strip() == 'y'
+        if use_custom_ml and ml_choice == 1:  # Decision Tree
+            print("\nConfiguring Decision Tree Parameters:")
+            criterion = input("Criterion (gini/entropy, default=gini): ").strip().lower()
+            if criterion in ["gini", "entropy"]:
+                ml_params["criterion"] = criterion
+            max_depth = input("Max depth (int, default 4): ").strip()
+            if max_depth:
+                ml_params["max_depth"] = int(max_depth)
+            min_samples_split = input("Min samples split (int, default 20): ").strip()
+            if min_samples_split:
+                ml_params["min_samples_split"] = int(min_samples_split)
+            min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
+            if min_samples_leaf:
+                ml_params["min_samples_leaf"] = int(min_samples_leaf)
+
+        # Train initial model
+        print("\nTraining model...")
+        trained_model, train_time = evaluation.measure_runtime(
+            model_training.train_model,
+            X_train,
+            y_train,
+            ml_params
+        )
+
+    # Decision Tree visualisation + reconfigure loop — only for a single Decision Tree
+    # (classification DT, or the Decision Tree Regressor for remaining time).
+    is_process_outcome = (not is_remaining_time and not is_future_deviations)
+    show_tree = (
+        (is_remaining_time and regression_algorithm == config.RegressionAlgorithm.DECISION_TREE)
+        or (is_process_outcome and ml_choice == 1)
     )
-
-    # Decision Tree visualisation + reconfigure loop — only relevant for Decision Tree
-    if ml_choice == 1:
+    if show_tree:
         while True:
             dt_vis_choice = input("\nDo you want the decision tree saved (s), displayed (d) or not shown (N)? (s/d/N): ").lower().strip()
 
@@ -319,7 +461,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
                 vis.visualize_decision_tree(
                     model=trained_model,
                     feature_names=X_train.columns.tolist(),
-                    class_names=class_names,
+                    class_names=class_names,  # [] for regression -> handled as None
                     output_path=dt_output_path
                 )
                 if dt_vis_choice == 's':
@@ -328,25 +470,31 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             if input("\nDo you want to reconfigure the hyperparameters and retrain? (y/n): ").lower().strip() == 'y':
                 ml_params = {}
                 print("\nConfiguring Decision Tree Parameters:")
-                criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
-                if criterion in ["gini", "entropy"]:
-                    ml_params["criterion"] = criterion
+                # Criterion (gini/entropy) only applies to the classifier.
+                if not is_remaining_time:
+                    criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
+                    if criterion in ["gini", "entropy"]:
+                        ml_params["criterion"] = criterion
                 max_depth = input("Max depth (int, default 4): ").strip()
                 if max_depth:
                     ml_params["max_depth"] = int(max_depth)
-                min_samples_split = input("Min samples split (int, default 20): ").strip()
+                min_samples_split = input("Min samples split (int, default 2): ").strip()
                 if min_samples_split:
                     ml_params["min_samples_split"] = int(min_samples_split)
                 min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
                 if min_samples_leaf:
                     ml_params["min_samples_leaf"] = int(min_samples_leaf)
                 print("Retraining model...")
-                trained_model, train_time = evaluation.measure_runtime(
-                    model_training.train_model, 
-                    X_train, 
-                    y_train, 
-                    ml_params
-                )
+                if is_remaining_time:
+                    trained_model, train_time = evaluation.measure_runtime(
+                        model_training.train_regression_model,
+                        X_train, y_train, regression_algorithm, ml_params,
+                    )
+                else:
+                    trained_model, train_time = evaluation.measure_runtime(
+                        model_training.train_model,
+                        X_train, y_train, ml_params,
+                    )
             else:
                 break
 
@@ -363,29 +511,46 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             ml_params=ml_params,
             preloaded_model=trained_model,
             test_prefix_lengths=test_prefix_lengths,
+            is_regression=is_remaining_time,
         )
         print("\nPipeline completed successfully!")
 
-        # Display confusion matrix and per-class stats in the CLI
         y_pred = results["y_pred"]
         y_test_arr = results["y_test"]
-        vis.display_confusion_matrix_text(y_test_arr, y_pred, class_names)
-        vis.display_per_class_stats(y_test_arr, y_pred, class_names)
 
-        # Prefix-length performance breakdown (HL-17) — only meaningful when lengths vary.
-        if test_prefix_lengths is not None and len(set(test_prefix_lengths)) > 1:
-            by_len = evaluation.metrics_by_prefix_length(
-                y_test_arr, y_pred, results["y_prob"], test_prefix_lengths
-            )
-            print("\nMetrics by prefix length:")
-            print(by_len.to_string(index=False))
+        if is_remaining_time:
+            # Regression result reporting (metrics, by-prefix-length error table, and the
+            # adaptive duration-unit display) is the evaluation module's responsibility
+            # (a colleague's part). The pipeline already attaches whatever metrics that
+            # module computed to results["metrics"]; echo them if present.
+            metrics = results.get("metrics") or {}
+            if metrics:
+                print("\nRegression metrics:")
+                for name, value in metrics.items():
+                    print(f"  {name}: {value}")
+            else:
+                print("\nPrediction complete. Remaining-time reporting (metrics, "
+                      "by-prefix-length errors, adaptive duration units) is handled by "
+                      "the evaluation module — not yet available.")
+        else:
+            # Display confusion matrix and per-class stats in the CLI
+            vis.display_confusion_matrix_text(y_test_arr, y_pred, class_names)
+            vis.display_per_class_stats(y_test_arr, y_pred, class_names)
 
-        # Offer to save both visualisations
-        if input("\nSave confusion matrix and accuracy chart? (y/n): ").lower().strip() == 'y':
-            path_input = input("Folder to save in (press Enter for Downloads): ").strip()
-            base_dir = path_input if path_input else None
-            saved_to = vis.save_evaluation_visuals(y_test_arr, y_pred, class_names, base_dir)
-            print(f"Results saved to: {saved_to}")
+            # Prefix-length performance breakdown (HL-17) — only meaningful when lengths vary.
+            if test_prefix_lengths is not None and len(set(test_prefix_lengths)) > 1:
+                by_len = evaluation.metrics_by_prefix_length(
+                    y_test_arr, y_pred, results["y_prob"], test_prefix_lengths
+                )
+                print("\nMetrics by prefix length:")
+                print(by_len.to_string(index=False))
+
+            # Offer to save both visualisations
+            if input("\nSave confusion matrix and accuracy chart? (y/n): ").lower().strip() == 'y':
+                path_input = input("Folder to save in (press Enter for Downloads): ").strip()
+                base_dir = path_input if path_input else None
+                saved_to = vis.save_evaluation_visuals(y_test_arr, y_pred, class_names, base_dir)
+                print(f"Results saved to: {saved_to}")
 
         # 5. Prediction on new data
         if input("\nDo you want to perform predictions on new data? (y/n): ").lower().strip() == 'y':

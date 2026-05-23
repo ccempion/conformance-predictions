@@ -14,14 +14,23 @@ def run_conformance_prediction_pipeline(
     ml_params: Optional[Dict[str, Any]] = None,
     preloaded_model=None,
     test_prefix_lengths: Optional[np.ndarray] = None,
+    is_regression: bool = False,
 ) -> Dict[str, Any]:
     """
     Main orchestration function for the entire pipeline.
+
+    When is_regression is True (REMAINING_TIME target), a regressor is used and
+    predictions are continuous (seconds). Metric computation/reporting is the evaluation
+    module's responsibility (a colleague's part); this function only produces the
+    predictions and passes y_test / y_pred / prefix_lengths through the results dict.
     """
 
     if preloaded_model is not None:
         print("--- Using pre-trained model ---")
         trained_model = preloaded_model
+    elif is_regression:
+        print(f"--- Training regression model with parameters: {ml_params} ---")
+        trained_model = model_training.train_regression_model(X_train, y_train, ml_params=ml_params)
     else:
         print(f"--- Training model with parameters: {ml_params} ---")
         trained_model = model_training.train_model(X_train, y_train, ml_params)
@@ -32,10 +41,23 @@ def run_conformance_prediction_pipeline(
     # Align test columns to training columns — fills any activity/move seen only in
     # one split with 0, preventing shape mismatches in the StandardScaler.
     X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
-    y_pred, y_prob = model_training.predict(trained_model, X_test)
-    metrics = evaluation.compute_classification_metrics(y_test, y_pred, y_prob)
 
-    print(f"Evaluation results: {metrics}")
+    if is_regression:
+        # Continuous predictions; no probabilities. Metric computation belongs to the
+        # evaluation module (colleague) — call it only if present so this path runs
+        # standalone until that module lands.
+        y_pred = model_training.predict_regression(trained_model, X_test)
+        y_prob = y_pred
+        metrics = {}
+        if hasattr(evaluation, "compute_regression_metrics"):
+            metrics = evaluation.compute_regression_metrics(y_test, y_pred)
+            print(f"Evaluation results: {metrics}")
+        else:
+            print("--- Regression metrics deferred to evaluation module (not yet available) ---")
+    else:
+        y_pred, y_prob = model_training.predict(trained_model, X_test)
+        metrics = evaluation.compute_classification_metrics(y_test, y_pred, y_prob)
+        print(f"Evaluation results: {metrics}")
 
     results = {
         "model": trained_model,
@@ -102,7 +124,8 @@ def extract_target_and_feature(
     log: pd.DataFrame,
     outcome_activities: Optional[List[str]] = None,
     prefix_length: Optional[int] = None,
-    selected_case_attributes: Optional[List[str]] = None
+    selected_case_attributes: Optional[List[str]] = None,
+    deviation_cost_threshold: int = 0,
 ) -> Tuple[pd.DataFrame, np.ndarray, List[str]]:
     """
     Orchestrates the extraction of labels (y) and features (X).
@@ -128,7 +151,8 @@ def extract_target_and_feature(
         log=log,
         target_type=target,
         outcome_activities=outcome_activities,
-        alignments=label_alignments
+        alignments=label_alignments,
+        deviation_cost_threshold=deviation_cost_threshold,
     )
 
     # Slicing
@@ -167,6 +191,7 @@ def extract_target_and_feature_over_prefixes(
     max_length: Optional[int] = None,
     step: int = 1,
     gate_outcome: bool = True,
+    deviation_cost_threshold: int = 0,
 ) -> Tuple[pd.DataFrame, np.ndarray, List[str], np.ndarray]:
     """
     Prefix-level (pooled) variant of extract_target_and_feature (LL-07.1).
@@ -178,6 +203,10 @@ def extract_target_and_feature_over_prefixes(
     Labels are computed once on the FULL log per original case and broadcast to that
     case's prefixes; for PROCESS_OUTCOME, prefixes are gated to end before the first
     outcome activity so the label is never inside the features.
+
+    REMAINING_TIME is the exception: it is a per-prefix regression label (seconds from
+    each prefix's end to case completion), computed per prefix rather than broadcast, and
+    explicit temporal features (elapsed / since-previous / event-count) are appended.
 
     Returns:
         X, y, class_names, prefix_lengths   (prefix_lengths row-aligned to X)
@@ -191,15 +220,21 @@ def extract_target_and_feature_over_prefixes(
         target == config.PredictionTarget.FUTURE_DEVIATIONS
     )
 
-    # 1. Labels on the FULL log, per original case.
-    print(f"--- Extracting target (per case): {target.name} ---")
-    label_alignments = feature_extraction.compute_alignments(log, model) if needs_alignments_for_label else None
-    y_by_case = feature_extraction.extract_label(
-        log=log,
-        target_type=target,
-        outcome_activities=outcome_activities,
-        alignments=label_alignments,
-    )
+    is_regression = (target == config.PredictionTarget.REMAINING_TIME)
+
+    # 1. Classification labels are computed once per ORIGINAL case (broadcast in step 4).
+    #    Remaining time is per-prefix (computed in step 4 from the prefix log), so the
+    #    per-case label step is skipped for it.
+    if not is_regression:
+        print(f"--- Extracting target (per case): {target.name} ---")
+        label_alignments = feature_extraction.compute_alignments(log, model) if needs_alignments_for_label else None
+        y_by_case = feature_extraction.extract_label(
+            log=log,
+            target_type=target,
+            outcome_activities=outcome_activities,
+            alignments=label_alignments,
+            deviation_cost_threshold=deviation_cost_threshold,
+        )
 
     # 2. Generate prefixes (with leakage gating for outcome prediction).
     gate = outcome_activities if (target == config.PredictionTarget.PROCESS_OUTCOME and gate_outcome) else None
@@ -221,13 +256,24 @@ def extract_target_and_feature_over_prefixes(
         selected_case_attributes=selected_case_attributes,
     )
 
-    # 4. Broadcast per-case labels to prefixes; align everything on the prefix id index.
-    idx = prefix_index.set_index("prefix_id")
-    y_raw = idx["orig_case_id"].map(y_by_case).reindex(X_raw.index)
-    prefix_lengths = idx["prefix_length"].reindex(X_raw.index).to_numpy()
+    # 3b. Remaining time benefits from explicit temporal predictors — append them.
+    if is_regression:
+        temporal = feature_extraction.extract_temporal_features(prefix_log)
+        X_raw = pd.concat([X_raw, temporal.reindex(X_raw.index)], axis=1)
 
-    # 5. Encode (now index-aligned by construction).
+    # 4. Labels aligned to the prefix id index.
+    idx = prefix_index.set_index("prefix_id")
+    prefix_lengths = idx["prefix_length"].reindex(X_raw.index).to_numpy()
+    if is_regression:
+        # Per-prefix remaining time (seconds), computed against the FULL case end.
+        y_full = feature_extraction.extract_remaining_time(log, prefix_log, prefix_index)
+        y_raw = y_full.reindex(X_raw.index)
+    else:
+        # Broadcast the per-case label to that case's prefixes.
+        y_raw = idx["orig_case_id"].map(y_by_case).reindex(X_raw.index)
+
+    # 5. Encode (classification) or pass through as float (regression); index-aligned.
     print("--- Preprocessing and encoding data ---")
-    X, y, class_names = feature_extraction.preprocess_for_ml(X_raw, y_raw)
+    X, y, class_names = feature_extraction.preprocess_for_ml(X_raw, y_raw, is_regression=is_regression)
 
     return X, y, class_names, prefix_lengths
