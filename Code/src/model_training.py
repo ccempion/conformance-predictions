@@ -170,6 +170,15 @@ def train_classification_model(
     ml_params: Optional[Dict[str, Any]] = None,
 ) -> Pipeline:
     """Fit a classification pipeline (deviation/outcome risk) to the training data."""
+    classes = np.unique(y_train)
+    if len(classes) < 2:
+        raise ValueError(
+            f"Training labels contain only one class ({classes.tolist()}), so the "
+            f"classifier has nothing to discriminate. For FUTURE_DEVIATIONS this usually "
+            f"means the deviation cost threshold T is too high and left no positive cases "
+            f"-- lower T (default 0 = 'any real deviation') and re-run. For PROCESS_OUTCOME "
+            f"it means every case in the training split shares the same outcome."
+        )
     pipeline = create_classification_pipeline(algorithm, ml_params)
     pipeline.fit(X_train, y_train)
     return pipeline
