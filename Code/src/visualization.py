@@ -51,12 +51,15 @@ def visualize_decision_tree(
     Renders the fitted Decision Tree from the pipeline.
     If output_path is given, saves to that file; otherwise opens an interactive window.
     """
-    clf = model.named_steps['classifier']
+    # Support both the classification pipeline ('classifier' step) and the
+    # remaining-time regression pipeline ('regressor' step).
+    steps = model.named_steps
+    estimator = steps.get('classifier') or steps.get('regressor')
     fig, ax = plt.subplots(figsize=(20, 10))
     plot_tree(
-        clf,
+        estimator,
         feature_names=feature_names,
-        class_names=class_names,
+        class_names=class_names or None,  # regressors have no class names
         filled=True,
         rounded=True,
         ax=ax

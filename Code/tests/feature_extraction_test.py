@@ -153,3 +153,111 @@ def test_pooled_extraction_broadcasts_labels_without_leakage():
         assert class_names[yi] == expected
     # outcome activities were gated out, so they never appear as features
     assert not any(c.endswith("Approve") or c.endswith("Reject") for c in X.columns)
+
+
+# --------------------------------------------------------------------------
+# Remaining time (regression target)
+# --------------------------------------------------------------------------
+
+def _remaining_time_toy() -> pd.DataFrame:
+    # case 1: events at 0h, 1h, 2h   case 2: events at 0h, 1h
+    ts = pd.to_datetime("2024-01-01") + pd.to_timedelta([0, 1, 2, 0, 1], unit="h")
+    return pd.DataFrame({
+        "case:concept:name": ["1", "1", "1", "2", "2"],
+        "concept:name":      ["a", "b", "c", "a", "b"],
+        "time:timestamp":    ts,
+    })
+
+
+def test_extract_remaining_time_exact_seconds():
+    log = _remaining_time_toy()
+    plog, pidx = fe.generate_prefixes(log, min_length=1, max_length=3, step=1)
+    rt = fe.extract_remaining_time(log, plog, pidx)
+
+    # remaining = case_end - prefix_last_event, in seconds (3600 s per hour).
+    assert rt["1@@k1"] == 7200.0   # ends at 0h, case ends at 2h
+    assert rt["1@@k2"] == 3600.0   # ends at 1h
+    assert rt["1@@k3"] == 0.0      # full case -> nothing remains
+    assert rt["2@@k1"] == 3600.0   # ends at 0h, case ends at 1h
+    assert rt["2@@k2"] == 0.0
+    assert rt.name == "remaining_time_seconds"
+
+
+def test_extract_temporal_features():
+    log = _remaining_time_toy()
+    plog, _ = fe.generate_prefixes(log, min_length=1, max_length=3, step=1)
+    tf = fe.extract_temporal_features(plog)
+
+    assert set(tf.columns) == {"tf_elapsed_s", "tf_since_prev_s", "tf_n_events"}
+    # length-1 prefix: nothing elapsed, no previous event
+    assert tf.loc["1@@k1", "tf_elapsed_s"] == 0.0
+    assert tf.loc["1@@k1", "tf_since_prev_s"] == 0.0
+    assert tf.loc["1@@k1", "tf_n_events"] == 1.0
+    # length-3 prefix of case 1: spans 0h..2h, last gap 1h, 3 events
+    assert tf.loc["1@@k3", "tf_elapsed_s"] == 7200.0
+    assert tf.loc["1@@k3", "tf_since_prev_s"] == 3600.0
+    assert tf.loc["1@@k3", "tf_n_events"] == 3.0
+
+
+def test_preprocess_for_ml_regression_keeps_float():
+    X_raw = pd.DataFrame({"feat1": [1, 2, 3]}, index=["a", "b", "c"])
+    y_raw = pd.Series([7200.0, 3600.0, 0.0], index=["a", "b", "c"])
+
+    X, y, class_names = preprocess_for_ml(X_raw, y_raw, is_regression=True)
+
+    assert isinstance(y, np.ndarray)
+    assert y.dtype == float                 # NOT label-encoded to small ints
+    assert list(y) == [7200.0, 3600.0, 0.0]  # values preserved
+    assert class_names == []                # regression has no classes
+
+
+def test_pooled_extraction_remaining_time():
+    log = _remaining_time_toy()
+    X, y, class_names, plen = pipeline.extract_target_and_feature_over_prefixes(
+        target=PredictionTarget.REMAINING_TIME,
+        feature=PredictionFeature.CONTROL_FLOW,
+        model=None,
+        log=log,
+        min_length=1, max_length=3, step=1,
+    )
+    # Regression: float labels, no class names, temporal features appended.
+    assert y.dtype == float
+    assert class_names == []
+    assert {"tf_elapsed_s", "tf_since_prev_s", "tf_n_events"} <= set(X.columns)
+    # Full-length prefixes have zero remaining time.
+    assert 0.0 in set(np.round(y, 6))
+    assert set(plen) == {1, 2, 3}
+
+
+# --------------------------------------------------------------------------
+# Future deviations (cost-threshold label, HL-08)
+# --------------------------------------------------------------------------
+
+def test_real_deviation_cost_excludes_silent_moves():
+    # (a,a) sync / (x,'>>') log move / ('>>',b) visible model move / ('>>',None) silent tau
+    assert fe.real_deviation_cost([("a", "a"), ("x", ">>")]) == 1   # real log move
+    assert fe.real_deviation_cost([("a", "a"), (">>", "b")]) == 1   # real visible model move
+    assert fe.real_deviation_cost([("a", "a"), (">>", None)]) == 0  # silent/tau -> NOT a deviation
+    assert fe.real_deviation_cost([("a", "a"), ("b", "b")]) == 0    # fully synchronous
+    assert fe.real_deviation_cost([("a", "a"), ("x", ">>"), ("y", ">>")]) == 2
+
+
+def test_extract_label_future_deviations_cost_threshold():
+    # One row per case; the label only uses case order + the supplied alignments.
+    log = pd.DataFrame({
+        "case:concept:name": ["c_sync", "c_two", "c_model", "c_tau"],
+        "concept:name":      ["a", "a", "a", "a"],
+        "time:timestamp":    pd.to_datetime(["2024-01-01"] * 4),
+    })
+    aligns = [
+        {"alignment": [("a", "a"), ("b", "b")]},                  # cost 0 (conforming)
+        {"alignment": [("a", "a"), ("x", ">>"), ("y", ">>")]},    # cost 2 (two log moves)
+        {"alignment": [("a", "a"), (">>", "b")]},                 # cost 1 (visible model move)
+        {"alignment": [("a", "a"), (">>", None)]},                # cost 0 (silent tau) <- bug regression
+    ]
+    y0 = extract_label(log, PredictionTarget.FUTURE_DEVIATIONS, alignments=aligns, deviation_cost_threshold=0)
+    # T=0: any REAL deviation flags; the silent-tau case must stay 0 (the fixed bug).
+    assert y0.to_dict() == {"c_sync": 0, "c_two": 1, "c_model": 1, "c_tau": 0}
+    # T=1: tolerate a single deviation -> only the cost-2 case remains flagged.
+    y1 = extract_label(log, PredictionTarget.FUTURE_DEVIATIONS, alignments=aligns, deviation_cost_threshold=1)
+    assert y1.to_dict() == {"c_sync": 0, "c_two": 1, "c_model": 0, "c_tau": 0}
