@@ -18,7 +18,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
     print("=== Conformance Predictions ===")
 
     # Data and Model Input
-    has_model = input("Do you have a normative process model? (y/n): ").lower().strip() == 'y'
+    has_model = input("Do you have a normative process model? (y/N): ").lower().strip() == 'y'
     
     log_path = input("Enter the path to the event log (XES/CSV): ").strip()
     discovery_alg = None
@@ -45,7 +45,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
 
         if discovery_alg == config.Discovery_alg.INDUCTIVE:
             discovery_params['noise_threshold'] = float(input("Noise threshold (default 0.0): ") or 0.0)
-            discovery_params['disable_fallthroughs'] = input("Disable fall-throughs? (y/n, default n): ").lower() == 'y'
+            discovery_params['disable_fallthroughs'] = input("Disable fall-throughs? (y/N): ").lower() == 'y'
 
         elif discovery_alg == config.Discovery_alg.ALPHA:
             print("Alpha Miner has no configurable parameters.")
@@ -111,8 +111,6 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
     print("2. Process outcome")
     print("3. Remaining time")
     
-    # Defined up-front so the 'invalid choice' fallback below can never leave them unset
-    # — they are passed as kwargs to feature extraction regardless of the chosen target.
     outcome_activities = []
     deviation_cost_threshold = 0
     try:
@@ -331,7 +329,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             regression_algorithm = config.RegressionAlgorithm.DECISION_TREE
         print(f"{regression_algorithm.value} selected.")
 
-        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/n): ").lower().strip() == 'y'
+        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/N): ").lower().strip() == 'y'
         if use_custom_ml and regression_algorithm == config.RegressionAlgorithm.DECISION_TREE:
             print("\nConfiguring Decision Tree Regressor Parameters:")
             max_depth = input("Max depth (int, default 4): ").strip()
@@ -378,7 +376,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             classification_algorithm = config.ClassificationAlgorithm.LOGISTIC_REGRESSION
         print(f"{classification_algorithm.value} selected.")
 
-        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/n): ").lower().strip() == 'y'
+        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/N): ").lower().strip() == 'y'
         if use_custom_ml and classification_algorithm == config.ClassificationAlgorithm.LOGISTIC_REGRESSION:
             print("\nConfiguring Logistic Regression Parameters:")
             c_val = input("Inverse regularization strength C (float, default 1.0): ").strip()
@@ -418,7 +416,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             print("Invalid choice. Defaulting to Decision Tree.")
             ml_choice = 1
 
-        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/n): ").lower().strip() == 'y'
+        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/N): ").lower().strip() == 'y'
         if use_custom_ml and ml_choice == 1:  # Decision Tree
             print("\nConfiguring Decision Tree Parameters:")
             criterion = input("Criterion (gini/entropy, default=gini): ").strip().lower()
@@ -467,7 +465,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
                 if dt_vis_choice == 's':
                     print(f"Decision tree saved to: {dt_output_path}")
 
-            if input("\nDo you want to reconfigure the hyperparameters and retrain? (y/n): ").lower().strip() == 'y':
+            if input("\nDo you want to reconfigure the hyperparameters and retrain? (y/N): ").lower().strip() == 'y':
                 ml_params = {}
                 print("\nConfiguring Decision Tree Parameters:")
                 # Criterion (gini/entropy) only applies to the classifier.
@@ -546,14 +544,14 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
                 print(by_len.to_string(index=False))
 
             # Offer to save both visualisations
-            if input("\nSave confusion matrix and accuracy chart? (y/n): ").lower().strip() == 'y':
+            if input("\nSave confusion matrix and accuracy chart? (y/N): ").lower().strip() == 'y':
                 path_input = input("Folder to save in (press Enter for Downloads): ").strip()
                 base_dir = path_input if path_input else None
                 saved_to = vis.save_evaluation_visuals(y_test_arr, y_pred, class_names, base_dir)
                 print(f"Results saved to: {saved_to}")
 
         # 5. Prediction on new data
-        if input("\nDo you want to perform predictions on new data? (y/n): ").lower().strip() == 'y':
+        if input("\nDo you want to perform predictions on new data? (y/N): ").lower().strip() == 'y':
             new_data_path = input("Enter the path to the file containing trace prefixes: ").strip()
             # logic to call prediction
             
@@ -582,7 +580,7 @@ if __name__ == "__main__":
     print(f"In total, it took {total_time:.4f} seconds from start to finish (processing time only).")
 
     # Save as JSON (on user selection after last step of CLI)
-    if input("\nDo you want to save the runtime and memory measurements as JSON? (y/n): ").lower().strip() == 'y':
+    if input("\nDo you want to save the runtime and memory measurements as JSON? (y/N): ").lower().strip() == 'y':
         report_path = input("Enter filename (default: report.json): ").strip() or "report.json"
         report_data = {
             "runtimes": {name: duration for name, duration in time_list},
