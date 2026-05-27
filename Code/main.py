@@ -496,10 +496,8 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             else:
                 break
 
-    # Call evaluation pipeline (training already done above)
     print("\nStarting evaluation pipeline...")
     try:
-        # This calls the orchestration logic in src/pipeline.py
         results, eval_time = evaluation.measure_runtime(
             pipeline.run_conformance_prediction_pipeline,
             X_test=X_test,
