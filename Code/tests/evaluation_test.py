@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 import os
-from src.evaluation import compute_classification_metrics, evaluate_by_prefix_length
+from src.evaluation import compute_classification_metrics, evaluate_by_prefix_length, compute_regression_metrics
 from src import config, io
 
 def test_compute_classification_metrics():
@@ -84,3 +84,16 @@ def test_plot_evaluate_by_prefix_length(tmp_path):
     
     assert os.path.exists(output_file)
     assert os.path.getsize(output_file) > 0
+
+
+def test_regression_metrics():
+    y_pred = np.array([1, 3, 4, 10])
+    y_true = np.array([1, -1, 3, 10.5])
+    metrics  = compute_regression_metrics(y_pred, y_true)
+    assert isinstance(metrics["MSE"], float)
+    assert isinstance(metrics["RMSE"], float)
+    assert isinstance(metrics["MAE"], float)
+    import math
+    assert math.isclose(metrics["MSE"], 0.25 * 17.25)
+    assert math.isclose(metrics["RMSE"], math.sqrt(0.25 * 17.25))
+    assert math.isclose(metrics["MAE"], 0.25 * 5.5)
