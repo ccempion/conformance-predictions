@@ -14,7 +14,13 @@ Responsibilities:
 from __future__ import annotations
 
 import time
+import sys
 from typing import Any, Callable, Dict, Set, Tuple, Optional, List
+
+try:
+    import resource
+except ImportError:
+    resource = None
 
 import pm4py
 import numpy as np
@@ -33,12 +39,22 @@ def measure_runtime(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, flo
 
 
 def measure_memory(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, float]:
-    """Call *func* and return its result together with peak RSS increase in MB."""
-    process = psutil.Process()
-    mem_before = process.memory_info().rss / (1024 * 1024)
+    """Call *func* and return its result together with peak RSS in MB."""
+    if resource is None:
+        # Fallback to psutil delta for non-Unix if resource is unavailable
+        process = psutil.Process()
+        mem_before = process.memory_info().rss / (1024 * 1024)
+        result = func(*args, **kwargs)
+        mem_after = process.memory_info().rss / (1024 * 1024)
+        return result, max(0.0, mem_after - mem_before)
+
+    # resource.ru_maxrss is monotonic: it tracks the maximum RSS used by the process so far.
     result = func(*args, **kwargs)
-    mem_after = process.memory_info().rss / (1024 * 1024)
-    return result, max(0.0, mem_after - mem_before)
+    peak_kb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+
+    # On Linux, ru_maxrss is in KB. On macOS, it's in Bytes.
+    factor = 1.0 / 1024.0 if sys.platform != 'darwin' else 1.0 / (1024.0 * 1024.0)
+    return result, peak_kb * factor
 
 
 def compute_classification_metrics(
