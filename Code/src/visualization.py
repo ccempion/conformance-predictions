@@ -229,24 +229,63 @@ def plot_evaluate_by_prefix_length(
         plt.show()
 
 
-def plot_metrics_by_prefix(
-    baseline_prefix_df: pd.DataFrame,
-    conformance_prefix_df: pd.DataFrame,
-    metric: str = "roc_auc",
+def plot_processing_times(
+    time_list: List[Tuple[str, float]],
     output_path: Optional[str] = None,
 ) -> None:
-    """Plot a chosen metric as a function of prefix length for both models.
-
-    Visually answers: does conformance information help more at early prefixes
-    (where the log-only signal is weak)?
-
-    Args:
-        baseline_prefix_df: Output of evaluate_by_prefix_length for the baseline model.
-        conformance_prefix_df: Output of evaluate_by_prefix_length for conformance-aware model.
-        metric: Column name to plot (must exist in both DataFrames).
-        output_path: If given, save figure; otherwise display interactively.
     """
-    ...
+    Creates a pie chart of processing times for different pipeline steps.
+    If output_path is provided, saves to that path; otherwise displays interactively.
+    """
+    if not time_list:
+        print("No timing data available to visualize.")
+        return
+
+    labels = [f"{name} ({duration:.2f}s)" for name, duration in time_list]
+    sizes = [duration for _, duration in time_list]
+
+    # Handle cases where total time is 0 to avoid ZeroDivisionError in pie chart
+    if sum(sizes) == 0:
+        print("Total processing time is zero, skipping pie chart.")
+        return
+
+    fig, ax = plt.subplots(figsize=(10, 7))
+    
+    # Use a visually pleasing color palette
+    colors = plt.cm.Paired(np.linspace(0, 1, len(time_list)))
+    
+    wedges, texts, autotexts = ax.pie(
+        sizes, 
+        labels=None,  # We'll use a legend for clarity
+        autopct='%1.1f%%', 
+        startangle=140, 
+        colors=colors,
+        pctdistance=0.85,
+        explode=[0.05] * len(time_list)  # Slight separation for better visibility
+    )
+
+    # Add a legend
+    ax.legend(
+        wedges, 
+        labels,
+        title="Pipeline Steps",
+        loc="center left",
+        bbox_to_anchor=(1, 0, 0.5, 1)
+    )
+
+    # Formatting
+    plt.setp(autotexts, size=10, weight="bold")
+    ax.set_title("Processing Time Distribution per Pipeline Step", pad=20)
+    
+    plt.tight_layout()
+    
+    if output_path:
+        plt.savefig(output_path, dpi=150, bbox_inches='tight')
+        plt.close(fig)
+        print(f"Processing time pie chart saved to: {output_path}")
+    else:
+        plt.show()
+
 
 
 def plot_feature_importance(
@@ -267,25 +306,6 @@ def plot_feature_importance(
     """
     ...
 
-
-def plot_resource_usage(
-    runtime_records: List[Dict[str, Any]],
-    output_path: Optional[str] = None,
-) -> pd.DataFrame:
-    """Plot runtime and memory usage as a function of log size, return summary table.
-
-    Each record in runtime_records should have keys:
-        step (str), log_size (int), elapsed_seconds (float), peak_memory_mb (float).
-    Separate series are drawn for conformance checking and feature generation steps.
-
-    Args:
-        runtime_records: Collected by pipeline.py using measure_runtime / measure_memory.
-        output_path: If given, save figure; otherwise display interactively.
-
-    Returns:
-        Summary DataFrame (step x [mean_seconds, mean_memory_mb]) for the report.
-    """
-    ...
 
 # ------------------------------------------
 # CLI output

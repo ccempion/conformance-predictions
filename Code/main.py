@@ -585,6 +585,15 @@ if __name__ == "__main__":
     print("---------------------------------------")
     print(f"In total, it took {total_time:.4f} seconds from start to finish (processing time only).")
 
+    # 6. Visualization of processing times
+    if time_list and input("\nDo you want to visualize the processing times as a pie chart? (y/N): ").lower().strip() == 'y':
+        vis_choice = input("Do you want to save the pie chart (s) or directly display it (d)? (s/d): ").lower().strip()
+        if vis_choice == 's':
+            vis_path = input("Enter the path to save the pie chart (e.g., runtime.png): ").strip() or "runtime_dist.png"
+            vis.plot_processing_times(time_list, output_path=vis_path)
+        else:
+            vis.plot_processing_times(time_list)
+
     # Save as JSON (on user selection after last step of CLI)
     if input("\nDo you want to save the runtime and memory measurements as JSON? (y/N): ").lower().strip() == 'y':
         report_path = input("Enter filename (default: report.json): ").strip() or "report.json"
