@@ -16,6 +16,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
     Guides the user through configuration steps as an interactive command-line-interface program: (HL-03) & triggers the pipeline.
     """
     print("=== Conformance Predictions ===")
+    time_list = []
 
     # Data and Model Input
     has_model = input("Do you have a normative process model? (y/N): ").lower().strip() == 'y'
@@ -98,10 +99,11 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             discovery_params=discovery_params,
             vis_params=vis_params
         )
+        time_list.append(("Read and Discovery", prep_time))
     
     except Exception as e:
         print(f"\n[SETUP ERROR]: {e}", file=sys.stderr)
-        sys.exit(1)
+        return time_list
 
 
 
@@ -251,59 +253,68 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
         print("Invalid choice. Defaulting to 0.7")
         split_value = 0.7
 
-    log_train, log_test = pm4py.split_train_test(log, split_value)
+    (log_train, log_test), split_time = evaluation.measure_runtime(pm4py.split_train_test, log, split_value)
+    time_list.append(("Train/Test Split", split_time))
 
     # Feature extraction. Default (no prefix) uses the per-case path; the opt-in prefix modes
     # use the pooled path, which also returns each row's prefix length for by-length analysis.
     test_prefix_lengths = None
-    if prefix_mode == "none":
-        (X_train, y_train, class_names), extract_train_time = evaluation.measure_runtime(
-            pipeline.extract_target_and_feature,
-            target=target,
-            feature=feature,
-            model=model_tuple,
-            log=log_train,
-            outcome_activities=outcome_activities,
-            selected_case_attributes=selected_case_attributes,
-            deviation_cost_threshold=deviation_cost_threshold,
-        )
-        (X_test, y_test, _), extract_test_time = evaluation.measure_runtime(
-            pipeline.extract_target_and_feature,
-            target=target,
-            feature=feature,
-            model=model_tuple,
-            log=log_test,
-            outcome_activities=outcome_activities,
-            selected_case_attributes=selected_case_attributes,
-            deviation_cost_threshold=deviation_cost_threshold,
-        )
-    else:
-        (X_train, y_train, class_names, _), extract_train_time = evaluation.measure_runtime(
-            pipeline.extract_target_and_feature_over_prefixes,
-            target=target,
-            feature=feature,
-            model=model_tuple,
-            log=log_train,
-            outcome_activities=outcome_activities,
-            selected_case_attributes=selected_case_attributes,
-            min_length=prefix_min,
-            max_length=prefix_max,
-            step=prefix_step,
-            deviation_cost_threshold=deviation_cost_threshold,
-        )
-        (X_test, y_test, _, test_prefix_lengths), extract_test_time = evaluation.measure_runtime(
-            pipeline.extract_target_and_feature_over_prefixes,
-            target=target,
-            feature=feature,
-            model=model_tuple,
-            log=log_test,
-            outcome_activities=outcome_activities,
-            selected_case_attributes=selected_case_attributes,
-            min_length=prefix_min,
-            max_length=prefix_max,
-            step=prefix_step,
-            deviation_cost_threshold=deviation_cost_threshold,
-        )
+    try:
+        if prefix_mode == "none":
+            (X_train, y_train, class_names), extract_train_time = evaluation.measure_runtime(
+                pipeline.extract_target_and_feature,
+                target=target,
+                feature=feature,
+                model=model_tuple,
+                log=log_train,
+                outcome_activities=outcome_activities,
+                selected_case_attributes=selected_case_attributes,
+                deviation_cost_threshold=deviation_cost_threshold,
+            )
+            time_list.append(("Alignment & Feature Extraction (Train split)", extract_train_time))
+            (X_test, y_test, _), extract_test_time = evaluation.measure_runtime(
+                pipeline.extract_target_and_feature,
+                target=target,
+                feature=feature,
+                model=model_tuple,
+                log=log_test,
+                outcome_activities=outcome_activities,
+                selected_case_attributes=selected_case_attributes,
+                deviation_cost_threshold=deviation_cost_threshold,
+            )
+            time_list.append(("Alignment & Feature Extraction (Test split)", extract_test_time))
+        else:
+            (X_train, y_train, class_names, _), extract_train_time = evaluation.measure_runtime(
+                pipeline.extract_target_and_feature_over_prefixes,
+                target=target,
+                feature=feature,
+                model=model_tuple,
+                log=log_train,
+                outcome_activities=outcome_activities,
+                selected_case_attributes=selected_case_attributes,
+                min_length=prefix_min,
+                max_length=prefix_max,
+                step=prefix_step,
+                deviation_cost_threshold=deviation_cost_threshold,
+            )
+            time_list.append(("Alignment & Feature Extraction (Train split)", extract_train_time))
+            (X_test, y_test, _, test_prefix_lengths), extract_test_time = evaluation.measure_runtime(
+                pipeline.extract_target_and_feature_over_prefixes,
+                target=target,
+                feature=feature,
+                model=model_tuple,
+                log=log_test,
+                outcome_activities=outcome_activities,
+                selected_case_attributes=selected_case_attributes,
+                min_length=prefix_min,
+                max_length=prefix_max,
+                step=prefix_step,
+                deviation_cost_threshold=deviation_cost_threshold,
+            )
+            time_list.append(("Alignment & Feature Extraction (Test split)", extract_test_time))
+    except Exception as e:
+        print(f"\n[EXTRACTION ERROR]: {e}", file=sys.stderr)
+        return time_list
 
     # ML Algorithm Configuration
     ml_params = {}
@@ -358,6 +369,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             regression_algorithm,
             ml_params,
         )
+        time_list.append(("Model Training", train_time))
     elif is_future_deviations:
         # FUTURE_DEVIATIONS is risk classification: probabilistic classifiers whose
         # predict_proba gives a calibrated-ish deviation risk score.
@@ -399,6 +411,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             classification_algorithm,
             ml_params,
         )
+        time_list.append(("Model Training", train_time))
     else:
         print("\nWhich ML algorithm do you want to apply on your data?")
         print("(1) Decision Tree")
@@ -440,6 +453,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             y_train,
             ml_params
         )
+        time_list.append(("Model Training", train_time))
 
     # Decision Tree visualisation + reconfigure loop — only for a single Decision Tree
     # (classification DT, or the Decision Tree Regressor for remaining time).
@@ -493,6 +507,9 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
                         model_training.train_model,
                         X_train, y_train, ml_params,
                     )
+                # Update the last training time
+                if time_list and time_list[-1][0] == "Model Training":
+                    time_list[-1] = ("Model Training", train_time)
             else:
                 break
 
@@ -511,6 +528,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             test_prefix_lengths=test_prefix_lengths,
             is_regression=is_remaining_time,
         )
+        time_list.append(("Evaluation", eval_time))
         print("\nPipeline completed successfully!")
 
         y_pred = results["y_pred"]
@@ -556,16 +574,10 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             # logic to call prediction
             
     except Exception as e:
-        print(f"\nError: {e}", file=sys.stderr)
-        sys.exit(1)
+        print(f"\n[EVALUATION ERROR]: {e}", file=sys.stderr)
+        return time_list
 
-    return [
-        ("Read and Discovery", prep_time), 
-        ("Alignment & Feature Extraction (Train split)", extract_train_time), 
-        ("Alignment & Feature Extraction (Test split)", extract_test_time), 
-        ("Model Training", train_time),
-        ("Evaluation", eval_time)
-    ]
+    return time_list
     
 if __name__ == "__main__":
     time_list, mem_peak = evaluation.measure_memory(run_interactive_cli)
