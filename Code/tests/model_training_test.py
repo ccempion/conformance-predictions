@@ -2,29 +2,11 @@ import pytest
 import pandas as pd
 import numpy as np
 from src.model_training import (
-    create_model_pipeline, train_model, predict,
+    predict,
     create_regression_pipeline, train_regression_model, predict_regression,
     create_classification_pipeline, train_classification_model,
 )
 from src.config import RegressionAlgorithm, ClassificationAlgorithm
-
-def test_create_model_pipeline():
-    pipeline = create_model_pipeline()
-    assert 'scaler' in pipeline.named_steps
-    assert 'classifier' in pipeline.named_steps
-
-def test_train_and_predict():
-    X_train = pd.DataFrame({'feat1': [1, 2, 3, 4], 'feat2': [0.1, 0.2, 0.3, 0.4]})
-    y_train = pd.Series([0, 0, 1, 1])
-    
-    model = train_model(X_train, y_train)
-    
-    X_test = pd.DataFrame({'feat1': [1.5, 3.5], 'feat2': [0.15, 0.35]})
-    y_pred, y_prob = predict(model, X_test)
-    
-    assert len(y_pred) == 2
-    assert len(y_prob) == 2
-    assert y_pred[0] in [0, 1]
 
 
 # --------------------------------------------------------------------------
@@ -53,7 +35,7 @@ def test_train_and_predict_regression(algorithm):
 
 
 # --------------------------------------------------------------------------
-# Classification menu (FUTURE_DEVIATIONS risk prediction)
+# Classification menu (PROCESS_OUTCOME / FUTURE_DEVIATIONS risk prediction)
 # --------------------------------------------------------------------------
 
 def test_create_classification_pipeline():
@@ -62,10 +44,7 @@ def test_create_classification_pipeline():
     assert 'classifier' in pipe.named_steps     # so predict()/visualize_decision_tree work
 
 
-@pytest.mark.parametrize("algorithm", [
-    ClassificationAlgorithm.LOGISTIC_REGRESSION,
-    ClassificationAlgorithm.GRADIENT_BOOSTING,
-])
+@pytest.mark.parametrize("algorithm", list(ClassificationAlgorithm))
 def test_train_and_predict_classification(algorithm):
     X_train = pd.DataFrame({'feat1': [1, 2, 3, 4, 5, 6], 'feat2': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]})
     y_train = np.array([0, 0, 0, 1, 1, 1])

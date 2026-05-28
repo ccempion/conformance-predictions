@@ -15,13 +15,13 @@ def run_conformance_prediction_pipeline(
     preloaded_model=None,
     test_prefix_lengths: Optional[np.ndarray] = None,
     is_regression: bool = False,
+    classification_algorithm: config.ClassificationAlgorithm = config.ClassificationAlgorithm.DECISION_TREE,
 ) -> Dict[str, Any]:
     """
     Main orchestration function for the entire pipeline.
 
     When is_regression is True (REMAINING_TIME target), a regressor is used and
-    predictions are continuous (seconds). Metric computation/reporting is the evaluation
-    module's responsibility (a colleague's part); this function only produces the
+    predictions are continuous (seconds).  this function produces the
     predictions and passes y_test / y_pred / prefix_lengths through the results dict.
     """
 
@@ -32,8 +32,10 @@ def run_conformance_prediction_pipeline(
         print(f"--- Training regression model with parameters: {ml_params} ---")
         trained_model = model_training.train_regression_model(X_train, y_train, ml_params=ml_params)
     else:
-        print(f"--- Training model with parameters: {ml_params} ---")
-        trained_model = model_training.train_model(X_train, y_train, ml_params)
+        print(f"--- Training {classification_algorithm.name} classifier with parameters: {ml_params} ---")
+        trained_model = model_training.train_classification_model(
+            X_train, y_train, classification_algorithm, ml_params
+        )
 
     # 6. Evaluation (HL-16)
     print("--- Evaluating model ---")

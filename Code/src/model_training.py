@@ -17,78 +17,21 @@ from typing import Dict, Any, Tuple, Optional
 from src.config import RegressionAlgorithm, ClassificationAlgorithm
 
 
-def create_model_pipeline(ml_params: Optional[Dict[str, Any]] = None) -> Pipeline:
-    """
-    Creates a scikit-learn Pipeline with preprocessing and a Decision Tree classifier (LL-08.1).
-    
-    Args:
-        ml_params: Dictionary of hyperparameters for the DecisionTreeClassifier.
-                   If None, default parameters for full branching are used.
-    
-    Returns:
-        A scikit-learn Pipeline object.
-    """
-    # 1. Default configurations for "complete branching" (MVP rule of thumb)
-    # Allows the tree to grow until all leaves are sufficiently pure.
-    model_defaults = {
-        'criterion': 'gini',
-        'max_depth': 4,
-        'min_samples_split': 2,
-        'min_samples_leaf': 1,
-        'random_state': 42  # Ensuring reproducibility
-    }
-    
-    if ml_params is not None:
-        model_defaults.update(ml_params)
-    
-    # 2. Preprocessing: Standardize features (LL-08.1)
-    # This ensures that scale-sensitive components are handled consistently.
-    scaler = StandardScaler()
-    
-    # 3. Classifier: Decision Tree (HL-08, HL-09)
-    clf = DecisionTreeClassifier(**model_defaults)
-    
-    # Bundle into a Pipeline for clean integration and to prevent data leakage.
-    pipeline = Pipeline([
-        ('scaler', scaler),
-        ('classifier', clf)
-    ])
-    
-    return pipeline
-
-
-def train_model(X_train: pd.DataFrame, y_train: pd.Series, ml_params: Optional[Dict[str, Any]] = None) -> Pipeline:
-    """
-    Fits a predictive model to the training data (LL-08.2).
-    
-    Args:
-        X_train: Feature matrix (prefixes + optional conformance diagnostics).
-        y_train: Target vector (deviation risk or outcome).
-        ml_params: Optional hyperparameters for the model.
-        
-    Returns:
-        The fitted Pipeline object.
-    """
-    pipeline = create_model_pipeline(ml_params)
-    pipeline.fit(X_train, y_train)
-    return pipeline
-
-
 def predict(model: Pipeline, X: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     """
     Applies the fitted model to generate predictions.
-    
+
     Args:
         model: A fitted scikit-learn Pipeline.
         X: Feature matrix for which to generate predictions.
-        
+
     Returns:
         A tuple containing:
             - Hard predictions (0/1)
             - Predicted probabilities for the positive class
     """
     y_pred = model.predict(X)
-    
+
     # Check if the classifier supports probability estimates
     if hasattr(model.named_steps['classifier'], "predict_proba"):
         proba = model.predict_proba(X)
@@ -101,31 +44,15 @@ def predict(model: Pipeline, X: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     else:
         # Fallback for models without predict_proba (not expected for DecisionTree)
         y_prob = y_pred.astype(float)
-        
+
     return y_pred, y_prob
-
-
-def get_feature_importance(model: Pipeline, feature_names: list) -> pd.Series:
-    """
-    Extracts feature importance scores from the fitted Decision Tree.
-    Useful for evaluation and comparing baseline vs conformance-aware features.
-    
-    Args:
-        model: A fitted scikit-learn Pipeline.
-        feature_names: List of names corresponding to the columns in X.
-        
-    Returns:
-        A Series mapping feature names to importance scores.
-    """
-    importances = model.named_steps['classifier'].feature_importances_
-    return pd.Series(importances, index=feature_names).sort_values(ascending=False)
 
 
 # ------------------------------------------
 # Classification algorithm menu (PROCESS_OUTCOME / FUTURE_DEVIATIONS)
 # ------------------------------------------
 
-# Per-algorithm defaults. Decision Tree mirrors create_model_pipeline's depth cap; the
+# Per-algorithm defaults. Decision Tree caps depth at 4 so the tree stays readable; the
 # others use sklearn defaults plus a fixed seed / enough iterations to converge.
 _CLASSIFIER_DEFAULTS: Dict[ClassificationAlgorithm, Dict[str, Any]] = {
     ClassificationAlgorithm.DECISION_TREE: {"max_depth": 4, "random_state": 42},
@@ -142,9 +69,8 @@ def create_classification_pipeline(
     Build a StandardScaler + classifier pipeline for deviation/outcome risk prediction.
 
     Counterpart to create_regression_pipeline. Every classifier here exposes predict_proba,
-    so the existing predict() yields a risk probability. The estimator step is named
-    'classifier' (matching create_model_pipeline) so predict() and visualize_decision_tree
-    keep working unchanged.
+    so predict() yields a risk probability. The estimator step is named 'classifier' so
+    predict() and visualize_decision_tree keep working unchanged.
     """
     defaults = dict(_CLASSIFIER_DEFAULTS.get(algorithm, {}))
     if ml_params:
@@ -204,10 +130,10 @@ def create_regression_pipeline(
     """
     Build a StandardScaler + regressor pipeline for remaining-time prediction.
 
-    Counterpart to create_model_pipeline (classification): selects a regressor from the
-    chosen RegressionAlgorithm. ml_params overrides the per-algorithm defaults. The
-    classifier step in the classification pipeline is named 'classifier'; here it is
-    named 'regressor' so the two are unambiguous downstream.
+    Counterpart to create_classification_pipeline: selects a regressor from the chosen
+    RegressionAlgorithm. ml_params overrides the per-algorithm defaults. The classifier
+    step in the classification pipeline is named 'classifier'; here it is named
+    'regressor' so the two are unambiguous downstream.
     """
     defaults = dict(_REGRESSOR_DEFAULTS.get(algorithm, {}))
     if ml_params:
@@ -241,4 +167,3 @@ def train_regression_model(
 def predict_regression(model: Pipeline, X: pd.DataFrame) -> np.ndarray:
     """Apply a fitted regression pipeline; returns continuous predictions (no proba)."""
     return model.predict(X)
-
