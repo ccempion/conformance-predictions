@@ -554,6 +554,11 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
                 )
                 print("\nMetrics by prefix length:")
                 print(by_len.to_string(index=False))
+                if input("\nDo you want to save a visualization of the accuracy and F1 per prefix-length? (y/N): ").lower().strip() == 'y':
+                    by_len_output_path = input("Enter filename (default: by_len_vis.png): ").strip() or "by_len_vis.png"
+                    vis.plot_evaluate_by_prefix_length(
+                        by_len, by_len_output_path
+                    )
 
             # Offer to save both visualisations
             if input("\nSave confusion matrix and accuracy chart? (y/N): ").lower().strip() == 'y':
