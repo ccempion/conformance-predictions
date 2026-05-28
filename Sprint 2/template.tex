@@ -28,6 +28,7 @@ Alessandro Berti\\[6ex]
 
 \section{Summary of Sprint 2}
 In this sprint we focused on the implementation of all the remaining functionalities to have a fully functional end-to-end pipeline for conformance predictions. We intend to use the last sprint to further improve and optimize the functionalities, such that we have a well aligned and polished software artifact at the end of the project, which also fulfills the requirements of Alessandro in the most sophisticated way. 
+%%% Mention finalization of documents in sprint 3
  
 Key achievements of this sprint include:
 \begin{enumerate}
@@ -159,16 +160,18 @@ We decomposed the modules into the following categories:
 \end{itemize}
 
 \section{User Guide}
-We updated the User Guide and it is now available at \texttt{Sprint 2/UserGuide.pdf}.
-
+% Not updated, meistens gleich geblieben und eigentlich selbsterklärend 
+% Planned to write a comprehensive user guide 
 \section{Team settings and Workflow}
 \subsection{Changes in Responsibilities}
-As already stated in the first sprint review, we changed the responsibilities in this sprint. In this sprint, Cem was responsible for I/O, Model Training and Feature Extraction. Richard was responsible for the new visualization module, evaluation and pipeline. Both of us were responsible for the CLI and config module, as they are relatively small and we wanted to work on them together to have a common understanding of the user interface and configuration options. We think this division of responsibilities worked well, as it allowed us to focus on specific modules while still collaborating on the overall pipeline and user experience.
+As already stated in the first sprint review, we changed the responsibilities in this sprint. In this sprint, Cem was responsible for I/O, Model Training and Feature Extraction. Richard was responsible for the new visualization module, evaluation and pipeline. Both of us were responsible for the CLI and config module, as they are relatively small and we wanted to work on them together to have a common understanding of the user interface and configuration options. We think this division of responsibilities worked well, as it allowed us to understand and reflect on each others past contributions and contribute with new capabilities.
+
+For the incoming sprint, we plan to keep the split and set a stronger focus on the documentation. We intend to work together on the User Guide, technical documentation, Read Me, and the phase review.
+% Mention that we keep the split and eventually work cross, especially in terms of the documents
 
 \subsection{Workflow Improvements for the next sprint}
-In this sprint, we focused on implementing the remaining core functionalities to have a fully functional tested end-to-end pipeline. 
-
-Furthermore, we will maintain the breakdown of the requirements per module listed here in the review document and update it after each sprint to keep track of the coverage status. This way, we can easily identify which requirements are still open and need to be addressed in the next sprints.
+In this sprint, we changed our branching and workflow strategy. First, we implemented a more granular decomposition of the work items in git, such that we were able to precisely adopt the planned requirements for this sprint. Second, we consolidated the personal branches into the key branches "development", "documents" and "main", and created branches for the work items we were working on. Later we merged these work item-based branches into their respective parents. 
+%%more documentation and issue based workflow in git
 
 \section{Exemplary Visualizations and Outputs}
 In this section a select sample of visualizations is included. The pipeline was run with the \textit{sepsis-cases} event log and following parameters:
