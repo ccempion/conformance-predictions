@@ -141,7 +141,6 @@ We aim to cover as much code as possible with our automated testing pipeline, th
 
 \noindent \textbf{Planned in Sprint 3}
 \begin{itemize}
-    \item \textbf{HL-15}: Full integration of a strict temporal split (train, validation, test) ordered by case end time into the main pipeline.
     \item \textbf{HL-16}: Conformance quality metrics for the normative model (fitness), and wiring of the regression metrics into the pipeline's \texttt{compute\_regression\_metrics} hook so they are reported automatically for the remaining-time target.
 \end{itemize}
 
@@ -166,7 +165,7 @@ We aim to cover as much code as possible with our automated testing pipeline, th
     \item \textbf{HL-19 \& LL-19.1-19.2}: The project is organized into \texttt{io}, \texttt{feature\_extraction}, \texttt{model\_training}, \texttt{evaluation}, \texttt{pipeline}, \texttt{visualization}, and a centralized \texttt{config} module; Git is used for version control. Note: the conformance logic is consolidated into \texttt{feature\_extraction} rather than placed in a dedicated \texttt{conformance} module. A formal branching strategy per module was not adopted, as we are working with one branch per team member.
     \item \textbf{HL-20}: \texttt{requirements.txt} and \texttt{README.md} are present in the repository.
     \item \textbf{LL-20.1}: \texttt{requirements.txt} as a plain text file is implemented and considered satisfactory for dependency management.
-    \item \newcov{HL-11}: An automated pytest test suite covering IO, feature extraction, model training, and evaluation is executable via a single command (\texttt{pytest tests/}) and runs in the GitLab CI pipeline on every push.
+    \item \newcov{HL-11}: An automated pytest test suite covering IO, feature extraction, model training, and evaluation is executable via a single command (\texttt{pytest tests/}) and runs in the GitLab CI pipeline on every push or merge.
     \item \newcov{LL-11.3}: \texttt{test\_generate\_prefixes\_lengths\_and\_content} asserts that a prefix of length $k$ contains exactly the first $k$ events of the original trace; the related \texttt{test\_pooled\_extraction\_broadcasts\_labels\_without\_leakage} test additionally confirms that outcome activities are gated out of the feature vector.
 \end{itemize}
 
@@ -196,12 +195,12 @@ For the next sprint, we plan to adopt an even more issue-based workflow on the c
 Even though we did not include visualizations in our requriements when planning this project, it has become evident, that visualizations are a key part of our project. In process and business intelligence, visualizations are of key importance to highlight and contextualize raw numbers and make them accessible to human pattern recognition. Thus we devoted a great amount of time this sprint to create new visualizations and we plan on implementing even more to achieve a great basis for the upcoming evaluation and assessment.
 \textbf{Covered}
 \begin{itemize}
-    \item
+    \item TODO
 \end{itemize}
 
 \noindent \textbf{Planned in Sprint 3}
 \begin{itemize}
-    \item
+    \item TODO
 \end{itemize}
 
 \section{Sprint review}
