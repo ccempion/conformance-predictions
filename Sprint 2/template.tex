@@ -40,10 +40,10 @@ Key achievements of this sprint include:
 	\item A configurable deviation cost threshold $T$ for the Future Deviations target, backed by a corrected cost function that excludes silent ($\tau$) routing moves from the real deviation count.
 	\item Per-prefix \textit{remaining-time} regression labels and dedicated temporal predictors (elapsed time, time since last event, event count).
 	\item Extension of the ML model menu beyond the Decision Tree: \textit{Logistic Regression} and \textit{Gradient Boosting} for classification, and \textit{Random Forest}, \textit{Gradient Boosting}, and \textit{Decision Tree Regressor} for regression.
-	\item Runtime and memory instrumentation via \texttt{time.perf\_counter} and \texttt{psutil}, with optional persistence of the collected measurements as a structured JSON report.
+	\item Runtime and memory instrumentation via \texttt{time.perf\_counter} and \texttt{psutil}, with optional persistence of the collected measurements as a structured JSON report or as a pie-chart.
 	\item Prefix-length performance analysis (\texttt{metrics\_by\_prefix\_length}) that reports the full metric set per prefix length for a single pooled model.
 	\item  Pytest suite covering feature extraction (case attributes, prefix gating, remaining time, deviation cost), model training (parametrised over all classifier and regressor variants), evaluation metrics, and IO.
-	\item Extraction of a dedicated \textit{Visualization} module that bundles process-model, decision-tree, confusion-matrix, and per-class accuracy rendering.
+	\item Extraction of a dedicated \textit{Visualization} module that bundles process-model, decision-tree, confusion-matrix, per-class accuracy rendering etc.
 \end{enumerate}
 
 \section{Codebase Structure}
@@ -60,13 +60,29 @@ We enriched the initial codebase structure outlined in the first sprint review w
 \end{enumerate}
 
 \section{Testing}
+We discussed with Alessandro at the weekly meetup that we wanted to set up a GitLab runner that runs independently of Richards PC uptime. Thankfully, registering a new runner and creating a token that links the runner to the repository is very straight-forward with GitLab. Alessandro agreed to host such a runner on an RWTH-server, such that we do not face the issue of pending pipelines anymore.
+This set-up went smoothly, and now our testing pipeline, which runs all the tests in the \texttt{tests/} folder with a fresh \texttt{python:3.14.4} image and pytest is up and running. The CI pipeline works in the following manner: 
+\begin{enumerate}
+    \item Navigation into the \texttt{Code/} folder: \texttt{cd Code}
+    \item Creation of a temporary virtual environment: \texttt{python3 -m venv .ci_venv}
+    \item Activating this virtual environment: \texttt{source .ci_venv/bin/activate}
+    \item Installation of all required dependencies: 
+    \begin{enumerate}
+        \item \texttt{pip install --upgrade pip}
+        \item \texttt{pip install -r requirements.txt}
+        \item \texttt{pip install pytest}
+    \end{enumerate}
+    \item Running the tests: \texttt{pytest tests/}
+\end{enumerate}
+
+We aim to cover as much code as possible with our automated testing pipeline, though a 100\% coverage is 1. infeasible and 2. much of our functionality is based on highly tested dependencies. Furthermore, we test by running the CLI manually and watching out for any unexpected errors. After all, we do not expect users to deliberately break the application, but use it in its designated fashion. Thus testing different input data and selected option combinations manually is definitely "good enough" for a student project.
 \section{Requirements Coverage Status - Overview per Module}
 
 \subsection{IO}
 \textbf{All Covered}
 \begin{itemize}
     \item \textbf{LL-01.1}: \texttt{io.discover\_process\_model()} supports Inductive, Alpha, and Genetic Miner via PM4Py, enabling automatic model discovery when no normative model is available.
-    \item \textbf{LL-01.2}: \texttt{io.visualize\_process\_model()} renders the model as Petri net, BPMN, or Process Tree, with optional file saving or direct display.
+    \item \textbf{LL-01.2}: \texttt{visualization.visualize\_process\_model()} renders the model as Petri net, BPMN, or Process Tree, with optional file saving or direct display.
     \item \textbf{HL-05}: Event log loading, model import, and model discovery are all functional; the foundational data-acquisition step of the pipeline is complete.
     \item \textbf{LL-05.1}: \texttt{pm4py.read\_xes} for XES logs; \texttt{pd.read\_csv} combined with \texttt{pm4py.format\_dataframe} for CSV logs in \texttt{io.load\_event\_log()}.
     \item \textbf{LL-05.2} (partially): Petri net loading via \texttt{pm4py.read\_pnml} implemented; BPMN files loaded via \texttt{pm4py.read\_bpmn} and Process Tree files via \texttt{pm4py.read\_ptml}, both internally converted to a Petri net.
