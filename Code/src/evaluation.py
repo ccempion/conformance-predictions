@@ -56,7 +56,19 @@ def measure_memory(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, floa
     factor = 1.0 / 1024.0 if sys.platform != 'darwin' else 1.0 / (1024.0 * 1024.0)
     return result, peak_kb * factor
 
-
+def compute_regression_metrics(
+    
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+)-> Dict[str, float]:
+    mae = compute_mae(y_true, y_pred)
+    mse = compute_mse(y_true, y_pred)
+    rmse = compute_rmse(y_true, y_pred)
+    return {
+        "MSE": mse,
+        "RMSE": rmse,
+        "MAE": mae,
+    }
 def compute_classification_metrics(
     y_true: np.ndarray,
     y_pred: np.ndarray,

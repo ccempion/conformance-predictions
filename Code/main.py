@@ -513,10 +513,8 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             else:
                 break
 
-    # Call evaluation pipeline (training already done above)
     print("\nStarting evaluation pipeline...")
     try:
-        # This calls the orchestration logic in src/pipeline.py
         results, eval_time = evaluation.measure_runtime(
             pipeline.run_conformance_prediction_pipeline,
             X_test=X_test,
@@ -534,22 +532,18 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
         y_pred = results["y_pred"]
         y_test_arr = results["y_test"]
 
-        if is_remaining_time:
-            # Regression result reporting (metrics, by-prefix-length error table, and the
-            # adaptive duration-unit display) is the evaluation module's responsibility
-            # (a colleague's part). The pipeline already attaches whatever metrics that
-            # module computed to results["metrics"]; echo them if present.
-            metrics = results.get("metrics") or {}
-            if metrics:
+        metrics = results.get("metrics") or {}
+        if metrics:
+            if is_remaining_time:
                 print("\nRegression metrics:")
-                for name, value in metrics.items():
-                    print(f"  {name}: {value}")
             else:
-                print("\nPrediction complete. Remaining-time reporting (metrics, "
-                      "by-prefix-length errors, adaptive duration units) is handled by "
-                      "the evaluation module — not yet available.")
-        else:
+                print("\nClassification metrics:")
+
+            for name, value in metrics.items():
+                print(f"  {name}: {value}")
+
             # Display confusion matrix and per-class stats in the CLI
+        if is_process_outcome:
             vis.display_confusion_matrix_text(y_test_arr, y_pred, class_names)
             vis.display_per_class_stats(y_test_arr, y_pred, class_names)
 

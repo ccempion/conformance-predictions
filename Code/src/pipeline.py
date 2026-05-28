@@ -18,11 +18,6 @@ def run_conformance_prediction_pipeline(
 ) -> Dict[str, Any]:
     """
     Main orchestration function for the entire pipeline.
-
-    When is_regression is True (REMAINING_TIME target), a regressor is used and
-    predictions are continuous (seconds). Metric computation/reporting is the evaluation
-    module's responsibility (a colleague's part); this function only produces the
-    predictions and passes y_test / y_pred / prefix_lengths through the results dict.
     """
 
     if preloaded_model is not None:
@@ -43,21 +38,12 @@ def run_conformance_prediction_pipeline(
     X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
 
     if is_regression:
-        # Continuous predictions; no probabilities. Metric computation belongs to the
-        # evaluation module (colleague) — call it only if present so this path runs
-        # standalone until that module lands.
         y_pred = model_training.predict_regression(trained_model, X_test)
-        y_prob = y_pred
-        metrics = {}
-        if hasattr(evaluation, "compute_regression_metrics"):
-            metrics = evaluation.compute_regression_metrics(y_test, y_pred)
-            print(f"Evaluation results: {metrics}")
-        else:
-            print("--- Regression metrics deferred to evaluation module (not yet available) ---")
+        metrics = evaluation.compute_regression_metrics(y_test, y_pred)
+
     else:
         y_pred, y_prob = model_training.predict(trained_model, X_test)
         metrics = evaluation.compute_classification_metrics(y_test, y_pred, y_prob)
-        print(f"Evaluation results: {metrics}")
 
     results = {
         "model": trained_model,
