@@ -5,10 +5,10 @@ Handles loading of event logs and process models, as well as model discovery.
 
 import pandas as pd
 import pm4py
-from typing import Tuple, Optional, Any
+from typing import Tuple
 from pm4py.objects.petri_net.obj import PetriNet, Marking
 
-from src.config import Discovery_alg, ModelRepresentation
+from src.config import Discovery_alg
 
 def load_event_log(file_path: str) -> pd.DataFrame:
     """
@@ -46,6 +46,10 @@ def load_process_model(file_path: str) -> Tuple[PetriNet, Marking, Marking]:
         # Internally converts BPMN to Petri net for conformance checking
         bpmn_graph = pm4py.read_bpmn(file_path)
         return pm4py.convert_to_petri_net(bpmn_graph)
+    elif file_path.endswith('.ptml'):
+        # Internally converts Process Tree to Petri net for conformance checking
+        ptml_graph= pm4py.read_ptml(file_path)
+        return pm4py.convert_to_petri_net(ptml_graph)
     else:
         raise ValueError(f"Unsupported model format: {file_path}")
 
@@ -77,25 +81,3 @@ def discover_process_model(log: pd.DataFrame,
     
     else:
         raise TypeError(f"Unsupported parameters or algorithm: {kwargs}, {discovery_alg}")
-
-def visualize_process_model(model: Tuple[PetriNet, Marking, Marking], path: Optional[str], model_representation: ModelRepresentation):
-    net, im, fm = model
-    if model_representation == ModelRepresentation.PROCESS_TREE:
-        process_tree = pm4py.convert_to_process_tree(net, im, fm)
-        if path: 
-            pm4py.save_vis_process_tree(process_tree, path)
-        else: 
-            pm4py.view_process_tree(process_tree)
-
-    elif model_representation == ModelRepresentation.BPMN:
-        bpmn = pm4py.convert_to_bpmn(net, im, fm)
-        if path: 
-            pm4py.save_vis_bpmn(bpmn, path)
-        else:
-            pm4py.view_bpmn(bpmn)
-    
-    elif model_representation == ModelRepresentation.PETRI_NET:
-        if path:
-            pm4py.save_vis_petri_net(net, im, fm, path)
-        else: 
-            pm4py.view_petri_net(net, im, fm)

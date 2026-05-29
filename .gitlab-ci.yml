@@ -5,7 +5,7 @@ stages:
 
 test_modules:
   stage: test
-  # The 'image' tag is ignored since the 'shell' executor on my (Richard) local machine is used with python version 3.14.4.
+  image: python:3.14.4
   script:
     - cd Code
     # Create a temporary virtual environment for the CI job

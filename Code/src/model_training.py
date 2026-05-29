@@ -5,11 +5,16 @@ Implements scikit-learn-style objects for preprocessing and prediction.
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.tree import DecisionTreeClassifier, plot_tree
-from typing import Dict, Any, List, Tuple, Optional
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.ensemble import (
+    RandomForestRegressor, GradientBoostingRegressor, GradientBoostingClassifier,
+)
+from sklearn.linear_model import LogisticRegression
+from typing import Dict, Any, Tuple, Optional
+
+from src.config import RegressionAlgorithm, ClassificationAlgorithm
 
 
 def create_model_pipeline(ml_params: Optional[Dict[str, Any]] = None) -> Pipeline:
@@ -116,29 +121,124 @@ def get_feature_importance(model: Pipeline, feature_names: list) -> pd.Series:
     return pd.Series(importances, index=feature_names).sort_values(ascending=False)
 
 
-def visualize_decision_tree(
-    model: Pipeline,
-    feature_names: List[str],
-    class_names: List[str],
-    output_path: Optional[str] = None,
-) -> None:
+# ------------------------------------------
+# Classification algorithm menu (PROCESS_OUTCOME / FUTURE_DEVIATIONS)
+# ------------------------------------------
+
+# Per-algorithm defaults. Decision Tree mirrors create_model_pipeline's depth cap; the
+# others use sklearn defaults plus a fixed seed / enough iterations to converge.
+_CLASSIFIER_DEFAULTS: Dict[ClassificationAlgorithm, Dict[str, Any]] = {
+    ClassificationAlgorithm.DECISION_TREE: {"max_depth": 4, "random_state": 42},
+    ClassificationAlgorithm.LOGISTIC_REGRESSION: {"max_iter": 1000},
+    ClassificationAlgorithm.GRADIENT_BOOSTING: {"random_state": 42},
+}
+
+
+def create_classification_pipeline(
+    algorithm: ClassificationAlgorithm = ClassificationAlgorithm.DECISION_TREE,
+    ml_params: Optional[Dict[str, Any]] = None,
+) -> Pipeline:
     """
-    Renders the fitted Decision Tree from the pipeline.
-    If output_path is given, saves to that file; otherwise opens an interactive window.
+    Build a StandardScaler + classifier pipeline for deviation/outcome risk prediction.
+
+    Counterpart to create_regression_pipeline. Every classifier here exposes predict_proba,
+    so the existing predict() yields a risk probability. The estimator step is named
+    'classifier' (matching create_model_pipeline) so predict() and visualize_decision_tree
+    keep working unchanged.
     """
-    clf = model.named_steps['classifier']
-    fig, ax = plt.subplots(figsize=(20, 10))
-    plot_tree(
-        clf,
-        feature_names=feature_names,
-        class_names=class_names,
-        filled=True,
-        rounded=True,
-        ax=ax
-    )
-    plt.tight_layout()
-    if output_path:
-        plt.savefig(output_path, dpi=150, bbox_inches='tight')
-        plt.close(fig)
-    else:
-        plt.show()
+    defaults = dict(_CLASSIFIER_DEFAULTS.get(algorithm, {}))
+    if ml_params:
+        defaults.update(ml_params)
+
+    if algorithm == ClassificationAlgorithm.LOGISTIC_REGRESSION:
+        clf = LogisticRegression(**defaults)
+    elif algorithm == ClassificationAlgorithm.GRADIENT_BOOSTING:
+        clf = GradientBoostingClassifier(**defaults)
+    else:  # DECISION_TREE (default)
+        clf = DecisionTreeClassifier(**defaults)
+
+    return Pipeline([
+        ("scaler", StandardScaler()),
+        ("classifier", clf),
+    ])
+
+
+def train_classification_model(
+    X_train: pd.DataFrame,
+    y_train: np.ndarray,
+    algorithm: ClassificationAlgorithm = ClassificationAlgorithm.DECISION_TREE,
+    ml_params: Optional[Dict[str, Any]] = None,
+) -> Pipeline:
+    """Fit a classification pipeline (deviation/outcome risk) to the training data."""
+    classes = np.unique(y_train)
+    if len(classes) < 2:
+        raise ValueError(
+            f"Training labels contain only one class ({classes.tolist()}), so the "
+            f"classifier has nothing to discriminate. For FUTURE_DEVIATIONS this usually "
+            f"means the deviation cost threshold T is too high and left no positive cases "
+            f"-- lower T (default 0 = 'any real deviation') and re-run. For PROCESS_OUTCOME "
+            f"it means every case in the training split shares the same outcome."
+        )
+    pipeline = create_classification_pipeline(algorithm, ml_params)
+    pipeline.fit(X_train, y_train)
+    return pipeline
+
+
+# ------------------------------------------
+# Regression (REMAINING_TIME target)
+# ------------------------------------------
+
+# Per-algorithm defaults. Decision Tree mirrors the classification depth cap (4) so its
+# tree stays readable; the ensembles use sklearn defaults plus a fixed seed.
+_REGRESSOR_DEFAULTS: Dict[RegressionAlgorithm, Dict[str, Any]] = {
+    RegressionAlgorithm.DECISION_TREE: {"max_depth": 4, "random_state": 42},
+    RegressionAlgorithm.RANDOM_FOREST: {"n_estimators": 100, "random_state": 42},
+    RegressionAlgorithm.GRADIENT_BOOSTING: {"random_state": 42},
+}
+
+
+def create_regression_pipeline(
+    algorithm: RegressionAlgorithm = RegressionAlgorithm.DECISION_TREE,
+    ml_params: Optional[Dict[str, Any]] = None,
+) -> Pipeline:
+    """
+    Build a StandardScaler + regressor pipeline for remaining-time prediction.
+
+    Counterpart to create_model_pipeline (classification): selects a regressor from the
+    chosen RegressionAlgorithm. ml_params overrides the per-algorithm defaults. The
+    classifier step in the classification pipeline is named 'classifier'; here it is
+    named 'regressor' so the two are unambiguous downstream.
+    """
+    defaults = dict(_REGRESSOR_DEFAULTS.get(algorithm, {}))
+    if ml_params:
+        defaults.update(ml_params)
+
+    if algorithm == RegressionAlgorithm.RANDOM_FOREST:
+        regressor = RandomForestRegressor(**defaults)
+    elif algorithm == RegressionAlgorithm.GRADIENT_BOOSTING:
+        regressor = GradientBoostingRegressor(**defaults)
+    else:  # DECISION_TREE (default)
+        regressor = DecisionTreeRegressor(**defaults)
+
+    return Pipeline([
+        ("scaler", StandardScaler()),
+        ("regressor", regressor),
+    ])
+
+
+def train_regression_model(
+    X_train: pd.DataFrame,
+    y_train: np.ndarray,
+    algorithm: RegressionAlgorithm = RegressionAlgorithm.DECISION_TREE,
+    ml_params: Optional[Dict[str, Any]] = None,
+) -> Pipeline:
+    """Fit a regression pipeline to the training data (remaining time in seconds)."""
+    pipeline = create_regression_pipeline(algorithm, ml_params)
+    pipeline.fit(X_train, y_train)
+    return pipeline
+
+
+def predict_regression(model: Pipeline, X: pd.DataFrame) -> np.ndarray:
+    """Apply a fitted regression pipeline; returns continuous predictions (no proba)."""
+    return model.predict(X)
+
