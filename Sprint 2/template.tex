@@ -193,15 +193,53 @@ For the next sprint, we plan to adopt an even more issue-based workflow on the c
 \section{Exemplary Visualizations and Outputs}
 \subsection{Visualizations}
 Even though we did not include visualizations in our requriements when planning this project, it has become evident, that visualizations are a key part of our project. In process and business intelligence, visualizations are of key importance to highlight and contextualize raw numbers and make them accessible to human pattern recognition. Thus we devoted a great amount of time this sprint to create new visualizations and we plan on implementing even more to achieve a great basis for the upcoming evaluation and assessment.
-\textbf{Covered}
+\textbf{Covered}\\\\
 \begin{itemize}
     \item \textbf{Process Model Visualization}: \texttt{visualize\_process\_model} supports interactive viewing or saving of normative models (either discovered or provided) in three formats: Petri Net, BPMN, and Process Tree.
-    \item \textbf{Decision Tree Visualization}: \texttt{visualize\_decision\_tree} renders the fitted scikit-learn Decision Tree (classifier or regressor), clearly showing the splitting criteria, node purity, and leaf values. This is crucial for the "white-box" interpretability requirement. An example output can be found in \texttt{figures/decision\_tree.png}.
-    \item \textbf{Confusion Matrix Heatmap}: \texttt{plot\_confusion\_matrix\_image} generates a clear, color-coded heatmap (blues colormap) of the confusion matrix for classification tasks. The matrix contrasts predicted vs. actual outcomes, highlighting true positives and false positives. An example output can be found in \texttt{figures/confusion\_matrix.png}.
-    \item \textbf{Per-Class Accuracy Chart}: \texttt{plot\_per\_class\_bar\_chart} complements the confusion matrix by rendering a stacked bar chart displaying the percentage of correct (green) versus incorrect (red) predictions for each class label. An example output can be found in \texttt{figures/per\_class\_accuracy.png}.
-    \item \newcov{Processing Times Distribution}: \texttt{plot\_processing\_times} creates a pie chart that visualizes the proportion of time spent in each pipeline phase (e.g., IO, Alignment, Model Training). An example output can be found in \texttt{figures/runtime\_dist.png}.
-    \item \newcov{Performance by Prefix Length}: \texttt{plot\_evaluate\_by\_prefix\_length} plots prediction metrics (Accuracy, F1 Score, or MAE for regression) on the Y-axis against the prefix length on the X-axis. This visually demonstrates whether adding more events to a trace improves the model's predictive power. An example output can be found in \texttt{figures/by\_len\_vis.png}.
+    \item \textbf{Decision Tree Visualization}: \texttt{visualize\_decision\_tree} renders the fitted scikit-learn Decision Tree (classifier or regressor), clearly showing the splitting criteria, node purity, and leaf values. This is crucial for the "white-box" interpretability requirement. An example output can be found in \ref{decision-tree}.
+    \item \textbf{Confusion Matrix Heatmap}: \texttt{plot\_confusion\_matrix\_image} generates a clear, color-coded heatmap (blues colormap) of the confusion matrix for classification tasks. The matrix contrasts predicted vs. actual outcomes, highlighting true positives and false positives. An example output can be found in \ref{confusion-matrix}.
+    \item \textbf{Per-Class Accuracy Chart}: \texttt{plot\_per\_class\_bar\_chart} complements the confusion matrix by rendering a stacked bar chart displaying the percentage of correct (green) versus incorrect (red) predictions for each class label. An example output can be found in \ref{class-accuracy}.
+    \item \newcov{Processing Times Distribution}: \texttt{plot\_processing\_times} creates a pie chart that visualizes the proportion of time spent in each pipeline phase (e.g., IO, Alignment, Model Training). An example output can be found in \ref{processing-time}.
+    \item \newcov{Performance by Prefix Length}: \texttt{plot\_evaluate\_by\_prefix\_length} plots prediction metrics (Accuracy, F1 Score, or MAE for regression) on the Y-axis against the prefix length on the X-axis. This visually demonstrates whether adding more events to a trace improves the model's predictive power. An example output can be found in \ref{prefix-classification} and \ref{prefix-regression}.
 \end{itemize}
+
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/confusion_matrix.png}
+	\caption{Confusion matrix visualization.}
+    \label{confusion-matrix}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/decision_tree.png}
+	\caption{Decision tree visualization.}
+    \label{decision-tree}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/per_class_accuracy.png}
+	\caption{Accuracy per class graph.}
+    \label{class-accuracy}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/runtime_dist.png}
+	\caption{Processing Times Distribution as Pie-chart.}
+    \label{processing-time}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/vis_classification_f1_accuracy.png}
+	\caption{Performance by Prefix Length: Classification}
+    \label{prefix-classification}
+\end{figure}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\textwidth]{figures/vis_regression_mae.png}
+	\caption{Performance by Prefix Length: Regression}
+    \label{prefix-regression}
+\end{figure}
 
 \noindent \textbf{Planned in Sprint 3}
 \begin{itemize}
