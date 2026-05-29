@@ -195,13 +195,137 @@ For the next sprint, we plan to adopt an even more issue-based workflow on the c
 Even though we did not include visualizations in our requriements when planning this project, it has become evident, that visualizations are a key part of our project. In process and business intelligence, visualizations are of key importance to highlight and contextualize raw numbers and make them accessible to human pattern recognition. Thus we devoted a great amount of time this sprint to create new visualizations and we plan on implementing even more to achieve a great basis for the upcoming evaluation and assessment.
 \textbf{Covered}
 \begin{itemize}
-    \item \todo{covered visualizations}
+    \item \textbf{Process Model Visualization}: \texttt{visualize\_process\_model} supports interactive viewing or saving of normative models (either discovered or provided) in three formats: Petri Net, BPMN, and Process Tree.
+    \item \textbf{Decision Tree Visualization}: \texttt{visualize\_decision\_tree} renders the fitted scikit-learn Decision Tree (classifier or regressor), clearly showing the splitting criteria, node purity, and leaf values. This is crucial for the "white-box" interpretability requirement. An example output can be found in \texttt{figures/decision\_tree.png}.
+    \item \textbf{Confusion Matrix Heatmap}: \texttt{plot\_confusion\_matrix\_image} generates a clear, color-coded heatmap (blues colormap) of the confusion matrix for classification tasks. The matrix contrasts predicted vs. actual outcomes, highlighting true positives and false positives. An example output can be found in \texttt{figures/confusion\_matrix.png}.
+    \item \textbf{Per-Class Accuracy Chart}: \texttt{plot\_per\_class\_bar\_chart} complements the confusion matrix by rendering a stacked bar chart displaying the percentage of correct (green) versus incorrect (red) predictions for each class label. An example output can be found in \texttt{figures/per\_class\_accuracy.png}.
+    \item \newcov{Processing Times Distribution}: \texttt{plot\_processing\_times} creates a pie chart that visualizes the proportion of time spent in each pipeline phase (e.g., IO, Alignment, Model Training). An example output can be found in \texttt{figures/runtime\_dist.png}.
+    \item \newcov{Performance by Prefix Length}: \texttt{plot\_evaluate\_by\_prefix\_length} plots prediction metrics (Accuracy, F1 Score, or MAE for regression) on the Y-axis against the prefix length on the X-axis. This visually demonstrates whether adding more events to a trace improves the model's predictive power. An example output can be found in \texttt{figures/by\_len\_vis.png}.
 \end{itemize}
 
 \noindent \textbf{Planned in Sprint 3}
 \begin{itemize}
-    \item \todo{planned visualizations} 
+    \item \textbf{Feature Importance Comparison}: \texttt{plot\_feature\_importance} will render a bar chart of the top predictive features, color-coding conformance-derived features to visually prove their impact versus standard control-flow features.
+    \item \textbf{ROC and PR Curves}: \texttt{plot\_roc\_curves} and \texttt{plot\_pr\_curves} will be implemented to overlay the curves of baseline vs. conformance-aware models, providing a standard ML evaluation visualization for binary risk targets.
+    \item \textbf{Resource Scaling Plot}: \texttt{plot\_resource\_usage} will plot runtime and memory usage as a function of log size (number of cases/events) to empirically demonstrate the computational overhead of alignment extraction.
 \end{itemize}
+
+\subsection{CLI Output}
+To better understand how these visualizations integrate into the user flow, here is an exemplary execution of the interactive CLI that generates the performance evaluation:
+
+\begin{verbatim}
+=== Conformance Predictions ===
+Do you have a normative process model? (y/N): 
+Enter the path to the event log (XES/CSV): data/sepsis-cases.xes
+Model discovery will be used.
+
+Which discovery algorithm should be used?
+1. Inductive Miner (recommended)
+2. Alpha Miner
+3. Genetic Miner
+Select option (1-3): 2
+Alpha Miner has no configurable parameters.
+
+Do you want a visualization of the discovered normative model saved (s) or directly displayed (d) or not (N)? (s/d/N): 
+--- Loading event log: data/sepsis-cases.xes ---
+--- Discovering model using ALPHA ---
+
+What should be predicted?
+1. Future conformance deviations
+2. Process outcome
+3. Remaining time
+Select option (1-3): 2
+
+Define the target outcome:
+Enter activity names that signify a outcome (one per line).
+Type 'done' when finished.
+> Release A
+> Release B
+> Release C
+> Release D
+> Release E
+> done
+
+What should the prediction be based upon?
+1. Plain trace (control-flow)
+2. Trace and alignment-based diagnostics
+3. Case features
+4. Mixture of all available information
+Select option (1-4): 4
+
+[... Case attributes omitted for brevity ...]
+
+Prefix mode?
+  [Enter] none      (default - one row per case, cheapest; no per-prefix alignments)
+  1)      exactly k (one prefix per case at length k)
+  2)      varying 1..k (pooled - prefixes of length 1..k)
+Select (Enter/1/2): 2
+  max length k (blank = median case length): 8
+  step (default 1): 2
+  using varying prefixes 1..8, step=2
+
+Enter a split value for the train- / test-split (default=0.7): 
+Invalid choice. Defaulting to 0.7
+--- Extracting target (per case): PROCESS_OUTCOME ---
+--- Generating prefixes (min=1, max=8, step=2, gate=on) ---
+--- Extracting features over 2772 prefixes: HYBRID ---
+--- Preprocessing and encoding data ---
+
+Which ML algorithm do you want to apply on your data?
+(1) Decision Tree
+(2) Algorithm 2
+(3) Algorithm 3
+Select option (1-3): 1
+Decision Tree selected.
+
+Do you want to configure the parameters yourself? (y/N): 
+
+Training model...
+Do you want the decision tree saved (s), displayed (d) or not shown (N)? (s/d/N): 
+Do you want to reconfigure the hyperparameters and retrain? (y/N): 
+
+Starting evaluation pipeline...
+--- Using pre-trained model ---
+--- Evaluating model ---
+
+Pipeline completed successfully!
+
+Classification metrics (Global Pooled - Lengths: [1, 3, 5, 7]):
+  accuracy: 0.6894060995184591
+  precision: 0.5921423288201567
+  recall: 0.6894060995184591
+  f1: 0.6344279306480443
+  roc_auc: 0.5942135054989948
+  brier_score: 0.0
+
+Overall Confusion Matrix (Pooled over lengths [1, 3, 5, 7]):
+                          Release A          Release B          Release C          Release D          Release E      uncertain_outcome 
+Release A                    771                 4                  0                  0                  0                  81        
+Release B                     57                 0                  0                  0                  0                  19        
+Release C                     23                 0                  0                  0                  0                  5         
+Release D                     33                 0                  0                  0                  0                  3         
+Release E                     12                 0                  0                  0                  0                  0         
+uncertain_outcome            150                 0                  0                  0                  0                  88        
+
+Per-Class Prediction Breakdown:
+  Release A: 90.1% correct (771/856),  9.9% incorrect (85/856)
+  Release B: 0.0% correct (0/76),  100.0% incorrect (76/76)
+  Release C: 0.0% correct (0/28),  100.0% incorrect (28/28)
+  Release D: 0.0% correct (0/36),  100.0% incorrect (36/36)
+  Release E: 0.0% correct (0/12),  100.0% incorrect (12/12)
+  uncertain_outcome: 37.0% correct (88/238),  63.0% incorrect (150/238)
+
+Metrics by prefix length:
+ prefix_length   n  accuracy  precision   recall       f1  roc_auc  brier_score
+             1 326  0.656442   0.579763 0.656442 0.615696 0.584056          0.0
+             3 326  0.690184   0.601240 0.690184 0.640255 0.597140          0.0
+             5 313  0.683706   0.585921 0.683706 0.627627 0.600362          0.0
+             7 281  0.733096   0.575795 0.733096 0.638572 0.581269          0.0
+
+Enter a prefix length to see its specific confusion matrix (or 'N' to skip): n
+
+Do you want to save a visualization of the performance per prefix-length? (y/N):
+\end{verbatim}
 
 \section{Sprint review}
 
