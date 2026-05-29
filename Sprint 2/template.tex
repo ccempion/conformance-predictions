@@ -64,8 +64,8 @@ We discussed with Alessandro at the weekly meetup that we wanted to set up a Git
 This set-up went smoothly, and now our testing pipeline, which runs all the tests in the \texttt{tests/} folder with a fresh \texttt{python:3.14.4} image and pytest is up and running. The CI pipeline works in the following manner: 
 \begin{enumerate}
     \item Navigation into the \texttt{Code/} folder: \texttt{cd Code}
-    \item Creation of a temporary virtual environment: \texttt{python3 -m venv .ci_venv}
-    \item Activating this virtual environment: \texttt{source .ci_venv/bin/activate}
+    \item Creation of a temporary virtual environment: \texttt{python3 -m venv .ci\_venv}
+    \item Activating this virtual environment: \texttt{source .ci\_venv/bin/activate}
     \item Installation of all required dependencies: 
     \begin{enumerate}
         \item \texttt{pip install --upgrade pip}
@@ -130,8 +130,8 @@ We aim to cover as much code as possible with our automated testing pipeline, th
     \item \textbf{HL-16}: \texttt{evaluation.compute\_classification\_metrics()} computes accuracy, precision, recall, F1-score, ROC-AUC, and Brier score for binary and multi-class classification targets.
     \item \textbf{HL-12}: Confusion matrix heatmap and per-class accuracy bar chart are generated via Matplotlib in \texttt{visualization.save\_evaluation\_visuals()}.
     \item \newcov{HL-14}: The system allows for precise measuring of runtime and memory usage.
-    \item \newcov{HL-14.1}: Each critical and potentially time-consuming step (often the pipelines) is precisely measured and the runtime is appended to running list. This functionality is performed by \texttt{measure_runtime}, which utilizes \texttt{time.perf_coutner} internally.
-    \item \newcov{HL-14.2}: The peak memory consumed by the program is tracked by the function \texttt{measure_memory}. Additionally, it accounts for OS dependent units (bytes or kilobytes).
+    \item \newcov{HL-14.1}: Each critical and potentially time-consuming step (often the pipelines) is precisely measured and the runtime is appended to running list. This functionality is performed by \texttt{measure\_runtime}, which utilizes \texttt{time.perf\_coutner} internally.
+    \item \newcov{HL-14.2}: The peak memory consumed by the program is tracked by the function \texttt{measure\_memory}. Additionally, it accounts for OS dependent units (bytes or kilobytes).
     \item \newcov{HL-14.3}: A counter accumulates the runtime from different steps in out program: from heavy \textit{PM4Py} methods for discovery, test-train split etc., to whole pipelines that extract features or train models.
     \item \newcov{HL-14.4}: The generated performance data (runtime, peak memory usage) is printed to the CLI and can optionally be saved to a JSON. The runtime can also be visualized as a pie-chart.
     \item \newcov{HL-15}: The main pipeline uses \texttt{pm4py.split\_train\_test} with a user-configurable train ratio (default $0.7$).
