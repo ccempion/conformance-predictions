@@ -6,6 +6,7 @@ machine learning pipeline as specified in the Requirements Engineering document.
 
 import sys
 import json
+import numpy as np
 from typing import Optional, Tuple, List, Any
 from src import model_training, pipeline, config, evaluation, feature_extraction
 from src import visualization as vis
@@ -534,16 +535,24 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
 
         metrics = results.get("metrics") or {}
         if metrics:
-            if is_remaining_time:
-                print("\nRegression metrics:")
+            target_str = "Regression" if is_remaining_time else "Classification"
+            if test_prefix_lengths is not None:
+                unique_lens = sorted(np.unique(test_prefix_lengths))
+                scope = f"Global Pooled - Lengths: {unique_lens}"
             else:
-                print("\nClassification metrics:")
+                scope = "Global - Full traces"
+            print(f"\n{target_str} metrics ({scope}):")
 
             for name, value in metrics.items():
                 print(f"  {name}: {value}")
 
             # Display confusion matrix and per-class stats in the CLI
         if is_process_outcome:
+            if test_prefix_lengths is not None:
+                unique_lens = sorted(np.unique(test_prefix_lengths))
+                print(f"\nOverall Confusion Matrix (Pooled over lengths {unique_lens}):")
+            else:
+                print("\nConfusion Matrix (Full traces):")
             vis.display_confusion_matrix_text(y_test_arr, y_pred, class_names)
             vis.display_per_class_stats(y_test_arr, y_pred, class_names)
 
@@ -554,6 +563,25 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             )
             print("\nMetrics by prefix length:")
             print(by_len.to_string(index=False))
+
+            # Allow inspecting specific lengths
+            if not is_remaining_time:
+                while True:
+                    prompt = "\nEnter a prefix length to see its specific confusion matrix (or 'N' to skip): "
+                    choice = input(prompt).strip().lower()
+                    if choice == 'n' or not choice:
+                        break
+                    try:
+                        k = int(choice)
+                        mask = (test_prefix_lengths == k)
+                        if not any(mask):
+                            print(f"No samples found for length {k}.")
+                            continue
+                        print(f"\n--- Detailed Confusion Matrix for Prefix Length {k} (n={sum(mask)}) ---")
+                        vis.display_confusion_matrix_text(y_test_arr[mask], y_pred[mask], class_names)
+                        vis.display_per_class_stats(y_test_arr[mask], y_pred[mask], class_names)
+                    except ValueError:
+                        print("Invalid input.")
             
             prompt = "\nDo you want to save a visualization of the performance per prefix-length? (y/N): "
             if input(prompt).lower().strip() == 'y':
