@@ -547,21 +547,21 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             vis.display_confusion_matrix_text(y_test_arr, y_pred, class_names)
             vis.display_per_class_stats(y_test_arr, y_pred, class_names)
 
-            # Prefix-length performance breakdown (HL-17) — only meaningful when lengths vary.
-            if test_prefix_lengths is not None and len(set(test_prefix_lengths)) > 1:
-                by_len = evaluation.metrics_by_prefix_length(
-                    y_test_arr, y_pred, results["y_prob"], test_prefix_lengths
-                )
-                print("\nMetrics by prefix length:")
-                print(by_len.to_string(index=False))
-                if input("\nDo you want to save a visualization of the accuracy and F1 per prefix-length? (y/N): ").lower().strip() == 'y':
-                    by_len_output_path = input("Enter filename (default: by_len_vis.png): ").strip() or "by_len_vis.png"
-                    vis.plot_evaluate_by_prefix_length(
-                        by_len, by_len_output_path
-                    )
+        # Prefix-length performance breakdown (HL-17) — only meaningful when lengths vary.
+        if test_prefix_lengths is not None and len(set(test_prefix_lengths)) > 1:
+            by_len = evaluation.metrics_by_prefix_length(
+                y_test_arr, y_pred, results.get("y_prob"), test_prefix_lengths, is_regression=is_remaining_time
+            )
+            print("\nMetrics by prefix length:")
+            print(by_len.to_string(index=False))
+            
+            prompt = "\nDo you want to save a visualization of the performance per prefix-length? (y/N): "
+            if input(prompt).lower().strip() == 'y':
+                by_len_output_path = input("Enter filename (default: by_len_vis.png): ").strip() or "by_len_vis.png"
+                vis.plot_evaluate_by_prefix_length(by_len, by_len_output_path)
 
-            # Offer to save both visualisations
-            if input("\nSave confusion matrix and accuracy chart? (y/N): ").lower().strip() == 'y':
+        # Offer to save visualisations
+        if is_process_outcome and input("\nSave confusion matrix and accuracy chart? (y/N): ").lower().strip() == 'y':
                 path_input = input("Folder to save in (press Enter for Downloads): ").strip()
                 base_dir = path_input if path_input else None
                 saved_to = vis.save_evaluation_visuals(y_test_arr, y_pred, class_names, base_dir)

@@ -40,6 +40,7 @@ def run_conformance_prediction_pipeline(
     if is_regression:
         y_pred = model_training.predict_regression(trained_model, X_test)
         metrics = evaluation.compute_regression_metrics(y_test, y_pred)
+        y_prob = None
 
     else:
         y_pred, y_prob = model_training.predict(trained_model, X_test)

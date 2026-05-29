@@ -72,23 +72,22 @@ def compute_regression_metrics(
 def compute_classification_metrics(
     y_true: np.ndarray,
     y_pred: np.ndarray,
-    y_pred_proba: np.ndarray,
+    y_pred_proba: Optional[np.ndarray] = None,
 ) -> Dict[str, float]:
     """Compute standard binary classification metrics."""
     n_unique = len(np.unique(y_true))
-    # Use proba dimensionality (what the model produced) to decide binary vs multi-class,
-    # not y_true's unique count — the two can differ after a temporal split.
-    is_binary_proba = np.ndim(y_pred_proba) == 1
+    # Use proba dimensionality to decide binary vs multi-class.
+    is_binary_proba = np.ndim(y_pred_proba) == 1 if y_pred_proba is not None else False
 
-    if n_unique <= 1:
-        roc_auc = 0.5
-    elif is_binary_proba:
-        roc_auc = float(metrics.roc_auc_score(y_true, y_pred_proba))
-    else:
-        try:
-            roc_auc = float(metrics.roc_auc_score(y_true, y_pred_proba, multi_class='ovr'))
-        except ValueError:
-            roc_auc = 0.0  # train/test class mismatch — model never saw all test classes
+    roc_auc = 0.5
+    if y_pred_proba is not None and n_unique > 1:
+        if is_binary_proba:
+            roc_auc = float(metrics.roc_auc_score(y_true, y_pred_proba))
+        else:
+            try:
+                roc_auc = float(metrics.roc_auc_score(y_true, y_pred_proba, multi_class='ovr'))
+            except ValueError:
+                roc_auc = 0.0
 
     return {
         "accuracy": float(metrics.accuracy_score(y_true, y_pred)),
@@ -103,40 +102,35 @@ def compute_classification_metrics(
 def metrics_by_prefix_length(
     y_true: np.ndarray,
     y_pred: np.ndarray,
-    y_prob: np.ndarray,
+    y_prob: Optional[np.ndarray],
     prefix_lengths: np.ndarray,
+    is_regression: bool = False,
     min_group_size: int = 10,
 ) -> pd.DataFrame:
     """Slice ONE pooled model's predictions by prefix length and compute metrics per length.
 
-    This is the pooled counterpart to evaluate_by_prefix_length (which retrains a separate
-    model per length); here a single model trained on varying-length prefixes is evaluated,
-    then its predictions are grouped by the prefix length of each test instance (HL-17).
-
     Args:
         y_true, y_pred, y_prob: aligned prediction arrays for the pooled test set.
-        prefix_lengths: prefix length of each test instance (row-aligned to the arrays).
-        min_group_size: groups with fewer samples are dropped to avoid unstable estimates.
-
-    Returns:
-        DataFrame with one row per prefix_length and the columns produced by
-        compute_classification_metrics, sorted by prefix_length.
+        prefix_lengths: prefix length of each test instance.
+        is_regression: whether to compute regression or classification metrics.
+        min_group_size: groups with fewer samples are dropped.
     """
-    y_true = np.asarray(y_true)
-    y_pred = np.asarray(y_pred)
-    y_prob = np.asarray(y_prob)
-    prefix_lengths = np.asarray(prefix_lengths)
+    y_true, y_pred, prefix_lengths = np.asarray(y_true), np.asarray(y_pred), np.asarray(prefix_lengths)
 
     rows = []
     for k in sorted(np.unique(prefix_lengths)):
         mask = prefix_lengths == k
         if int(mask.sum()) < min_group_size:
             continue
-        m = compute_classification_metrics(y_true[mask], y_pred[mask], y_prob[mask])
+        
+        if is_regression:
+            m = compute_regression_metrics(y_true[mask], y_pred[mask])
+        else:
+            m = compute_classification_metrics(y_true[mask], y_pred[mask], y_prob[mask] if y_prob is not None else None)
+        
         rows.append({"prefix_length": int(k), "n": int(mask.sum()), **m})
 
-    cols = ["prefix_length", "n", "accuracy", "precision", "recall", "f1", "roc_auc", "brier_score"]
-    return pd.DataFrame(rows, columns=cols)
+    return pd.DataFrame(rows)
 
 
 def evaluate_by_prefix_length(

@@ -205,19 +205,25 @@ def plot_evaluate_by_prefix_length(
     output_path: Optional[str] = None,
 ) -> None:
     """
-    Plots the results of evaluate_by_prefix_length.
-    X-axis: prefix_length
-    Y-axis: accuracy and f1 scores
+    Plots the results of metrics_by_prefix_length.
+    X-axis: prefix_length. Y-axis: Metrics (Accuracy/F1 for clf, MAE for reg).
     """
     fig, ax = plt.subplots(figsize=(10, 6))
     
-    ax.plot(results_df["prefix_length"], results_df["accuracy"], marker='o', label="Accuracy", color="blue")
-    ax.plot(results_df["prefix_length"], results_df["f1"], marker='o', label="F1 Score", color="green")
+    if "accuracy" in results_df.columns:
+        ax.plot(results_df["prefix_length"], results_df["accuracy"], marker='o', label="Accuracy", color="blue")
+    if "f1" in results_df.columns:
+        ax.plot(results_df["prefix_length"], results_df["f1"], marker='o', label="F1 Score", color="green")
+    
+    if "MAE" in results_df.columns:
+        ax.plot(results_df["prefix_length"], results_df["MAE"], marker='s', label="MAE", color="red")
+        ax.set_ylabel("Mean Absolute Error (seconds)")
+    else:
+        ax.set_ylabel("Score")
+        ax.set_ylim(0, 1.05)
     
     ax.set_xlabel("Prefix Length")
-    ax.set_ylabel("Score")
     ax.set_title("Model Performance by Prefix Length")
-    ax.set_ylim(0, 1.05)
     ax.legend()
     ax.grid(True, linestyle='--', alpha=0.7)
     
