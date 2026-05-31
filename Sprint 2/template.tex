@@ -110,12 +110,12 @@ We aim to cover as much code as possible with our automated testing pipeline, th
 
 \textbf{Planned in Sprint 3}
 \begin{itemize}
-    \item \textbf{LL-13.1}: \textit{Optional:}Hash-based caching of prefix activity sequences to deterministically identify and skip redundant alignment computations.
-    \item \textbf{LL-13.2}: \textit{Optional:} Disk-based persistence of alignment results via \texttt{joblib}.
+    \item \textbf{LL-13.1}: \textit{Optional:} \noindent Hash-based caching of prefix activity sequences to deterministically identify and skip redundant alignment computations.
+    \item \textbf{LL-13.2}: \textit{Optional:} \noindent Disk-based persistence of alignment results via \texttt{joblib}.
 \end{itemize}
 
 \subsection{Model Training}
-\textbf{Covered}
+\textbf{Fully Covered}
 \begin{itemize}
     \item \textbf{HL-08}: \texttt{train\_classification\_model()} wraps a configurable classifier (Decision Tree, Logistic Regression, or Gradient Boosting) in a \texttt{sklearn.Pipeline}. The binary deviation label is derived from the case's real alignment cost via the configurable threshold $T$, so the target is fully driven by alignment-based deviation cost.
     \item \textbf{LL-08.1}: \texttt{StandardScaler} is integrated as the first step in every sklearn Pipeline, ensuring scale-consistent feature distributions.
@@ -146,7 +146,7 @@ We aim to cover as much code as possible with our automated testing pipeline, th
 
 \subsection{Config \& Pipeline}
 
-\textbf{Covered}
+\textbf{Fully Covered}
 \begin{itemize}
     \item \textbf{HL-03}: \texttt{main.py} provides an interactive CLI that guides the user through model path/discovery selection, prediction target (future deviations, process outcome, remaining time), feature basis (including case attributes), prefix mode, train/test split ratio, and ML algorithm configuration.
     \item \textbf{LL-03.1}: Prediction target and feature basis options are fully defined in \texttt{config.py} and selectable in the CLI; both the case-attribute feature path and the conformance-deviation target are now fully wired through the pipeline.
@@ -192,7 +192,7 @@ For the next sprint, we plan to adopt an even more issue-based workflow on the c
 
 \section{Exemplary Visualizations and Outputs}
 \subsection{Visualizations}
-Even though we did not include visualizations in our requriements when planning this project, it has become evident, that visualizations are a key part of our project. In process and business intelligence, visualizations are of key importance to highlight and contextualize raw numbers and make them accessible to human pattern recognition. Thus we devoted a great amount of time this sprint to create new visualizations and we plan on implementing even more to achieve a great basis for the upcoming evaluation and assessment.
+Even though we did not include visualizations in our requriements when planning this project, it has become evident, that visualizations are a key part of our project. In process and business intelligence, visualizations are of key importance to highlight and contextualize raw numbers and make them accessible to human pattern recognition. Thus we devoted a great amount of time this sprint to create new visualizations and we plan on implementing even more to achieve a great basis for the upcoming evaluation and assessment. \\
 \textbf{Covered}\\\\
 \begin{itemize}
     \item \textbf{Process Model Visualization}: \texttt{visualize\_process\_model} supports interactive viewing or saving of normative models (either discovered or provided) in three formats: Petri Net, BPMN, and Process Tree.
@@ -373,5 +373,5 @@ The collaboration with Cem was again flawless and even though we were both restr
 \subsection{Cem Colak}
 In this sprint we switched the responsibilities. This was a very important step for me, to really understand the other modules of our project and add/improve improve some functionalities. I feel very comfortable with our codebase, and even see some potential implementation improvements we can make in the next sprint. 
 Furthermore, the new branching and granularity was pretty new for me, although that I know, that it is common pratice. I really liked the approach and will definitely use it in my future projects as well. Additionally, I noticed that preprocessing is a pretty heavy module and understand now, why Prof. Van der Aalst meant, that Preprocessing makes a huge stake in the whole data pipeline. 
-In terms of time-management, I was a bit restricted in the second week, since I am on vacation. Still, Richard and me already planned and timed our engagement in the whole sprint such that we were able to manage all our goals for the second sprint in a smooth and timely manner. The only thing I didn't expect is the weak level of documentation we have had so far. On the other hand, I was really busy in the past days with my seminar submission and all the assignments, so I think it is a valid reason why we achieved less in this part of the project. For the next sprint, we plan to focus on the documentation from the beginning, as we have alrady implemented most of the functionalities and can produce a valuable documentation base. In terms of the collaboration with Richard I'm very satisfied overall and valued his engagement in planning and adivsing a lot. We have had regular conversations and calls such that our boths views are aligned and no one works apart from the other. I'm looking foward continuing, polishing, and finishing the software artifact with Richard in the incoming last sprint.
+In terms of time-management, I was a bit restricted in the second week, since I am on vacation. Still, Richard and me already planned and timed our engagement in the whole sprint such that we were able to manage all our goals for the second sprint in a smooth and timely manner. The only thing I didn't expect is the weak level of documentation we have had so far. On the other hand, I was really busy in the past days with my seminar submission and all the assignments, so I think it is a valid reason why we achieved less in this part of the project. For the next sprint, we plan to focus on the documentation from the beginning, as we have alrady implemented most of the functionalities and can produce a valuable documentation base. The collaboration with Richard was overall very satisfying and I valued his engagement in planning and adivsing a lot. Furthermore, he put a great effort into our comprehensive testing and visualization modules. For the next sprint we will have to simplify our code, add the last functionalities and build the remaining documents. 
 \end{document}
