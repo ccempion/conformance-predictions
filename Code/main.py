@@ -12,6 +12,84 @@ from src import model_training, pipeline, config, evaluation, feature_extraction
 from src import visualization as vis
 import pm4py
 
+def _prompt_classifier_params(algorithm: config.ClassificationAlgorithm) -> dict:
+    """
+    Prompt for the hyperparameters relevant to the chosen classifier and return them
+    as an ml_params dict (blank answers fall back to the per-algorithm defaults in
+    model_training._CLASSIFIER_DEFAULTS).
+    """
+    ml_params: dict = {}
+    if algorithm == config.ClassificationAlgorithm.DECISION_TREE:
+        print("\nConfiguring Decision Tree Parameters:")
+        criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
+        if criterion in ["gini", "entropy"]:
+            ml_params["criterion"] = criterion
+        max_depth = input("Max depth (int, default 4): ").strip()
+        if max_depth:
+            ml_params["max_depth"] = int(max_depth)
+        min_samples_split = input("Min samples split (int, default 2): ").strip()
+        if min_samples_split:
+            ml_params["min_samples_split"] = int(min_samples_split)
+        min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
+        if min_samples_leaf:
+            ml_params["min_samples_leaf"] = int(min_samples_leaf)
+    elif algorithm == config.ClassificationAlgorithm.LOGISTIC_REGRESSION:
+        print("\nConfiguring Logistic Regression Parameters:")
+        c_val = input("Inverse regularization strength C (float, default 1.0): ").strip()
+        if c_val:
+            ml_params["C"] = float(c_val)
+    else:  # GRADIENT_BOOSTING
+        print("\nConfiguring Gradient Boosting Parameters:")
+        n_estimators = input("Number of estimators (int, default 100): ").strip()
+        if n_estimators:
+            ml_params["n_estimators"] = int(n_estimators)
+        max_depth = input("Max depth (int, default 3): ").strip()
+        if max_depth:
+            ml_params["max_depth"] = int(max_depth)
+    return ml_params
+
+
+def configure_and_train_classifier(X_train, y_train, time_list):
+    """
+    Shared classifier-selection + hyperparameter + training path for the two
+    classification targets (PROCESS_OUTCOME and FUTURE_DEVIATIONS). Prints the
+    algorithm menu, optionally collects custom parameters, trains via
+    train_classification_model, records the training time, and returns
+    (trained_model, algorithm, ml_params).
+    """
+    print("\nWhich classification algorithm do you want to apply?")
+    print("(1) Decision Tree")
+    print("(2) Logistic Regression")
+    print("(3) Gradient Boosting")
+    algorithms = [
+        config.ClassificationAlgorithm.DECISION_TREE,
+        config.ClassificationAlgorithm.LOGISTIC_REGRESSION,
+        config.ClassificationAlgorithm.GRADIENT_BOOSTING,
+    ]
+    try:
+        ml_choice = int(input("Select option (1-3): ").strip())
+        algorithm = algorithms[ml_choice - 1]
+    except (ValueError, IndexError):
+        print("Invalid choice. Defaulting to Decision Tree.")
+        algorithm = config.ClassificationAlgorithm.DECISION_TREE
+    print(f"{algorithm.value} selected.")
+
+    ml_params = {}
+    if input("\nDo you want to configure the parameters yourself? (y/N): ").lower().strip() == 'y':
+        ml_params = _prompt_classifier_params(algorithm)
+
+    print("\nTraining model...")
+    trained_model, train_time = evaluation.measure_runtime(
+        model_training.train_classification_model,
+        X_train,
+        y_train,
+        algorithm,
+        ml_params,
+    )
+    time_list.append(("Model Training", train_time))
+    return trained_model, algorithm, ml_params
+
+
 def run_interactive_cli() -> List[Tuple[str, float]]:
     """
     Guides the user through configuration steps as an interactive command-line-interface program: (HL-03) & triggers the pipeline.
@@ -320,7 +398,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
     # ML Algorithm Configuration
     ml_params = {}
     regression_algorithm = None      # set only for REMAINING_TIME
-    classification_algorithm = None  # set only for FUTURE_DEVIATIONS
+    classification_algorithm = None  # set for the classification targets
 
     if is_remaining_time:
         # Regression menu — the "Algorithm 1/2/3" slots map to concrete regressors.
@@ -371,97 +449,21 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             ml_params,
         )
         time_list.append(("Model Training", train_time))
-    elif is_future_deviations:
-        # FUTURE_DEVIATIONS is risk classification: probabilistic classifiers whose
-        # predict_proba gives a calibrated-ish deviation risk score.
-        print("\nWhich classification algorithm do you want to apply?")
-        print("(1) Logistic Regression")
-        print("(2) Gradient Boosting")
-        try:
-            ml_choice = int(input("Select option (1-2): ").strip())
-            classification_algorithm = [
-                config.ClassificationAlgorithm.LOGISTIC_REGRESSION,
-                config.ClassificationAlgorithm.GRADIENT_BOOSTING,
-            ][ml_choice - 1]
-        except (ValueError, IndexError):
-            print("Invalid choice. Defaulting to Logistic Regression.")
-            ml_choice = 1
-            classification_algorithm = config.ClassificationAlgorithm.LOGISTIC_REGRESSION
-        print(f"{classification_algorithm.value} selected.")
-
-        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/N): ").lower().strip() == 'y'
-        if use_custom_ml and classification_algorithm == config.ClassificationAlgorithm.LOGISTIC_REGRESSION:
-            print("\nConfiguring Logistic Regression Parameters:")
-            c_val = input("Inverse regularization strength C (float, default 1.0): ").strip()
-            if c_val:
-                ml_params["C"] = float(c_val)
-        elif use_custom_ml:  # Gradient Boosting
-            print("\nConfiguring Gradient Boosting Parameters:")
-            n_estimators = input("Number of estimators (int, default 100): ").strip()
-            if n_estimators:
-                ml_params["n_estimators"] = int(n_estimators)
-            max_depth = input("Max depth (int, default 3): ").strip()
-            if max_depth:
-                ml_params["max_depth"] = int(max_depth)
-
-        print("\nTraining model...")
-        trained_model, train_time = evaluation.measure_runtime(
-            model_training.train_classification_model,
-            X_train,
-            y_train,
-            classification_algorithm,
-            ml_params,
-        )
-        time_list.append(("Model Training", train_time))
     else:
-        print("\nWhich ML algorithm do you want to apply on your data?")
-        print("(1) Decision Tree")
-        print("(2) Algorithm 2")
-        print("(3) Algorithm 3")
-        try:
-            ml_choice = int(input("Select option (1-3): ").strip())
-            if ml_choice == 1:
-                print("Decision Tree selected.")
-            elif ml_choice == 2:
-                print("Algorithm 2 selected.")
-            elif ml_choice == 3:
-                print("Algorithm 3 selected.")
-        except (ValueError, IndexError):
-            print("Invalid choice. Defaulting to Decision Tree.")
-            ml_choice = 1
-
-        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/N): ").lower().strip() == 'y'
-        if use_custom_ml and ml_choice == 1:  # Decision Tree
-            print("\nConfiguring Decision Tree Parameters:")
-            criterion = input("Criterion (gini/entropy, default=gini): ").strip().lower()
-            if criterion in ["gini", "entropy"]:
-                ml_params["criterion"] = criterion
-            max_depth = input("Max depth (int, default 4): ").strip()
-            if max_depth:
-                ml_params["max_depth"] = int(max_depth)
-            min_samples_split = input("Min samples split (int, default 20): ").strip()
-            if min_samples_split:
-                ml_params["min_samples_split"] = int(min_samples_split)
-            min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
-            if min_samples_leaf:
-                ml_params["min_samples_leaf"] = int(min_samples_leaf)
-
-        # Train initial model
-        print("\nTraining model...")
-        trained_model, train_time = evaluation.measure_runtime(
-            model_training.train_model,
-            X_train,
-            y_train,
-            ml_params
+        # PROCESS_OUTCOME and FUTURE_DEVIATIONS are both classification targets and
+        # share one enum-driven path (Decision Tree / Logistic Regression / Gradient
+        # Boosting). Every classifier exposes predict_proba, so a Decision Tree chosen
+        # here also stays visualisable.
+        trained_model, classification_algorithm, ml_params = configure_and_train_classifier(
+            X_train, y_train, time_list
         )
-        time_list.append(("Model Training", train_time))
 
     # Decision Tree visualisation + reconfigure loop — only for a single Decision Tree
     # (classification DT, or the Decision Tree Regressor for remaining time).
     is_process_outcome = (not is_remaining_time and not is_future_deviations)
     show_tree = (
         (is_remaining_time and regression_algorithm == config.RegressionAlgorithm.DECISION_TREE)
-        or (is_process_outcome and ml_choice == 1)
+        or (not is_remaining_time and classification_algorithm == config.ClassificationAlgorithm.DECISION_TREE)
     )
     if show_tree:
         while True:
@@ -481,32 +483,30 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
                     print(f"Decision tree saved to: {dt_output_path}")
 
             if input("\nDo you want to reconfigure the hyperparameters and retrain? (y/N): ").lower().strip() == 'y':
-                ml_params = {}
-                print("\nConfiguring Decision Tree Parameters:")
-                # Criterion (gini/entropy) only applies to the classifier.
-                if not is_remaining_time:
-                    criterion = input("Criterion (gini/entropy, default gini): ").strip().lower()
-                    if criterion in ["gini", "entropy"]:
-                        ml_params["criterion"] = criterion
-                max_depth = input("Max depth (int, default 4): ").strip()
-                if max_depth:
-                    ml_params["max_depth"] = int(max_depth)
-                min_samples_split = input("Min samples split (int, default 2): ").strip()
-                if min_samples_split:
-                    ml_params["min_samples_split"] = int(min_samples_split)
-                min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
-                if min_samples_leaf:
-                    ml_params["min_samples_leaf"] = int(min_samples_leaf)
-                print("Retraining model...")
                 if is_remaining_time:
+                    # Decision Tree Regressor — criterion (gini/entropy) does not apply.
+                    ml_params = {}
+                    print("\nConfiguring Decision Tree Parameters:")
+                    max_depth = input("Max depth (int, default 4): ").strip()
+                    if max_depth:
+                        ml_params["max_depth"] = int(max_depth)
+                    min_samples_split = input("Min samples split (int, default 2): ").strip()
+                    if min_samples_split:
+                        ml_params["min_samples_split"] = int(min_samples_split)
+                    min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
+                    if min_samples_leaf:
+                        ml_params["min_samples_leaf"] = int(min_samples_leaf)
+                    print("Retraining model...")
                     trained_model, train_time = evaluation.measure_runtime(
                         model_training.train_regression_model,
                         X_train, y_train, regression_algorithm, ml_params,
                     )
                 else:
+                    ml_params = _prompt_classifier_params(config.ClassificationAlgorithm.DECISION_TREE)
+                    print("Retraining model...")
                     trained_model, train_time = evaluation.measure_runtime(
-                        model_training.train_model,
-                        X_train, y_train, ml_params,
+                        model_training.train_classification_model,
+                        X_train, y_train, classification_algorithm, ml_params,
                     )
                 # Update the last training time
                 if time_list and time_list[-1][0] == "Model Training":
