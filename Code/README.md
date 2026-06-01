@@ -94,14 +94,14 @@ folder is not tracked in Git — supply your own logs there or point the prompt 
 - Model discovery: Inductive, Alpha, Genetic miner (`Discovery_alg`)
 
 **Prefix modes.** Predictions can run on whole cases (`none`), a single prefix length
-(`exactly k`), or pooled varying-length prefixes (`varying 1..k`). Remaining time is undefined
+(`exactly k`), or pooled varying-length prefixes (`varying 1..k`). **Remaining time** is undefined
 on a complete case, so it always requires prefixing.
 
 ## Inputs and outputs
 
 **Inputs**
-- Event log: **XES** (`.xes`), or **CSV** (`.csv`) with the exact columns
-  `case:concept:name`, `concept:name`, `time:timestamp`.
+- Event log: **XES** (`.xes`), or **CSV** (`.csv`) with the columns
+  `case:concept:name`, `concept:name`, `time:timestamp` and optional case attributes.
 - Normative model (optional): **Petri net** (`.pnml`), **BPMN** (`.bpmn`), or
   **process tree** (`.ptml`). BPMN and process trees are converted to Petri nets internally.
 
@@ -132,20 +132,19 @@ Code/
 ## Running tests
 
 ```bash
-cd Code
+cd Conformance-predictions/Code
 python -m pytest
 ```
 
 ## Documentation
 
 A detailed **User Guide** with the complete prompt-by-prompt CLI walkthrough is maintained as a
-LaTeX/PDF deliverable in the sprint folders — see the most recent `Sprint */UserGuide.pdf` at
-the repository root. Note that the PDF may lag behind the code on which features are marked
-implemented; this README reflects the current state of the code.
+LaTeX/PDF deliverable in the sprint folders — see the most recent `UserGuide.pdf` at
+the repository root folder.
 
 ## Team & context
 
-University lab project at **RWTH Aachen University** (Group 4), supervised by
+University lab project at **RWTH Aachen University**, supervised by
 **Dr. Alessandro Berti**.
 
 - Richard Schuppener
