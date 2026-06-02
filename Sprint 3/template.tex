@@ -6,6 +6,11 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{todonotes}
+\setuptodonotes{inline}
+
+% Highlight for requirement IDs that moved from "Planned" to "Covered" this sprint.
+\newcommand{\newcov}[1]{\colorbox{green!40}{\textbf{#1}}}
 
 \begin{document}
 \thispagestyle{empty}
@@ -14,7 +19,7 @@ Rheinisch-Westf\"alische Technische Hochschule Aachen \\
 Alessandro Berti\\[6ex]
 
 \LARGE
-	\textbf{Project Initialization: Implementation of "Conformance Predictions"} \\[6ex]
+	\textbf{Phase Review: 3rd Sprint of the Implementation of "Conformance Predictions"} \\[6ex]
         \centering{Group 4:}\\
 	\textit{Richard Schuppener, Cem Colak} \\[6ex]
 \end{center}
@@ -24,83 +29,163 @@ Alessandro Berti\\[6ex]
 \tableofcontents
 \newpage
 
-\section{Introduction}
+\section{Summary of Sprint 3}
+In this sprint, we focused on implementing all the remaining functionalities required for a fully functional end-to-end pipeline for conformance predictions. We intend to use the final sprint to further refine and optimise these functionalities, so that we can deliver a well-aligned and polished software artifact that fulfils Alessandro's requirements in the most sophisticated way.
 
-\section{Business Case} 
+Key achievements of this sprint include:
+\begin{enumerate}
+	\item Full end-to-end support for all three prediction targets -- \textit{Future Conformance Deviations}, \textit{Process Outcome}, and \textit{Remaining Time} -- with the CLI, pipeline, feature extraction, and model training extended accordingly.
+	\item Introduction of a prefix-generation module (\texttt{feature\_extraction.generate\_prefixes}) supporting both \textit{exactly-$k$} and \textit{varying $1..k$} prefix modes, with outcome-leakage gating that prevents the target activity from ever appearing inside the feature vector.
+	\item Implementation of the \textit{Case Attributes} and \textit{Hybrid} feature paths, including robust detection of trace-level attributes for both prefixed (\texttt{case:}) and unprefixed (XES-style) columns.
+	\item A configurable deviation cost threshold $T$ for the Future Deviations target, backed by a corrected cost function that excludes silent ($\tau$) routing moves from the real deviation count.
+	\item Per-prefix \textit{remaining-time} regression labels and dedicated temporal predictors (elapsed time, time since last event, event count).
+	\item Extension of the ML model menu beyond the Decision Tree: \textit{Logistic Regression} and \textit{Gradient Boosting} for classification, and \textit{Random Forest}, \textit{Gradient Boosting}, and \textit{Decision Tree Regressor} for regression.
+	\item Runtime and memory instrumentation via \texttt{time.perf\_counter} and \texttt{psutil}, with optional persistence of the collected measurements as a structured JSON report or as a pie-chart.
+	\item Prefix-length performance analysis (\texttt{metrics\_by\_prefix\_length}) that reports the full metric set per prefix length for a single pooled model.
+	\item  Pytest suite covering feature extraction (case attributes, prefix gating, remaining time, deviation cost), model training (parametrised over all classifier and regressor variants), evaluation metrics, and IO.
+	\item Extraction of a dedicated \textit{Visualization} module that bundles process-model, decision-tree, confusion-matrix, per-class accuracy rendering etc.
+\end{enumerate}
 
-\subsection{Client}
-\subsection{Example Use Case 1:}
-\subsection{Example Use Case 2:}
+\section{Codebase Structure}
+We enriched the initial codebase structure outlined in the first sprint review with a dedicated visualization module that bundles all visualization functionalities together. The modules are decomposed into the following categories:
+\begin{enumerate}
+	\item \textbf{IO:} Handles inputs and outputs, such as reading event logs and normative models, as well as visualizing process models.
+	\item \textbf{Feature Extraction:} Performs conformance checking (alignments only, hence no separate conformance module), extracts features related to alignments, control flow, and case attributes, and preprocesses the data for ML training (e.g.\ scaling of numerical values).
+	\item \textbf{Model Training:} Trains a model (as specified by the user) on the target and feature vector produced by the Feature Extraction step. This module also provides the capability to predict unseen data (test data or new data).
+	\item \textbf{Evaluation:} Computes evaluation metrics such as accuracy, precision, recall/fitness, confusion matrix, and ROC.
+	\item \textbf{Config:} Collection of Enums that correspond to the options presented to the user via the CLI. It keeps the codebase clean and easier to manage.
+	\item \textbf{Pipeline:} Bundles functionalities from the other modules into the larger ``steps'' of the process. Based on the user's choices, the correct functions are called and their inputs and outputs are streamlined together.
+	\item \textbf{Main / CLI:} The entry point of the program; also serves as the guide and option selector for the user. The CLI presents options, numerical metrics, and comprehensive error messages.
+	\item \textbf{Visualization:} Bundles all visualization functionalities, allowing us to maintain and adjust the visualizations in a more modular manner.
+\end{enumerate}
 
-\section{Feasibility Study}
+\section{Testing}
+We discussed with Alessandro at the weekly meetup that we wanted to set up a GitLab runner that runs independently of Richards PC uptime. Thankfully, registering a new runner and creating a token that links the runner to the repository is very straight-forward with GitLab. Alessandro agreed to host such a runner on an RWTH-server, such that we do not face the issue of pending pipelines anymore.
+This set-up went smoothly, and now our testing pipeline, which runs all the tests in the \texttt{tests/} folder with a fresh \texttt{python:3.14.4} image and pytest is up and running. The CI pipeline works in the following manner: 
+\begin{enumerate}
+    \item Navigation into the \texttt{Code/} folder: \texttt{cd Code}
+    \item Creation of a temporary virtual environment: \texttt{python3 -m venv .ci\_venv}
+    \item Activating this virtual environment: \texttt{source .ci\_venv/bin/activate}
+    \item Installation of all required dependencies: 
+    \begin{enumerate}
+        \item \texttt{pip install --upgrade pip}
+        \item \texttt{pip install -r requirements.txt}
+        \item \texttt{pip install pytest}
+    \end{enumerate}
+    \item Running the tests: \texttt{pytest tests/}
+\end{enumerate}
 
-\subsection{Theoretical Feasibility}
-\subsection{Technical Feasibility}
+We aim to cover as much code as possible with our automated testing pipeline, though a 100\% coverage is 1. infeasible and 2. much of our functionality is based on highly tested dependencies. Furthermore, we test by running the CLI manually and watching out for any unexpected errors. After all, we do not expect users to deliberately break the application, but use it in its designated fashion. Thus testing different input data and selected option combinations manually is definitely "good enough" for a student project.
+\section{Requirements Coverage Status - Overview per Module}
 
-\section{Project Charter}\label{sec:charter} 
-
-\includegraphics[width=1\textwidth]{project_charter.png}
-\\\\
-The milestones and their respective deadlines for submission of the required materials are:
+\subsection{IO}
+\textbf{All Covered}
 \begin{itemize}
-	\item Project Setup:
-	\item Requirements Engineering: 
-	\item Sprint 1: 
-	\item Sprint 2: 
-	\item Sprint 3: 
-	\item Testing and Assessment: 
+    \item \textbf{LL-01.1}: \texttt{io.discover\_process\_model()} supports Inductive, Alpha, and Genetic Miner via PM4Py, enabling automatic model discovery when no normative model is available.
+    \item \textbf{LL-01.2}: \texttt{visualization.visualize\_process\_model()} renders the model as Petri net, BPMN, or Process Tree, with optional file saving or direct display.
+    \item \textbf{HL-05}: Event log loading, model import, and model discovery are all functional; the foundational data-acquisition step of the pipeline is complete.
+    \item \textbf{LL-05.1}: \texttt{pm4py.read\_xes} for XES logs; \texttt{pd.read\_csv} combined with \texttt{pm4py.format\_dataframe} for CSV logs in \texttt{io.load\_event\_log()}.
+    \item \textbf{LL-05.2} (partially): Petri net loading via \texttt{pm4py.read\_pnml} implemented; BPMN files loaded via \texttt{pm4py.read\_bpmn} and Process Tree files via \texttt{pm4py.read\_ptml}, both internally converted to a Petri net.
+    \item \textbf{LL-05.3}: Inductive, Alpha, and Genetic Miner available as fallback discovery algorithms when no normative model file is provided.
+    \item \textbf{HL-04}: \texttt{try/except} blocks in \texttt{main.py} catch and report setup errors, preprocessing failures, and pipeline exceptions to \texttt{stderr} with descriptive labels.
+    \item \newcov{HL-01}: End-to-end prediction of conformance deviations is now fully operational; the \textit{Future Deviations} target is wired through the complete pipeline -- label extraction via \texttt{real\_deviation\_cost}, configurable threshold $T$, classification training, and evaluation.
+    \item \newcov{LL-05.2}: Standalone loading of BPMN and Process Tree files as direct model inputs (without forced internal conversion to a Petri net).
 \end{itemize}
-It is essential to acknowledge that the schedule presented here is preliminary and may be subject to adjustments. This flexibility accommodates unforeseen personal or professional circumstances that may arise during the project's execution, allowing team members to navigate challenges effectively. 
 
-\section{Tools}
-\subsection{Trello}
-In order to plan, organize, and track the development of our work, we rely on a project management tool called Trello. It is based on the concept of boards, lists, and cards, allowing us to break down complex tasks into smaller ones and distribute them among team members. We utilize features such as due dates and labels to further customize our tasks and distinguish them from one another. This web-based platform makes it easy for group members to monitor the progress of each task and identify their responsibilities. In conclusion, Trello's user-friendly interface and comprehensive features significantly contribute to the success of our project.
-\\\\
-Link to our Trello board: \href{https://trello.com/b/Hlx8Wp8m}{\textit{Group 4 Trello}}
+\subsection{Feature Extraction}
 
-\subsection{Git and GitLab}
-Version control systems are indispensable for modern software development, especially in collaborative environments like academic projects. For our PM4PY based project we used Git and GitLab, which will be introduced in the following: \\ 
-\\
-\textit{Git}, at its core, is a distributed version control system that tracks changes in source code over time. Its key strengths lie in its ability to create branches for remote independent development, merge code easily, and revert to previous versions. This allows team members to work concurrently on different features or bug fixes without interfering with each other's progress. Remote repositories enable the developing team to get the most up-to-date version of the project and develop from there. \\
-\\
-\textit{GitLab} on the other hand, provides a web-based platform built around Git, extending its functionalities with a suite of project management and collaboration tools. These include issue tracking, code review, continuous integration/continuous delivery (CI/CD) pipelines, and wiki pages for documentation. By integrating these features, GitLab creates a centralized hub for project activity.
-\\\\
+\textbf{All Covered}
+\begin{itemize}
+    \item \textbf{HL-06} (partially): \texttt{feature\_extraction.compute\_alignments()} invokes \texttt{pm4py.conformance\_diagnostics\_alignments}; log-moves, model-moves, and synchronous moves are extracted per case. Distance-to-completion indicators are not yet included.
+    \item \textbf{LL-06.1}: PM4Py alignment dictionaries are computed for every trace against the normative Petri net using the standard cost function. Alignments are now keyed by case ID and re-emitted in first-appearance order, eliminating the silent ordering issue that previously misaligned diagnostics with cases.
+    \item \textbf{LL-06.2}: Alignment moves are parsed by \texttt{real\_deviation\_cost()} to count genuine deviations (log-moves and visible model-moves) per case; cumulative alignment cost is extracted while silent ($\tau$) routing moves are correctly excluded.
+    \item \textbf{HL-07}: \texttt{feature\_extraction.extract\_features()} now supports control-flow features (Bag-of-Activities), alignment-based diagnostic features (Bag-of-move-types per activity), case-attribute features, and the hybrid combination of all three.
+    \item \textbf{LL-07.3}: Control-flow frequency matrix constructed via \texttt{pd.crosstab} over case IDs and activity names, producing a per-case Bag-of-Activities feature matrix.
+    \item \textbf{HL-13}: Alignment results are computed once per run and stored in memory; they are passed as a variable to avoid redundant re-computation within a single pipeline execution.
+    \item \newcov{HL-02}: Structured case attributes are fully integrated as predictive features. \texttt{list\_case\_attributes} and \texttt{summarize\_case\_attributes} detect both explicitly prefixed (\texttt{case:}) and constant-within-case attributes (XES-style), and the CLI lets the user select a subset of them.
+    \item \newcov{LL-07.1}: \texttt{generate\_prefixes()} expands each case into varying-length prefix pseudo-cases, with optional outcome-leakage gating, supporting both \textit{exactly-$k$} and \textit{varying $1..k$} modes.
+    \item \newcov{LL-07.2}: \texttt{extract\_remaining\_time()} and \texttt{extract\_temporal\_features()} together produce a numerical feature matrix tailored to the remaining-time regression target, including elapsed time, time since the previous event, and event count.
+    \item \textbf{HL-06}:   \textit{We left this out.} Addition of distance-to-completion indicators (e.g.\ remaining enabled transitions, token distance to the final marking).
+    \item \textbf{LL-13.1}: \textit{We left this out.} \noindent Hash-based caching of prefix activity sequences to deterministically identify and skip redundant alignment computations.
+    \item \textbf{LL-13.2}: \textit{We left this out.} \noindent Disk-based persistence of alignment results via \texttt{joblib}.
+\end{itemize}
 
-\subsection{PM4Py}
-PM4Py is an open source library designed by the process mining group of the Frauenhofer Institute (FiT), which includes a plethora of state-of-the-art process mining algorithms. In regards to our project and the overall topic of Conformance Checking, PM4Py supports f.e. token-based, alignment-based and footprint-based conformance diagnostics, while also offering a lot of visualization techniques. Filtering event logs and extracting features is also supported, which makes pm4py it perfect for our project.
+\subsection{Model Training}
+\textbf{All Covered}
+\begin{itemize}
+    \item \textbf{HL-08}: \texttt{train\_classification\_model()} wraps a configurable classifier (Decision Tree, Logistic Regression, or Gradient Boosting) in a \texttt{sklearn.Pipeline}. The binary deviation label is derived from the case's real alignment cost via the configurable threshold $T$, so the target is fully driven by alignment-based deviation cost.
+    \item \textbf{LL-08.1}: \texttt{StandardScaler} is integrated as the first step in every sklearn Pipeline, ensuring scale-consistent feature distributions.
+    \item \textbf{HL-09}: Baseline (control-flow features only) and conformance-aware (diagnostics or hybrid features) model variants are both supported via the \texttt{PredictionFeature} configuration.
+    \item \newcov{LL-08.2}: Additional ML algorithms are available beyond the Decision Tree: \textit{Logistic Regression} and \textit{Gradient Boosting} for classification, and \textit{Random Forest}, \textit{Gradient Boosting}, and \textit{Decision Tree Regressor} for regression. All are exposed via the CLI and selectable per run.
+\end{itemize}
+
+\subsection{Evaluation}
+
+\textbf{Covered}
+\begin{itemize}
+    \item \textbf{HL-16}: \texttt{evaluation.compute\_classification\_metrics()} computes accuracy, precision, recall, F1-score, ROC-AUC, and Brier score for binary and multi-class classification targets.
+    \item \textbf{HL-12}: Confusion matrix heatmap and per-class accuracy bar chart are generated via Matplotlib in \texttt{visualization.save\_evaluation\_visuals()}.
+    \item \newcov{HL-14}: The system allows for precise measuring of runtime and memory usage.
+    \item \newcov{HL-14.1}: Each critical and potentially time-consuming step (often the pipelines) is precisely measured and the runtime is appended to running list. This functionality is performed by \texttt{measure\_runtime}, which utilizes \texttt{time.perf\_coutner} internally.
+    \item \newcov{HL-14.2}: The peak memory consumed by the program is tracked by the function \texttt{measure\_memory}. Additionally, it accounts for OS dependent units (bytes or kilobytes).
+    \item \newcov{HL-14.3}: A counter accumulates the runtime from different steps in out program: from heavy \textit{PM4Py} methods for discovery, test-train split etc., to whole pipelines that extract features or train models.
+    \item \newcov{HL-14.4}: The generated performance data (runtime, peak memory usage) is printed to the CLI and can optionally be saved to a JSON. The runtime can also be visualized as a pie-chart.
+    \item \newcov{HL-15}: The main pipeline uses \texttt{pm4py.split\_train\_test} with a user-configurable train ratio (default $0.7$).
+    \item \newcov{LL-16.2}: \texttt{compute\_mae}, \texttt{compute\_mse}, and \texttt{compute\_rmse} are available in the evaluation module for evaluating remaining-time regression targets.
+    \item \newcov{HL-17}: \texttt{evaluation.metrics\_by\_prefix\_length()} slices the predictions of a single pooled model by prefix length and reports the full metric set per length; the CLI prints this table whenever prefix lengths vary.
+\end{itemize}
+
+\noindent \textbf{Planned in Sprint 3}
+\begin{itemize}
+    \item \textbf{HL-16}: Conformance quality metrics for the normative model (fitness), and wiring of the regression metrics into the pipeline's \texttt{compute\_regression\_metrics} hook so they are reported automatically for the remaining-time target.
+\end{itemize}
+
+\subsection{Config \& Pipeline}
+
+\textbf{Fully Covered}
+\begin{itemize}
+    \item \textbf{HL-03}: \texttt{main.py} provides an interactive CLI that guides the user through model path/discovery selection, prediction target (future deviations, process outcome, remaining time), feature basis (including case attributes), prefix mode, train/test split ratio, and ML algorithm configuration.
+    \item \textbf{LL-03.1}: Prediction target and feature basis options are fully defined in \texttt{config.py} and selectable in the CLI; both the case-attribute feature path and the conformance-deviation target are now fully wired through the pipeline.
+    \item \textbf{HL-10}: \texttt{main.py} combined with \texttt{pipeline.py} forms an end-to-end runner from raw data and model input to evaluation output, without manual intermediate steps.
+    \item \newcov{HL-14}: Runtime and resource measurement now wrap conformance checking, feature extraction, model training, and evaluation; the totals are reported at the end of every run.
+    \item \newcov{LL-14.1}: \texttt{evaluation.measure\_runtime()} uses \texttt{time.perf\_counter()} around alignment computation, feature extraction, model training, and evaluation.
+    \item \newcov{LL-14.2}: \texttt{evaluation.measure\_memory()} polls \texttt{psutil.Process().memory\_info()} to track peak RSS during the entire pipeline run.
+    \item \newcov{LL-14.3}: Sub-second precision wall-clock measurements are recorded per step (conformance checking, feature generation, training, evaluation).
+    \item \newcov{LL-14.4}: Runtime and resource metrics are printed to the console and can be persisted to a structured JSON log file at the end of the run.
+\end{itemize}
+
+\subsection{Project Infrastructure \& Testing}
+\textbf{Covered}
+\begin{itemize}
+    \item \textbf{HL-18}: PM4Py, scikit-learn, pandas, NumPy, and Matplotlib are used as the primary library stack throughout all modules.
+    \item \textbf{HL-19 \& LL-19.1-19.2}: The project is organized into \texttt{io}, \texttt{feature\_extraction}, \texttt{model\_training}, \texttt{evaluation}, \texttt{pipeline}, \texttt{visualization}, and a centralized \texttt{config} module; Git is used for version control. Note: the conformance logic is consolidated into \texttt{feature\_extraction} rather than placed in a dedicated \texttt{conformance} module. A formal branching strategy per module was not adopted, as we are working with one branch per team member.
+    \item \textbf{HL-20}: \texttt{requirements.txt} and \texttt{README.md} are present in the repository.
+    \item \textbf{LL-20.1}: \texttt{requirements.txt} as a plain text file is implemented and considered satisfactory for dependency management.
+    \item \newcov{HL-11}: An automated pytest test suite covering IO, feature extraction, model training, and evaluation is executable via a single command (\texttt{pytest tests/}) and runs in the GitLab CI pipeline on every push or merge.
+    \item \newcov{LL-11.3}: \texttt{test\_generate\_prefixes\_lengths\_and\_content} asserts that a prefix of length $k$ contains exactly the first $k$ events of the original trace; the related \texttt{test\_pooled\_extraction\_broadcasts\_labels\_without\_leakage} test additionally confirms that outcome activities are gated out of the feature vector.
+\end{itemize}
+
+\noindent \textbf{Planned in Sprint 3}
+\begin{itemize}
+    \item \textbf{LL-11.1}: Dedicated pytest fixtures providing a synthetic, fully conforming XES log and a matching Petri net (currently the tests use ad-hoc DataFrame helpers).
+    \item \textbf{LL-11.2}: Explicit test assertion that the alignment cost equals $0.0$ on a fully conforming synthetic dataset.
+    \item \textbf{HL-21}: Technical documentation of system architecture.
+\end{itemize}
+
+\section{User Guide}
+The User Guide is now fully implemented and mature to use as a reference for users who want to understand the options within the usage of the CLI. We believe that the User Guide is a crucial part of our Software Artifact, as it allows users with few to no background in process mining to make valuable use of our software. 
+
+\section{Team settings and Workflow}
+
+\subsection{Team settings}
+
+\subsection{Workflow summary of all sprints}
 
 
-\section{Team}
-\subsection{Personal Description}
-\subsubsection{Richard Schuppener}
-\subsubsection{Cem Colak}
+\section{Sprint review}
 
-\section{Roles}
-
-\underline{Scrum Master}: 
-\\\\
-\underline{Official Communication/Product Owner}: 
-\\\\
-\underline{Tools Administration}: 
-\\\\
-\underline{Theory Expert}: 
-\\\\
-\underline{Software Expert}: 
-\\\\
-\underline{Test Management}: 
-
-
-\section{Phase review}
 \subsection{Richard Schuppener}
+
 \subsection{Cem Colak}
-
-\paragraph{}
-\begin{thebibliography}{10}
-
-\bibitem{denisov2018performance}
-Denisov, V., Belkina, E., Fahland, D., van der Aalst, W. M. (2018, September). The Performance Spectrum Miner: Visual Analytics for Fine-Grained Performance Analysis of Processes. In BPM (Dissertation/Demos/Industry) (pp. 96-100).
-
-\end{thebibliography}
-
 
 \end{document}
