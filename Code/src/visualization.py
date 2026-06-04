@@ -187,7 +187,7 @@ def plot_roc_curves(
     for name, (fpr, tpr) in roc_data.items():
         roc_auc = metrics.auc(fpr, tpr)
         display = metrics.RocCurveDisplay(
-            fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name=name
+            fpr=fpr, tpr=tpr, roc_auc=roc_auc, name=name
         )
         display.plot(ax=ax)
     
@@ -219,7 +219,7 @@ def plot_pr_curves(
     for name, (precision, recall, avg_prec) in pr_data.items():
         display = metrics.PrecisionRecallDisplay(
             precision=precision, recall=recall, 
-            average_precision=avg_prec, estimator_name=name
+            average_precision=avg_prec, name=name
         )
         display.plot(ax=ax)
     
