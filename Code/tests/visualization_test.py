@@ -5,6 +5,7 @@ import os
 import io as python_io
 import sys
 from src import visualization
+from src.evaluation import compute_roc_curve, compute_pr_curve
 
 @pytest.fixture
 def dummy_data():
@@ -92,3 +93,42 @@ def test_display_per_class_stats(dummy_data):
     assert "Per-Class Prediction Breakdown" in output
     assert "ClassA" in output
     assert "ClassB" in output
+
+
+def test_roc_pr_curves(tmp_path):
+    y_true = np.array([0, 0, 1, 1])
+    y_scores1 = np.array([0.1, 0.4, 0.35, 0.8])
+    y_scores2 = np.array([0.2, 0.3, 0.6, 0.9])
+    
+    # Test evaluation functions
+    fpr1, tpr1 = compute_roc_curve(y_true, y_scores1)
+    fpr2, tpr2 = compute_roc_curve(y_true, y_scores2)
+    
+    prec1, recall1, ap1 = compute_pr_curve(y_true, y_scores1)
+    prec2, recall2, ap2 = compute_pr_curve(y_true, y_scores2)
+    
+    assert len(fpr1) > 0
+    assert len(tpr1) == len(fpr1)
+    assert ap1 > 0
+    
+    # Test visualization functions
+    roc_data = {
+        "Model A": (fpr1, tpr1),
+        "Model B": (fpr2, tpr2)
+    }
+    
+    pr_data = {
+        "Model A": (prec1, recall1, ap1),
+        "Model B": (prec2, recall2, ap2)
+    }
+    
+    roc_path = os.path.join(tmp_path, "roc_test.png")
+    pr_path = os.path.join(tmp_path, "pr_test.png")
+    
+    visualization.plot_roc_curves(roc_data, output_path=roc_path)
+    visualization.plot_pr_curves(pr_data, output_path=pr_path)
+    
+    assert os.path.exists(roc_path)
+    assert os.path.exists(pr_path)
+    print("ROC and PR curve tests passed and files created.")
+

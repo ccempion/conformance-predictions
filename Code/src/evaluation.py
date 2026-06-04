@@ -104,7 +104,10 @@ def compute_roc_curve(y_true: np.ndarray, y_score: np.ndarray, pos_label=None) -
 
 def compute_pr_curve(y_true: np.ndarray, y_score: np.ndarray, pos_label=None) -> Tuple[np.ndarray, np.ndarray, float]:
     prec, recall, _ = metrics.precision_recall_curve(y_true, y_score, pos_label=pos_label)
-    avg_prec = float(metrics.average_precision_score(y_true, y_score, pos_label=pos_label))
+    if pos_label is not None:
+        avg_prec = float(metrics.average_precision_score(y_true, y_score, pos_label=pos_label))
+    else:
+        avg_prec = float(metrics.average_precision_score(y_true, y_score))
     return (prec, recall, avg_prec)
 
 def metrics_by_prefix_length(
