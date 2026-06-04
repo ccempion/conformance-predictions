@@ -173,17 +173,35 @@ def save_evaluation_visuals(
 
 
 def plot_roc_curves(
-    roc_data: Dict[str, Tuple[np.ndarray, np.ndarray, float]],
+    roc_data: Dict[str, Tuple[np.ndarray, np.ndarray]],
     output_path: Optional[str] = None,
 ) -> None:
     """Plot overlaid ROC curves for multiple models.
-
+    
     Args:
-        roc_data: Mapping model_name -> (fpr, tpr, auc_value).
-            Compute with sklearn.metrics.roc_curve + roc_auc_score before calling.
-        output_path: If given, save figure to this path; otherwise display interactively.
+        roc_data: Mapping label -> (fpr, tpr)
+        output_path: Path to save the figure. If None, show interactively.
     """
-    ...
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    for name, (fpr, tpr) in roc_data.items():
+        roc_auc = metrics.auc(fpr, tpr)
+        display = metrics.RocCurveDisplay(
+            fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name=name
+        )
+        display.plot(ax=ax)
+    
+    ax.plot([0, 1], [0, 1], color='navy', linestyle='--', label='Chance')
+    ax.set_title("Receiver Operating Characteristic (ROC) Curves")
+    ax.legend(loc="lower right")
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
 
 
 def plot_pr_curves(
@@ -191,13 +209,31 @@ def plot_pr_curves(
     output_path: Optional[str] = None,
 ) -> None:
     """Plot overlaid Precision-Recall curves for multiple models.
-
+    
     Args:
-        pr_data: Mapping model_name -> (precision, recall, pr_auc_value).
-            Compute with sklearn.metrics.precision_recall_curve + auc before calling.
-        output_path: If given, save figure; otherwise display interactively.
+        pr_data: Mapping label -> (precision, recall, average_precision)
+        output_path: Path to save the figure. If None, show interactively.
     """
-    ...
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    for name, (precision, recall, avg_prec) in pr_data.items():
+        display = metrics.PrecisionRecallDisplay(
+            precision=precision, recall=recall, 
+            average_precision=avg_prec, estimator_name=name
+        )
+        display.plot(ax=ax)
+    
+    ax.set_title("Precision-Recall Curves")
+    ax.legend(loc="lower left")
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
+
 
 
 def plot_evaluate_by_prefix_length(
