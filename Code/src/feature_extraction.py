@@ -299,7 +299,7 @@ def list_case_attributes(log: pd.DataFrame) -> List[str]:
         elif c in _EVENT_LEVEL_COLS:
             continue                          # known event/system column
         elif c in per_case_nunique.columns and per_case_nunique[c].max() <= 1:
-            keep.add(c)                       # constant max uniqueness of 1 within every case -> trace attribute
+            keep.add(c)                       # constant within every case -> trace attribute
 
     return [c for c in cols if c in keep]     # preserve original column order
 

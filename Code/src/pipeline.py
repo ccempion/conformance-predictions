@@ -15,17 +15,9 @@ def run_conformance_prediction_pipeline(
     preloaded_model=None,
     test_prefix_lengths: Optional[np.ndarray] = None,
     is_regression: bool = False,
-    classification_algorithm: config.ClassificationAlgorithm = config.ClassificationAlgorithm.DECISION_TREE,
 ) -> Dict[str, Any]:
     """
     Main orchestration function for the entire pipeline.
-<<<<<<< HEAD
-=======
-
-    When is_regression is True (REMAINING_TIME target), a regressor is used and
-    predictions are continuous (seconds).  this function produces the
-    predictions and passes y_test / y_pred / prefix_lengths through the results dict.
->>>>>>> 75-additional-ml-algorithm
     """
 
     if preloaded_model is not None:
@@ -35,19 +27,12 @@ def run_conformance_prediction_pipeline(
         print(f"--- Training regression model with parameters: {ml_params} ---")
         trained_model = model_training.train_regression_model(X_train, y_train, ml_params=ml_params)
     else:
-<<<<<<< HEAD
         print(f"--- Training model with parameters: {ml_params} ---")
         # Standalone fallback (the CLI always passes preloaded_model): default Decision
         # Tree classifier. Build+fit directly rather than via train_classification_model
         # so this path keeps working on degenerate single-class splits, as before.
         trained_model = model_training.create_classification_pipeline(ml_params=ml_params)
         trained_model.fit(X_train, y_train)
-=======
-        print(f"--- Training {classification_algorithm.name} classifier with parameters: {ml_params} ---")
-        trained_model = model_training.train_classification_model(
-            X_train, y_train, classification_algorithm, ml_params
-        )
->>>>>>> 75-additional-ml-algorithm
 
     # 6. Evaluation (HL-16)
     print("--- Evaluating model ---")

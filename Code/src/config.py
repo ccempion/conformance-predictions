@@ -20,11 +20,7 @@ class PredictionFeature(Enum):
     DIAGNOSTICS = "DIAGNOSTICS"
     CASE_ATTRIBUTES = "CASE_ATTRIBUTES"
     HYBRID = "HYBRID"
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 75-additional-ml-algorithm
 class RegressionAlgorithm(Enum):
     DECISION_TREE = "DECISION_TREE"
     RANDOM_FOREST = "RANDOM_FOREST"
