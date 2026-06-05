@@ -175,14 +175,21 @@ def evaluate_by_prefix_length(
             outcome_activities=outcome_activities,
             prefix_length=prefix_length
         )
-        result = pipeline.run_conformance_prediction_pipeline(
-            X_test=X_test,
-            y_test=y_test,
-            X_train=X_train,
-            y_train=y_train,
-            # ml_params=ml_params, --> for now use the default values
-        )
-        metrics = result.get("metrics", {})
+        try:
+            result = pipeline.run_conformance_prediction_pipeline(
+                X_test=X_test,
+                y_test=y_test,
+                X_train=X_train,
+                y_train=y_train,
+                # ml_params=ml_params, --> for now use the default values
+            )
+            metrics = result.get("metrics", {})
+        except ValueError as e:
+            # A prefix slice can be degenerate (e.g. a perfectly-fitting model yields no
+            # deviations, leaving a single training class, which the classifier rejects).
+            # Record empty metrics for that length instead of aborting the whole sweep.
+            print(f"--- Skipping prefix length {prefix_length}: {e} ---")
+            metrics = {}
         results.append({
             "prefix_length": prefix_length,
             "accuracy": metrics.get("accuracy"),

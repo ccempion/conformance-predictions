@@ -35,7 +35,7 @@ def test_train_and_predict_regression(algorithm):
 
 
 # --------------------------------------------------------------------------
-# Classification menu (FUTURE_DEVIATIONS risk prediction)
+# Classification menu (PROCESS_OUTCOME / FUTURE_DEVIATIONS risk prediction)
 # --------------------------------------------------------------------------
 
 def test_create_classification_pipeline():
@@ -44,11 +44,15 @@ def test_create_classification_pipeline():
     assert 'classifier' in pipe.named_steps     # so predict()/visualize_decision_tree work
 
 
+<<<<<<< HEAD
 @pytest.mark.parametrize("algorithm", [
     ClassificationAlgorithm.DECISION_TREE,
     ClassificationAlgorithm.LOGISTIC_REGRESSION,
     ClassificationAlgorithm.GRADIENT_BOOSTING,
 ])
+=======
+@pytest.mark.parametrize("algorithm", list(ClassificationAlgorithm))
+>>>>>>> 75-additional-ml-algorithm
 def test_train_and_predict_classification(algorithm):
     X_train = pd.DataFrame({'feat1': [1, 2, 3, 4, 5, 6], 'feat2': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]})
     y_train = np.array([0, 0, 0, 1, 1, 1])

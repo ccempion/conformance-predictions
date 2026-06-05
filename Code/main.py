@@ -450,12 +450,72 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
         )
         time_list.append(("Model Training", train_time))
     else:
+<<<<<<< HEAD
         # PROCESS_OUTCOME and FUTURE_DEVIATIONS are both classification targets and
         # share one enum-driven path (Decision Tree / Logistic Regression / Gradient
         # Boosting). Every classifier exposes predict_proba, so a Decision Tree chosen
         # here also stays visualisable.
         trained_model, classification_algorithm, ml_params = configure_and_train_classifier(
             X_train, y_train, time_list
+=======
+        # PROCESS_OUTCOME is multi-class classification. Decision Tree stays the default
+        # (and keeps the tree visualisation below); Logistic Regression and Gradient
+        # Boosting mirror the FUTURE_DEVIATIONS menu.
+        print("\nWhich classification algorithm do you want to apply?")
+        print("(1) Decision Tree")
+        print("(2) Logistic Regression")
+        print("(3) Gradient Boosting")
+        try:
+            ml_choice = int(input("Select option (1-3): ").strip())
+            classification_algorithm = [
+                config.ClassificationAlgorithm.DECISION_TREE,
+                config.ClassificationAlgorithm.LOGISTIC_REGRESSION,
+                config.ClassificationAlgorithm.GRADIENT_BOOSTING,
+            ][ml_choice - 1]
+        except (ValueError, IndexError):
+            print("Invalid choice. Defaulting to Decision Tree.")
+            ml_choice = 1
+            classification_algorithm = config.ClassificationAlgorithm.DECISION_TREE
+        print(f"{classification_algorithm.value} selected.")
+
+        use_custom_ml = input("\nDo you want to configure the parameters yourself? (y/n): ").lower().strip() == 'y'
+        if use_custom_ml and classification_algorithm == config.ClassificationAlgorithm.DECISION_TREE:
+            print("\nConfiguring Decision Tree Parameters:")
+            criterion = input("Criterion (gini/entropy, default=gini): ").strip().lower()
+            if criterion in ["gini", "entropy"]:
+                ml_params["criterion"] = criterion
+            max_depth = input("Max depth (int, default 4): ").strip()
+            if max_depth:
+                ml_params["max_depth"] = int(max_depth)
+            min_samples_split = input("Min samples split (int, default 2): ").strip()
+            if min_samples_split:
+                ml_params["min_samples_split"] = int(min_samples_split)
+            min_samples_leaf = input("Min samples leaf (int, default 1): ").strip()
+            if min_samples_leaf:
+                ml_params["min_samples_leaf"] = int(min_samples_leaf)
+        elif use_custom_ml and classification_algorithm == config.ClassificationAlgorithm.LOGISTIC_REGRESSION:
+            print("\nConfiguring Logistic Regression Parameters:")
+            c_val = input("Inverse regularization strength C (float, default 1.0): ").strip()
+            if c_val:
+                ml_params["C"] = float(c_val)
+        elif use_custom_ml:  # Gradient Boosting
+            print("\nConfiguring Gradient Boosting Parameters:")
+            n_estimators = input("Number of estimators (int, default 100): ").strip()
+            if n_estimators:
+                ml_params["n_estimators"] = int(n_estimators)
+            max_depth = input("Max depth (int, default 3): ").strip()
+            if max_depth:
+                ml_params["max_depth"] = int(max_depth)
+
+        # Train initial model
+        print("\nTraining model...")
+        trained_model, train_time = evaluation.measure_runtime(
+            model_training.train_classification_model,
+            X_train,
+            y_train,
+            classification_algorithm,
+            ml_params,
+>>>>>>> 75-additional-ml-algorithm
         )
 
     # Decision Tree visualisation + reconfigure loop — only for a single Decision Tree
@@ -463,7 +523,11 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
     is_process_outcome = (not is_remaining_time and not is_future_deviations)
     show_tree = (
         (is_remaining_time and regression_algorithm == config.RegressionAlgorithm.DECISION_TREE)
+<<<<<<< HEAD
         or (not is_remaining_time and classification_algorithm == config.ClassificationAlgorithm.DECISION_TREE)
+=======
+        or (is_process_outcome and classification_algorithm == config.ClassificationAlgorithm.DECISION_TREE)
+>>>>>>> 75-additional-ml-algorithm
     )
     if show_tree:
         while True:

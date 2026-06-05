@@ -20,18 +20,18 @@ from src.config import RegressionAlgorithm, ClassificationAlgorithm
 def predict(model: Pipeline, X: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     """
     Applies the fitted model to generate predictions.
-    
+
     Args:
         model: A fitted scikit-learn Pipeline.
         X: Feature matrix for which to generate predictions.
-        
+
     Returns:
         A tuple containing:
             - Hard predictions (0/1)
             - Predicted probabilities for the positive class
     """
     y_pred = model.predict(X)
-    
+
     # Check if the classifier supports probability estimates
     if hasattr(model.named_steps['classifier'], "predict_proba"):
         proba = model.predict_proba(X)
@@ -44,31 +44,19 @@ def predict(model: Pipeline, X: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     else:
         # Fallback for models without predict_proba (not expected for DecisionTree)
         y_prob = y_pred.astype(float)
-        
+
     return y_pred, y_prob
-
-
-def get_feature_importance(model: Pipeline, feature_names: list) -> pd.Series:
-    """
-    Extracts feature importance scores from the fitted Decision Tree.
-    Useful for evaluation and comparing baseline vs conformance-aware features.
-    
-    Args:
-        model: A fitted scikit-learn Pipeline.
-        feature_names: List of names corresponding to the columns in X.
-        
-    Returns:
-        A Series mapping feature names to importance scores.
-    """
-    importances = model.named_steps['classifier'].feature_importances_
-    return pd.Series(importances, index=feature_names).sort_values(ascending=False)
 
 
 # ------------------------------------------
 # Classification algorithm menu (PROCESS_OUTCOME / FUTURE_DEVIATIONS)
 # ------------------------------------------
 
+<<<<<<< HEAD
 # Per-algorithm defaults. Decision Tree caps depth at 4 to keep the tree readable; the
+=======
+# Per-algorithm defaults. Decision Tree caps depth at 4 so the tree stays readable; the
+>>>>>>> 75-additional-ml-algorithm
 # others use sklearn defaults plus a fixed seed / enough iterations to converge.
 _CLASSIFIER_DEFAULTS: Dict[ClassificationAlgorithm, Dict[str, Any]] = {
     ClassificationAlgorithm.DECISION_TREE: {"max_depth": 4, "random_state": 42},
@@ -85,8 +73,13 @@ def create_classification_pipeline(
     Build a StandardScaler + classifier pipeline for deviation/outcome risk prediction.
 
     Counterpart to create_regression_pipeline. Every classifier here exposes predict_proba,
+<<<<<<< HEAD
     so the existing predict() yields a risk probability. The estimator step is named
     'classifier' so predict() and visualize_decision_tree keep working unchanged.
+=======
+    so predict() yields a risk probability. The estimator step is named 'classifier' so
+    predict() and visualize_decision_tree keep working unchanged.
+>>>>>>> 75-additional-ml-algorithm
     """
     defaults = dict(_CLASSIFIER_DEFAULTS.get(algorithm, {}))
     if ml_params:
@@ -146,10 +139,17 @@ def create_regression_pipeline(
     """
     Build a StandardScaler + regressor pipeline for remaining-time prediction.
 
+<<<<<<< HEAD
     Counterpart to create_classification_pipeline: selects a regressor from the
     chosen RegressionAlgorithm. ml_params overrides the per-algorithm defaults. The
     classifier step in the classification pipeline is named 'classifier'; here it is
     named 'regressor' so the two are unambiguous downstream.
+=======
+    Counterpart to create_classification_pipeline: selects a regressor from the chosen
+    RegressionAlgorithm. ml_params overrides the per-algorithm defaults. The classifier
+    step in the classification pipeline is named 'classifier'; here it is named
+    'regressor' so the two are unambiguous downstream.
+>>>>>>> 75-additional-ml-algorithm
     """
     defaults = dict(_REGRESSOR_DEFAULTS.get(algorithm, {}))
     if ml_params:
@@ -183,4 +183,3 @@ def train_regression_model(
 def predict_regression(model: Pipeline, X: pd.DataFrame) -> np.ndarray:
     """Apply a fitted regression pipeline; returns continuous predictions (no proba)."""
     return model.predict(X)
-
