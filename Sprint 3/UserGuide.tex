@@ -387,16 +387,8 @@ Press \texttt{Enter} to save to your system's \texttt{Downloads} folder, or type
 \end{itemize}
 
 % -------------------------------------------------------
-\subsection{Step 9: Predictions on New Data}
-\begin{verbatim}
-Do you want to perform predictions on new data? (y/N):
-\end{verbatim}
-
-\textbf{Not yet implemented.} Answering \texttt{y} prompts for a file path containing trace prefixes, but no predictions are computed; the program continues to the runtime report regardless of the answer.
-
-% -------------------------------------------------------
-\subsection{Step 10: Runtime Report}
-After the prediction steps, the tool prints the runtime of each pipeline step and the peak memory used, followed by the total processing time. It then offers two optional reports.
+\subsection{Step 9: Runtime Report}
+After the evaluation steps, the tool prints the runtime of each pipeline step and the peak memory used, followed by the total processing time. It then offers two optional reports.
 
 A pie chart of the processing times per step:
 \begin{verbatim}
@@ -413,13 +405,20 @@ Enter filename (default: report.json):
 The resulting file contains the per-step runtimes, the peak memory in MB, and the total processing time.
 
 % -------------------------------------------------------
+\subsection{Step 10: Predictions on New Data}
+\begin{verbatim}
+Do you want to perform predictions on new data? This will restart the CLI. (y/N):
+\end{verbatim}
+
+This is the final prompt, shown only after the runtime report so that the current run's measurements are printed first. Answering \texttt{y} restarts the entire CLI from the beginning (Step 1), letting you run the whole pipeline again on a new event log; any other answer ends the program.
+
+% -------------------------------------------------------
 \subsection{Known Limitations}
 Most features from earlier sprints are now fully functional. The following limitations remain worth keeping in mind:
 
 \begin{itemize}
     \item \textbf{Genetic Miner} --- discovery is very slow on larger logs (around 19 minutes on the 1050-case Sepsis log, versus seconds for Inductive/Alpha), and the discovered net may not be ``easy sound''. In that case any alignment-based path (future-deviation labels, diagnostics or hybrid features) fails with a caught \verb|[EXTRACTION ERROR]| and the program exits cleanly. Prefer the Inductive or Alpha Miner for alignment-based targets.
     \item \textbf{Future deviations on short prefixes} --- with a short fixed prefix and \texttt{T=0}, all training prefixes may be non-deviant, leaving a single training class. The training step is not wrapped in error handling, so this can terminate the program with a traceback instead of a friendly message. Use a longer prefix, the varying prefix mode, or full traces to avoid it.
-    \item \textbf{Prediction on new data} (Step 9) --- the prompt appears, but no prediction logic is executed yet.
     \item \textbf{CSV log format} --- only supported if the file uses the exact column names \verb|case:concept:name|, \verb|concept:name|, and \verb|time:timestamp|.
     \item \textbf{Multi-outcome cases} --- for the process-outcome target, a case containing more than one (or none) of the specified outcome activities receives the label \verb|uncertain_outcome| rather than a specific class.
 \end{itemize}

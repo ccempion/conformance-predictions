@@ -595,18 +595,18 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
                 saved_to = vis.save_evaluation_visuals(y_test_arr, y_pred, class_names, base_dir)
                 print(f"Results saved to: {saved_to}")
 
-        # 5. Prediction on new data
-        if input("\nDo you want to perform predictions on new data? (y/N): ").lower().strip() == 'y':
-            new_data_path = input("Enter the path to the file containing trace prefixes: ").strip()
-            # logic to call prediction
-            
     except Exception as e:
         print(f"\n[EVALUATION ERROR]: {e}", file=sys.stderr)
         return time_list
 
     return time_list
     
-if __name__ == "__main__":
+def main() -> None:
+    """
+    Perform exactly one full interactive run plus its runtime/memory measurements and
+    optional report output. Re-running on new data is handled by the caller, which simply
+    invokes this again (see the __main__ loop below).
+    """
     time_list, mem_peak = evaluation.measure_memory(run_interactive_cli)
     print(f"The program consumed {mem_peak} MB memory in peak.")
     total_time = 0
@@ -641,3 +641,16 @@ if __name__ == "__main__":
             print(f"Report saved to: {report_path}")
         except Exception as e:
             print(f"Failed to save report: {e}", file=sys.stderr)
+
+
+if __name__ == "__main__":
+    # Predicting on new data is simply a fresh run of the whole CLI. Each iteration
+    # finishes its own measurements/report (above) before this prompt offers a restart.
+    while True:
+        main()
+        again = input(
+            "\nDo you want to perform predictions on new data? "
+            "This will restart the CLI. (y/N): "
+        ).lower().strip()
+        if again != 'y':
+            break
