@@ -139,8 +139,8 @@ python -m pytest
 ## Documentation
 
 A detailed **User Guide** with the complete prompt-by-prompt CLI walkthrough is maintained as a
-LaTeX/PDF deliverable in the sprint folders — see the most recent `UserGuide.pdf` at
-the repository root folder.
+LaTeX/PDF deliverable in the sprint folders — see the most recent
+[`Sprint 3/UserGuide.pdf`](../Sprint%203/UserGuide.pdf).
 
 ## Team & context
 

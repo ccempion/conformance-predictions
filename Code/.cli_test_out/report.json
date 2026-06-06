@@ -1,0 +1,105 @@
+[
+  {
+    "name": "S1",
+    "desc": "Inductive | FutureDeviations T=0 | control-flow | Decision Tree (+tree,+JSON)",
+    "status": "FAIL",
+    "returncode": 1,
+    "duration_s": 485.4,
+    "missing_artifacts": [
+      "s1_tree.png",
+      "s1_report.json"
+    ],
+    "error_tail": "Traceback (most recent call last): \u23ce   File \"/Users/bojack/Documents/Projects/conformance-predictions/Code/main.py\", line 610, in <module> \u23ce     time_list, mem_peak = evaluation.measure_memory(run_interactive_cli) \u23ce                           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^ \u23ce   File \"/Users/bojack/Documents/Projects/conformance-predictions/Code/src/evaluation.py\", line 52, in measure_memory \u23ce",
+    "n_answers": 21
+  },
+  {
+    "name": "S2",
+    "desc": "Alpha | FutureDeviations T=5 | diagnostics | Logistic Regression (+pie)",
+    "status": "PASS",
+    "returncode": 0,
+    "duration_s": 6.1,
+    "missing_artifacts": [],
+    "error_tail": "",
+    "n_answers": 17
+  },
+  {
+    "name": "S3",
+    "desc": "Genetic | FutureDeviations T=0 | case-attrs(all) | Gradient Boosting",
+    "status": "FAIL",
+    "returncode": 0,
+    "duration_s": 1163.2,
+    "missing_artifacts": [],
+    "error_tail": "[EXTRACTION ERROR]: trying to apply alignments on a Petri net that is not a easy sound net!! \u23ce",
+    "n_answers": 20
+  },
+  {
+    "name": "S4",
+    "desc": "Inductive | model-viz Petri | ProcessOutcome(Release A) | control-flow | Decision Tree (+tree,+conf-chart)",
+    "status": "PASS",
+    "returncode": 0,
+    "duration_s": 4.5,
+    "missing_artifacts": [],
+    "error_tail": "",
+    "n_answers": 25
+  },
+  {
+    "name": "S5",
+    "desc": "Inductive | model-viz BPMN | ProcessOutcome(Release A,B) | hybrid(all) | Logistic Regression",
+    "status": "PASS",
+    "returncode": 0,
+    "duration_s": 4.3,
+    "missing_artifacts": [],
+    "error_tail": "",
+    "n_answers": 23
+  },
+  {
+    "name": "S6",
+    "desc": "Inductive | model-viz ProcessTree | ProcessOutcome(Release A) | diagnostics | Gradient Boosting",
+    "status": "PASS",
+    "returncode": 0,
+    "duration_s": 3.8,
+    "missing_artifacts": [],
+    "error_tail": "",
+    "n_answers": 21
+  },
+  {
+    "name": "S7",
+    "desc": "Inductive | RemainingTime | control-flow | Decision Tree Regressor (+tree)",
+    "status": "PASS",
+    "returncode": 0,
+    "duration_s": 3.0,
+    "missing_artifacts": [],
+    "error_tail": "",
+    "n_answers": 19
+  },
+  {
+    "name": "S8",
+    "desc": "Inductive | RemainingTime | case-attrs(all) | Random Forest Regressor",
+    "status": "PASS",
+    "returncode": 0,
+    "duration_s": 2.9,
+    "missing_artifacts": [],
+    "error_tail": "",
+    "n_answers": 17
+  },
+  {
+    "name": "S9",
+    "desc": "Inductive | RemainingTime | hybrid(all) | Gradient Boosting Regressor (+pie,+JSON)",
+    "status": "PASS",
+    "returncode": 0,
+    "duration_s": 3.7,
+    "missing_artifacts": [],
+    "error_tail": "",
+    "n_answers": 20
+  },
+  {
+    "name": "S10",
+    "desc": "PROVIDED model (pnml) | model-viz Petri | ProcessOutcome(Release A) | control-flow | Decision Tree (+tree)",
+    "status": "PASS",
+    "returncode": 0,
+    "duration_s": 3.0,
+    "missing_artifacts": [],
+    "error_tail": "",
+    "n_answers": 22
+  }
+]
