@@ -31,8 +31,7 @@ def predict(model: Pipeline, X: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
             - Predicted probabilities for the positive class
     """
     y_pred = model.predict(X)
-    
-    # Check if the classifier supports probability estimates
+
     if hasattr(model.named_steps['classifier'], "predict_proba"):
         proba = model.predict_proba(X)
         if proba.shape[1] == 1:
@@ -46,22 +45,6 @@ def predict(model: Pipeline, X: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
         y_prob = y_pred.astype(float)
         
     return y_pred, y_prob
-
-
-def get_feature_importance(model: Pipeline, feature_names: list) -> pd.Series:
-    """
-    Extracts feature importance scores from the fitted Decision Tree.
-    Useful for evaluation and comparing baseline vs conformance-aware features.
-    
-    Args:
-        model: A fitted scikit-learn Pipeline.
-        feature_names: List of names corresponding to the columns in X.
-        
-    Returns:
-        A Series mapping feature names to importance scores.
-    """
-    importances = model.named_steps['classifier'].feature_importances_
-    return pd.Series(importances, index=feature_names).sort_values(ascending=False)
 
 
 # ------------------------------------------

@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import pm4py
 from pm4py.objects.petri_net.obj import PetriNet, Marking
+from sklearn.preprocessing import LabelEncoder
 
 from src.config import PredictionTarget, PredictionFeature
 from src import config
@@ -213,7 +214,7 @@ def extract_label(
       deviation_cost_threshold (HL-08). Real cost ignores silent/tau routing moves.
     - REMAINING_TIME: per-prefix regression label (see extract_remaining_time).
     """
-    case_id_key = 'case:concept:name' # PM4Py standard case ID column
+    case_id_key = 'case:concept:name'
     activity_key = 'concept:name'
     timestamp_key = 'time:timestamp'
 
@@ -379,8 +380,7 @@ def extract_features(
                 record[feat_name] = record.get(feat_name, 0) + 1
                 
             diag_records.append(record)
-            
-        # Convert to DataFrame
+
         diag_df = pd.DataFrame(diag_records).set_index('case_id').fillna(0).astype(int)
         feature_matrices.append(diag_df)
 
@@ -408,12 +408,11 @@ def extract_features(
     if not feature_matrices:
         raise ValueError(f"Unsupported feature type: {feature_type}")
         
-    # Concatenate all active feature matrices side-by-side (to create the hybrid features), because they all share the case_id as the index, Pandas aligns them perfectly.
+    # Concatenate side-by-side; all matrices share the case_id index, so pandas aligns them.
     final_df = pd.concat(feature_matrices, axis=1)
-    
+
     return final_df
 
-from sklearn.preprocessing import LabelEncoder
 
 def preprocess_for_ml(
     X_raw: pd.DataFrame,
