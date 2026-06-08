@@ -10,14 +10,16 @@ from pm4py.objects.petri_net.obj import PetriNet, Marking
 from src.config import Discovery_alg
 
 def load_event_log(file_path: str) -> pd.DataFrame:
-    """
-    Parses event log data from XES or CSV files into a DataFrame (LL-05.1).
-    
+    """Parses event log data from XES or CSV files into a Dataframe.
+
     Args:
-        file_path: Path to the log file.
-        
+        file_path (str): Path to file.
+
+    Raises:
+        ValueError: Unsupported log format.
+
     Returns:
-        A pandas DataFrame formatted for PM4Py.
+        pd.DataFrame: Internal event log representation.
     """
     if file_path.endswith('.xes'):
         return pm4py.read_xes(file_path)
@@ -30,14 +32,16 @@ def load_event_log(file_path: str) -> pd.DataFrame:
         raise ValueError(f"Unsupported log format: {file_path}")
 
 def load_process_model(file_path: str) -> Tuple[PetriNet, Marking, Marking]:
-    """
-    Loads a Petri net or BPMN representation from a file (LL-05.2).
-    
+    """Loads a Petri net or BPMN representation from a file. If BPMN, it is transformed to a Petri Net.
+
     Args:
-        file_path: Path to the model file (.pnml or .bpmn).
-        
+        file_path (str): Path to model. 
+
+    Raises:
+        ValueError: Unsupported model format.
+
     Returns:
-        A tuple containing (Petri net, initial marking, final marking).
+        Tuple[PetriNet, Marking, Marking]: Internal petri net description.
     """
     if file_path.endswith('.pnml'):
         return pm4py.read_pnml(file_path)
@@ -56,16 +60,17 @@ def discover_process_model(log: pd.DataFrame,
                            discovery_alg: Discovery_alg,
                            **kwargs
                            ) -> Tuple[PetriNet, Marking, Marking]:
-    """
-    Discovers a Petri net from event log data using Inductive / Alpha / Genetic Miner (LL-05.3).
-    
+    """Discovers a Petri net from event log data using Inductive / Alpha / Genetic Miner.
+
     Args:
-        log: The event log DataFrame.
-        noise_threshold: Threshold for the inductive miner.
-        **kwargs: Algorithm-specific parameters (e.g. noise_threshold for Inductive Miner)
-        
+        log (pd.DataFrame): The event log Dataframe. 
+        discovery_alg (Discovery_alg): The user selected process discovery algorithm. 
+
+    Raises:
+        TypeError: Unsupported discovery algorithm parameters or discovery algorithm.
+
     Returns:
-        A tuple containing (Petri net, initial marking, final marking).
+        Tuple[PetriNet, Marking, Marking]: Discovered model as internal Petri Net representation. 
     """
     if discovery_alg == Discovery_alg.INDUCTIVE:
         # params: noise_threshold
