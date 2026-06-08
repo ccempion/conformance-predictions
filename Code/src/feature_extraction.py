@@ -1,3 +1,10 @@
+"""
+This module is responsible for extracting features from input data such as 
+1. Log (pandas dataframe): case attributes, control flow, conformance insights i.e. alignments
+2. Model (petri net): conformance insights i.e. alignments
+This data is also preprocesed for ML by applying scaling and ensuring that the extracted label- and feature-vectors
+for the train and test sets are not missing any cells.
+"""
 from typing import List, Dict, Optional, Any, Tuple
 
 import pandas as pd
