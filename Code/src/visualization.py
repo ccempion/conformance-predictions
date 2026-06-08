@@ -298,7 +298,7 @@ def plot_processing_times(
     
     wedges, texts, autotexts = ax.pie(
         sizes, 
-        labels=None,  # We'll use a legend for clarity
+        labels=None,
         autopct='%1.1f%%', 
         startangle=140, 
         colors=colors,
@@ -329,6 +329,23 @@ def plot_processing_times(
         plt.show()
 
 
+def plot_runtime_log_size_relation(data: List[Tuple[float, float]], output_path: str):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    ax.plot(data["log_sizes"], data["runtimes"], marker="o", label="Runtimes")
+    
+    ax.set_xlabel("Log Size")
+    ax.set_ylabel("Runtime")
+    ax.set_title("Relation of runtimes and log sizes.")
+    # ax.legend()
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
 
 def plot_feature_importance(
     importances: pd.Series,
@@ -392,3 +409,4 @@ def display_per_class_stats(
         pct_w = wrong / total * 100 if total > 0 else 0.0
         print(
             f"  {name}: {pct_c:.1f}% correct ({correct}/{total}),  {pct_w:.1f}% incorrect ({wrong}/{total})")
+
