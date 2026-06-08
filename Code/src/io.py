@@ -1,6 +1,5 @@
 """
-Module for Input/Output operations (HL-05).
-Handles loading of event logs and process models, as well as model discovery.
+The input module handles the loading of event logs and process models, as well as model discovery from event logs.
 """
 
 import pandas as pd
