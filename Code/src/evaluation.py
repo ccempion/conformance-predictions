@@ -30,7 +30,14 @@ from src import pipeline
 from src import config
 
 def measure_runtime(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, float]:
-    """Call *func* and return its result together with wall-clock seconds elapsed."""
+    """Measure the runtime of an arbitrary function.
+
+    Args:
+        func (Callable): The Python function whose runtime is to be measured.
+
+    Returns:
+        Tuple[Any, float]: The return value of the passed function and the elapsed time (in seconds).
+    """
     start_time = time.perf_counter()
     result = func(*args, **kwargs)
     elapsed = time.perf_counter() - start_time
@@ -38,7 +45,14 @@ def measure_runtime(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, flo
 
 
 def measure_memory(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, float]:
-    """Call *func* and return its result together with peak RSS in MB."""
+    """Measure the peak memory usage of an arbitrary function.
+
+    Args:
+        func (Callable): The Python function whose peak memory usage is to be measured. 
+
+    Returns:
+        Tuple[Any, float]: The return value of the passed function and the peak RSS in MB. 
+    """
     if resource is None:
         # Fallback to psutil delta for non-Unix if resource is unavailable
         process = psutil.Process()
@@ -56,10 +70,21 @@ def measure_memory(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, floa
     return result, peak_kb * factor
 
 def compute_regression_metrics(
-    
     y_true: np.ndarray,
     y_pred: np.ndarray,
 )-> Dict[str, float]:
+    """Aggregation function for all available regression metrics.
+
+    Args:
+        y_true (np.ndarray): Target vector. 
+        y_pred (np.ndarray): Predicted vector. 
+
+    Returns:
+        Dict[str, float]: A dictionary containing regression metrics: 
+        Root Mean Squared Error ('RMSE'),
+        Mean Squared Error ('MSE'),
+        Mean Absolute Error ('MAE'),
+    """
     mae = compute_mae(y_true, y_pred)
     mse = compute_mse(y_true, y_pred)
     rmse = compute_rmse(y_true, y_pred)
@@ -68,12 +93,23 @@ def compute_regression_metrics(
         "RMSE": rmse,
         "MAE": mae,
     }
+
 def compute_classification_metrics(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     y_pred_proba: Optional[np.ndarray] = None,
 ) -> Dict[str, float]:
-    """Compute standard binary classification metrics."""
+    """Aggregation of classification metrics.
+
+    Args:
+        y_true (np.ndarray): Target vector. 
+        y_pred (np.ndarray): Predicted vector.
+        y_pred_proba (Optional[np.ndarray], optional): Class probability. Defaults to None.
+
+    Returns:
+        Dict[str, float]: Dictionary of classification scores such as:
+        Accuracy, Precision, Recall, F1, ROC/AUC, Brier score.
+    """
     n_unique = len(np.unique(y_true))
     # Use proba dimensionality to decide binary vs multi-class.
     is_binary_proba = np.ndim(y_pred_proba) == 1 if y_pred_proba is not None else False
@@ -98,6 +134,16 @@ def compute_classification_metrics(
     }
 
 def compute_roc_curve(y_true: np.ndarray, y_score: np.ndarray, pos_label=None) -> Tuple[np.ndarray, np.ndarray]:
+    """Invokes the sklearn.metrics function that calculates the ROC curve.
+
+    Args:
+        y_true (np.ndarray): Target vector. 
+        y_score (np.ndarray): Predicted vector.
+        pos_label (_type_, optional): Class probability. Defaults to None.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: Lists of false positive and true positive rates (FPR, TPR).
+    """
     fpr, tpr, _ = metrics.roc_curve(y_true, y_score, pos_label=pos_label)
     return (fpr, tpr)
 
@@ -114,11 +160,15 @@ def prepare_curve_data(
     y_prob: np.ndarray,
     class_names: List[str],
 ) -> Tuple[Dict[str, Tuple[np.ndarray, np.ndarray]], Dict[str, Tuple[np.ndarray, np.ndarray, float]]]:
-    """Prepare ROC and PR data for both binary and multi-class scenarios.
+    """Preparation of data for and aggregation of curves (ROC / PR) per class.
+
+    Args:
+        y_true (np.ndarray): Target vector.
+        y_prob (np.ndarray): Class probability.
+        class_names (List[str]): Class names. 
 
     Returns:
-        roc_data: Mapping label -> (fpr, tpr)
-        pr_data: Mapping label -> (precision, recall, avg_precision)
+        Tuple[Dict[str, Tuple[np.ndarray, np.ndarray]], Dict[str, Tuple[np.ndarray, np.ndarray, float]]]: Tuple of prepared data for ROC and PR.
     """
     roc_data = {}
     pr_data = {}
@@ -154,13 +204,18 @@ def metrics_by_prefix_length(
     is_regression: bool = False,
     min_group_size: int = 10,
 ) -> pd.DataFrame:
-    """Slice ONE pooled model's predictions by prefix length and compute metrics per length.
+    """Slice one pooled model's predictions by prefix length and compute metrics per length.
 
     Args:
-        y_true, y_pred, y_prob: aligned prediction arrays for the pooled test set.
-        prefix_lengths: prefix length of each test instance.
-        is_regression: whether to compute regression or classification metrics.
-        min_group_size: groups with fewer samples are dropped.
+        y_true (np.ndarray): Target vector.
+        y_pred (np.ndarray): Prediction vector.
+        y_prob (Optional[np.ndarray]): Class probability.
+        prefix_lengths (np.ndarray): Prefix length of each test instance.
+        is_regression (bool, optional): Determins whether to compute regression or classification metrics. Defaults to False.
+        min_group_size (int, optional): Groups with fewer samples than specified are dropped. Defaults to 10.
+
+    Returns:
+        pd.DataFrame: Dataframe of metrics by the prefix length. One row per prefix length - metric combination.
     """
     y_true, y_pred, prefix_lengths = np.asarray(y_true), np.asarray(y_pred), np.asarray(prefix_lengths)
 
@@ -189,6 +244,20 @@ def evaluate_by_prefix_length(
     prefix_range_start: Optional[int] = None,
     prefix_range_end: Optional[int] = None,
 ) -> pd.DataFrame:
+    """Trains models with trace-prefixes of specified length and aggregates the resulting F1 and Accuracy scores.
+
+    Args:
+        target (config.PredictionTarget): User specified target type.
+        feature (config.PredictionFeature): User specified feature type (should include trace, otherwise pointless). 
+        model (Tuple[Any, Any, Any]): Petri net.
+        log (pd.DataFrame): Event log.
+        outcome_activities (Optional[List[str]], optional): Optionally specified outcome activities. Required for prediction type 'process outcome'. Defaults to None.
+        prefix_range_start (Optional[int], optional): Specified lower bound of prefix length range. Defaults to None. If not specified, the maximum of (1, lower quartile trace length) is used.
+        prefix_range_end (Optional[int], optional): Specified upper bound of prefix length range. Defaults to None. If not specified, the median trace length is identified and used.
+
+    Returns:
+        pd.DataFrame: A dataframe containing the F1 and accuracy score per prefix length in the provided range.
+    """
     case_id_col = "case:concept:name"
     
     if prefix_range_start is None or prefix_range_end is None:
@@ -242,23 +311,21 @@ def compare_models(
     baseline_results: Dict[int, Dict[str, float]],
     conformance_results: Dict[int, Dict[str, float]],
 ) -> pd.DataFrame:
-    """Aggregate metrics across seeds and produce a comparison table.
-
-    Args:
-        baseline_results: Mapping seed -> metrics dict (from compute_classification_metrics)
-            for the log-only baseline model.
-        conformance_results: Same structure for the conformance-aware model.
-
-    Returns:
-        DataFrame with one row per metric, columns:
-            baseline_mean, baseline_std, conformance_mean, conformance_std.
-    """
     ...
 
 def compute_mse(
     y_true: np.ndarray,
     y_pred: np.ndarray,
 ) -> np.float64:
+    """Computation of Mean Squared Error (MSE).
+
+    Args:
+        y_true (np.ndarray): Target vector. 
+        y_pred (np.ndarray): Predicted vector.
+
+    Returns:
+        np.float64: MSE.
+    """
     n = len(y_true)
     return (1/n)*(sum((y_true-y_pred)**2))
 
@@ -266,6 +333,15 @@ def compute_rmse(
     y_true: np.ndarray,
     y_pred: np.ndarray,
 ) -> np.float64:
+    """Computation of Root Mean Squared Error (RMSE).
+
+    Args:
+        y_true (np.ndarray): Target vector. 
+        y_pred (np.ndarray): Predicted vector.
+
+    Returns:
+        np.float64: RMSE.
+    """
     mse = compute_mse(y_true, y_pred)
     return np.sqrt(mse)
 
@@ -273,5 +349,14 @@ def compute_mae(
     y_true: np.ndarray,
     y_pred: np.ndarray,
 ) -> np.float64:
+    """Computation of Mean Absolute Error (MAE).
+
+    Args:
+        y_true (np.ndarray): Target vector. 
+        y_pred (np.ndarray): Predicted vector.
+
+    Returns:
+        np.float64: MAE.
+    """
     n = len(y_true)
     return (1/n)*(sum(np.abs(y_true-y_pred)))
