@@ -1,3 +1,10 @@
+"""
+This module bundles pipelines that perform the relevant steps from input to results. These pipeline fragments are the following:
+1. Prepare Log and Model
+2. Extract Target and Feature (optionally: for given prefix lenght(s))
+3. Run Conformance Prediction (+ compute Evaluation scores)
+"""
+
 from typing import Tuple, Optional, Dict, Any, List
 import pandas as pd
 import numpy as np
