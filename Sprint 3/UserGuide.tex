@@ -1,0 +1,426 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+Rheinisch-Westf\"alische Technische Hochschule Aachen \\
+Alessandro Berti\\[6ex]
+
+\LARGE
+	\textbf{User Guide For "Conformance Predictions"} \\[6ex]
+        \centering{Group 4:}\\
+	\textit{Richard Schuppener, Cem Colak} \\[6ex]
+\end{center}
+
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+In this document we will provide a user guide for the "Conformance Predictions" project. The user guide is split into several sections. 
+First, we will provide a guide for the installation of our project, followed by a guide for the usage of our software artifact. 
+
+\section{Installation Guide}
+In our past Requirements Engineering document we have already outlined the Installation procedure for our project. 
+In the following section we will provide the guide for completeness.
+
+\subsection{Excerpt: Installation Guide from Requirements Engineering Document}
+To use our \textbf{Python script}, the following set-up steps are required. 
+First, the user should check whether all prerequisites are met: 
+Our project requires a working \textbf{Python} installation of version \textit{3.14.4} (currently the latest available Python version where all required packages are supported). 
+Also, a proper installation of \textbf{Git} is required.
+
+First, the repository needs to be cloned:
+\begin{center}
+\texttt{git clone https://git.rwth-aachen.de/schuppenerr/conformance-predictions.git}
+\end{center}
+
+Then, we suggest entering the cloned directory and creating a virtual environment for the Python packages:
+\begin{center}
+\texttt{python -m venv .venv}
+\end{center}
+
+Alternatively (not recommended), this step can be skipped, and the required packages can be globally installed on the PC.
+
+The next step is to install all packages from the \textit{requirements.txt} file:
+\begin{center}
+\texttt{pip install -r requirements.txt}
+\end{center}
+
+Now, the script can be launched via the terminal from the directory containing \textit{main.py}:
+\begin{center}
+\texttt{python main.py}
+\end{center}
+
+Note that this aims only to roughly sketch the installation process and neither depicts correct BPMN nor comprehensively describes the script setup.
+
+\section{User Guide}
+
+% -------------------------------------------------------
+\subsection{Step 1: Event Log and Normative Model}
+
+\subsubsection{Has model?}
+\begin{verbatim}
+Do you have a normative process model? (y/N):
+\end{verbatim}
+Answer \texttt{y} if you have a pre-built model file ready, or \texttt{n} (the default) to let the tool discover a model automatically from the event log.
+
+\subsubsection{Event log path}
+\begin{verbatim}
+Enter the path to the event log (XES/CSV):
+\end{verbatim}
+Enter the absolute or relative path to your event log. Two file formats are accepted:
+\begin{itemize}
+    \item \textbf{XES} (\texttt{.xes}) --- the standard process mining log format; loaded directly via PM4Py.
+    \item \textbf{CSV} (\texttt{.csv}) --- the file must contain columns with exactly the names \verb|case:concept:name|, \verb|concept:name|, and \verb|time:timestamp|. Any other column naming will cause a loading error.
+\end{itemize}
+
+\subsubsection{Option A: Loading a Pre-Built Model}
+If you answered \texttt{y} in the first prompt:
+\begin{verbatim}
+Enter the path to the normative model (Petri net/BPMN):
+\end{verbatim}
+Three formats are accepted:
+\begin{itemize}
+    \item \textbf{Petri net} (\texttt{.pnml}) --- loaded directly.
+    \item \textbf{BPMN} (\texttt{.bpmn}) --- converted to a Petri net internally before use.
+    \item \textbf{Process tree} (\texttt{.ptml}) --- converted to a Petri net internally before use.
+\end{itemize}
+Any other file extension will cause an error.
+
+\subsubsection{Option B: Discovering a Model}
+If you answered \texttt{n}, the tool prints:
+\begin{verbatim}
+Model discovery will be used.
+
+Which discovery algorithm should be used?
+1. Inductive Miner (recommended)
+2. Alpha Miner
+3. Genetic Miner
+Select option (1-3):
+\end{verbatim}
+
+\textbf{Option 1 --- Inductive Miner} is the recommended choice for most logs. Two additional parameters are requested:
+\begin{verbatim}
+Noise threshold (default 0.0):
+Disable fall-throughs? (y/N):
+\end{verbatim}
+The noise threshold (a value between 0.0 and 1.0) controls how aggressively infrequent behavior is filtered out before model construction. A value of 0.0 keeps all behavior; higher values produce simpler models. Press \texttt{Enter} to accept the defaults.
+
+\textbf{Option 2 --- Alpha Miner} has no configurable parameters. The tool will confirm this and continue:
+\begin{verbatim}
+Alpha Miner has no configurable parameters.
+\end{verbatim}
+
+\textbf{Option 3 --- Genetic Miner} requests six parameters:
+\begin{verbatim}
+Population size (default 500):
+Elitism rate (default 0.01):
+Crossover rate (default 1.0):
+Mutation rate (default 0.01):
+Generations (default 100):
+Elitism min sample (default 5):
+\end{verbatim}
+Press \texttt{Enter} on any field to keep its default value.
+
+% -------------------------------------------------------
+\subsection{Step 2: Normative Model Visualization (Optional)}
+After the model is loaded or discovered, the tool asks:
+\begin{verbatim}
+Do you want a visualization of the [discovered/provided]
+normative model saved (s) or directly displayed (d) or not (N)?
+(s/d/N):
+\end{verbatim}
+We recommend you to visualize the model at least once in the beginning to get a better understanding of the process structure. Especially for the prediction outcome target (option 2 in Step 3), it is important to know which activities signify the different outcomes. The visualization can be skipped in later runs once you are familiar with the model.
+\begin{itemize}
+    \item \textbf{s --- Save:} the model is rendered and written to a file. Two further prompts follow. First, choose the representation format:
+    \begin{verbatim}
+Choose model representation for visualization:
+1. Petri Net
+2. BPMN
+3. Process Tree
+Select option (1-3):
+    \end{verbatim}
+    Then provide the output file path:
+    \begin{verbatim}
+Enter the path to save the visualization (e.g., model.png):
+    \end{verbatim}
+
+    \item \textbf{d --- Display:} the same representation prompt is shown, then the figure(png) is opened in an interactive window. No file is written.
+
+    \item \textbf{N --- Skip:} no visualization is produced, and the pipeline continues immediately.
+\end{itemize}
+% -------------------------------------------------------
+\subsection{Step 3: Prediction Target}
+\begin{verbatim}
+What should be predicted?
+1. Future conformance deviations
+2. Process outcome
+3. Remaining time
+Select option (1-3):
+\end{verbatim}
+
+\textbf{Option 1 --- Future conformance deviations} predicts whether a case will exhibit a further deviation from the normative model. The label is binary: 0 means no (further) deviation is expected, 1 means a deviation is expected. After selecting this option, one additional prompt appears:
+\begin{verbatim}
+Deviation cost threshold T (default 0):
+\end{verbatim}
+A case is counted as \emph{deviant} when its real alignment cost --- the number of genuine log-only and visible model-only moves, with silent routing excluded --- exceeds the threshold \texttt{T}. With \texttt{T=0} (the default) any real deviation makes the case deviant; raising \texttt{T} tolerates minor deviations before a case is labelled deviant. Press \texttt{Enter} to keep \texttt{T=0}. \textit{Fully implemented.}
+
+\textbf{Option 2 --- Process outcome} predicts which of several predefined outcomes a case will reach. After selecting this option, the following prompt appears:
+\begin{verbatim}
+Define the target outcome:
+Enter activity names that signify a outcome (one per line).
+Type 'done' when finished.
+>
+\end{verbatim}
+Enter each outcome activity name \textbf{exactly as it appears in the event log}, including capitalization, one name per line. Type \texttt{done} and press \texttt{Enter} when finished. Each case is labelled with the outcome activity that appears in it, provided exactly one of the specified activities is present. Cases containing none or more than one of the specified activities receive the label \verb|uncertain_outcome|. These uncertain cases indicate, that the chosen outcome activities are not given. \textit{Fully implemented.}
+
+\textbf{Option 3 --- Remaining time} predicts, from a partial trace, how much time (in seconds) remains until the case completes. This is a regression target rather than a classification target, so it leads to the regression algorithm menu in Step 5. Because the remaining time of a completed case is always zero, this target \textbf{requires prefixing} (see Step 4.1); the ``no prefixing'' option is therefore not offered for it. \textit{Fully implemented.}
+
+% -------------------------------------------------------
+\subsection{Step 4: Feature Type}
+\begin{verbatim}
+What should the prediction be based upon?
+1. Plain trace (control-flow)
+2. Trace and alignment-based diagnostics
+3. Case features
+4. Mixture of all available information
+Select option (1-4):
+\end{verbatim}
+
+\textbf{Option 1 --- Control-flow} uses a bag-of-activities representation. For each case the feature vector contains the count of each activity observed in the log. \textit{Fully implemented.}
+
+\textbf{Option 2 --- Alignment-based diagnostics} runs optimal alignment between the log and the model and encodes, for each case, the counts of synchronous moves, log-only moves, and model-only moves per activity. This is computationally more expensive than option 1 for large logs. \textit{Fully implemented.}
+
+\textbf{Option 3 --- Case features} uses static case-level attributes (e.g.\ a patient's age or admission department) stored in the event log. \textit{Fully implemented.}
+
+\textbf{Option 4 --- Hybrid} combines all of the above: control-flow counts, alignment-based diagnostics, and the selected case attributes. \textit{Fully implemented.}
+
+\subsubsection{Selecting case attributes}
+If you chose option 3 or option 4, the tool lists the case-level attributes it found in the log and asks you to select which to use:
+\begin{verbatim}
+Available case-level attributes:
+  1. <attribute>  (type=..., unique=..., e.g. ...)
+  2. ...
+Select attributes (comma-separated numbers, or 'all'):
+\end{verbatim}
+Enter the numbers of the attributes you want, separated by commas, or type \texttt{all} (or press \texttt{Enter}) to use every listed attribute. If the log contains no case-level attributes, the tool prints a notice and continues without case features.
+
+% -------------------------------------------------------
+\subsection{Step 4.1: Prefix mode}
+A prefix is the first part of a trace. Training on prefixes lets the model predict from a \emph{partial} case, as it would be used in practice. How prefixes are formed is controlled by the prefix-mode prompt.
+
+\subsubsection{Classification targets (process outcome / future deviations)}
+For the two classification targets the tool asks:
+\begin{verbatim}
+Prefix mode?
+  [Enter] none      (default - one row per case, cheapest; no per-prefix alignments)
+  1)      exactly k (one prefix per case at length k)
+  2)      varying 1..k (pooled - prefixes of length 1..k)
+Select (Enter/1/2):
+\end{verbatim}
+\begin{itemize}
+    \item \textbf{none} (press \texttt{Enter}) --- one row per case using the full trace. This is the cheapest path: at most one alignment per case.
+    \item \textbf{exactly k} (enter \texttt{1}) --- one prefix per case, cut at a fixed length. You are then asked:
+    \begin{verbatim}
+  prefix length k:
+    \end{verbatim}
+    \item \textbf{varying 1..k} (enter \texttt{2}) --- pooled prefixes of every length from 1 up to \texttt{k}. You are then asked for the maximum length and the step:
+    \begin{verbatim}
+  max length k (blank = median case length):
+  step (default 1):
+    \end{verbatim}
+\end{itemize}
+Note: when the feature type is \emph{pure case attributes} (option 3 in Step 4), no prefix is needed --- the prompt is skipped and the model runs on full traces by design.
+
+\subsubsection{Remaining time}
+Remaining time always needs a partial trace, so the ``none'' option is not offered. The prompt instead reads:
+\begin{verbatim}
+Prefix mode (required for remaining time)?
+  [Enter] varying 1..median (N)  (pooled - prefixes of length 1..k)
+  1)      exactly k          (one prefix per case at length k)
+Select (Enter/1):
+\end{verbatim}
+Here \texttt{N} is the median case length of your log, used as the default upper bound. Pressing \texttt{Enter} pools prefixes of length 1 up to the median; entering \texttt{1} asks for a single fixed length \texttt{k} instead.
+
+% -------------------------------------------------------
+\subsection{Step 4.2: Train/Test Split}
+\begin{verbatim}
+Enter a split value for the train- / test-split (default=0.7):
+\end{verbatim}
+The log is split into a training and a test set using a temporal split by case end time (earlier cases train, later cases test). The value is the fraction used for training --- the default \texttt{0.7} means 70\,\% training / 30\,\% test. Press \texttt{Enter} to keep the default.
+% -------------------------------------------------------
+\subsection{Step 5: ML Algorithm and Hyperparameters}
+The algorithm menu depends on the prediction target. The two classification targets (process outcome, future deviations) offer classifiers; remaining time offers regressors.
+
+\subsubsection{Classification algorithms (process outcome / future deviations)}
+\begin{verbatim}
+Which classification algorithm do you want to apply?
+(1) Decision Tree
+(2) Logistic Regression
+(3) Gradient Boosting
+Select option (1-3):
+\end{verbatim}
+All three are fully implemented and support binary and multi-class targets.
+
+\subsubsection{Regression algorithms (remaining time)}
+\begin{verbatim}
+Which regression algorithm do you want to apply?
+(1) Decision Tree Regressor
+(2) Random Forest Regressor
+(3) Gradient Boosting Regressor
+Select option (1-3):
+\end{verbatim}
+
+\subsubsection{Hyperparameters}
+After selecting an algorithm:
+\begin{verbatim}
+Do you want to configure the parameters yourself? (y/N):
+\end{verbatim}
+Answer \texttt{n} (the default) to use sensible defaults, or \texttt{y} to set the parameters relevant to your chosen algorithm. Press \texttt{Enter} on any field to keep its default value.
+
+\textbf{Decision Tree} (classification):
+\begin{verbatim}
+Criterion (gini/entropy, default gini):
+Max depth (int, default 4):
+Min samples split (int, default 2):
+Min samples leaf (int, default 1):
+\end{verbatim}
+
+\textbf{Logistic Regression:}
+\begin{verbatim}
+Inverse regularization strength C (float, default 1.0):
+\end{verbatim}
+
+\textbf{Gradient Boosting} (classification):
+\begin{verbatim}
+Number of estimators (int, default 100):
+Max depth (int, default 3):
+\end{verbatim}
+
+\textbf{Decision Tree Regressor} (remaining time):
+\begin{verbatim}
+Max depth (int, default 4):
+Min samples split (int, default 2):
+Min samples leaf (int, default 1):
+\end{verbatim}
+
+\textbf{Random Forest / Gradient Boosting Regressor} (remaining time):
+\begin{verbatim}
+Number of estimators (int, default 100):
+Max depth (int, blank = default):
+\end{verbatim}
+
+% -------------------------------------------------------
+\subsection{Step 6: Decision Tree Visualization and Refinement}
+\textit{This step only appears when a single Decision Tree was selected --- either the Decision Tree classifier or the Decision Tree Regressor.} We recommend, to visualize the trained tree at least once to understand how the decision tree looks like with the default parameters and specified hyperparameters. After each visualization, you have the option to reconfigure the hyperparameters and retrain the model, such that you can interatively refine the tree structure and inspect the changes after each iteration.
+
+After the initial training, the tool asks:
+\begin{verbatim}
+Do you want the decision tree saved (s), displayed (d)
+or not shown (N)? (s/d/N):
+\end{verbatim}
+\begin{itemize}
+    \item \textbf{s --- Save:} provide a file path when asked:
+    \begin{verbatim}
+Enter the path to save the decision tree (e.g., tree.png):
+    \end{verbatim}
+    The tree is rendered with feature names and class labels and saved as an image file.
+    \item \textbf{d --- Display:} the tree is opened in an interactive Matplotlib window.
+    \item \textbf{N --- Skip:} no visualization is produced.
+\end{itemize}
+
+Immediately after the visualization choice, the tool asks:
+\begin{verbatim}
+Do you want to reconfigure the hyperparameters and retrain? (y/N):
+\end{verbatim}
+
+If you answer \texttt{y}, the Decision Tree parameter prompt from Step 5 is shown again. The model is retrained with the new settings and the visualization prompt is repeated, allowing you to inspect the new tree before deciding again. This loop continues until you answer \texttt{n}.
+
+% -------------------------------------------------------
+\subsection{Step 7: Evaluation Results}
+Once the final model is confirmed, evaluation runs automatically. What is printed depends on the target and on whether prefixes vary.
+
+\textbf{Scalar metrics (all targets).} A block of scalar metrics is always printed, labelled with its scope (full traces, or pooled over the prefix lengths used). For the classification targets these are accuracy, precision, recall, F1-score and ROC-AUC; for remaining time these are regression metrics (e.g.\ error measures).
+
+\textbf{Confusion matrix and per-class breakdown (process outcome only).} For the process-outcome target the tool additionally prints:
+\begin{enumerate}
+    \item A \textbf{confusion matrix} as a text table, with rows representing actual class labels and columns representing predicted class labels.
+    \item A \textbf{per-class accuracy breakdown} listing, for each class, the percentage of cases that were correctly predicted and the percentage that were not.
+\end{enumerate}
+
+\textbf{Metrics by prefix length (varying prefixes only).} If you chose the \emph{varying} prefix mode (so at least two distinct prefix lengths are present), the tool also prints a table of metrics broken down by prefix length, letting you see how predictive performance changes as more of the case is observed. For classification it then offers an interactive loop to inspect a single length in detail:
+\begin{verbatim}
+Enter a prefix length to see its specific confusion matrix
+(or 'N' to skip):
+\end{verbatim}
+Enter a length to print that length's confusion matrix and per-class breakdown, or \texttt{N} to skip. Finally it offers to save a performance-by-prefix-length chart:
+\begin{verbatim}
+Do you want to save a visualization of the performance
+per prefix-length? (y/N):
+Enter filename (default: by_len_vis.png):
+\end{verbatim}
+
+% -------------------------------------------------------
+\subsection{Step 8: Saving Evaluation Visuals}
+\textit{This prompt only appears for the process-outcome target.}
+\begin{verbatim}
+Save confusion matrix and accuracy chart? (y/N):
+\end{verbatim}
+
+If you answer \texttt{y}:
+\begin{verbatim}
+Folder to save in (press Enter for Downloads):
+\end{verbatim}
+Press \texttt{Enter} to save to your system's \texttt{Downloads} folder, or type a custom folder path. The tool creates a timestamped subfolder \\(e.g.\ \verb|conformance_results_2026-05-15_14-30-00|) inside the chosen location and saves two image files:
+\begin{itemize}
+    \item \texttt{confusion\_matrix.png} --- a color-coded heatmap of the confusion matrix.
+    \item \texttt{per\_class\_accuracy.png} --- a stacked bar chart with green segments (correct predictions) and red segments (incorrect predictions) per class.
+\end{itemize}
+
+% -------------------------------------------------------
+\subsection{Step 9: Runtime Report}
+After the evaluation steps, the tool prints the runtime of each pipeline step and the peak memory used, followed by the total processing time. It then offers two optional reports.
+
+A pie chart of the processing times per step:
+\begin{verbatim}
+Do you want to visualize the processing times as a pie chart? (y/N):
+Do you want to save the pie chart (s) or directly display it (d)? (s/d):
+\end{verbatim}
+Choosing \texttt{s} asks for an output path (default \texttt{runtime\_dist.png}); choosing \texttt{d} opens the chart in a window.
+
+A machine-readable JSON report:
+\begin{verbatim}
+Do you want to save the runtime and memory measurements as JSON? (y/N):
+Enter filename (default: report.json):
+\end{verbatim}
+The resulting file contains the per-step runtimes, the peak memory in MB, and the total processing time.
+
+% -------------------------------------------------------
+\subsection{Step 10: Predictions on New Data}
+\begin{verbatim}
+Do you want to perform predictions on new data? This will restart the CLI. (y/N):
+\end{verbatim}
+
+This is the final prompt, shown only after the runtime report so that the current run's measurements are printed first. Answering \texttt{y} restarts the entire CLI from the beginning (Step 1), letting you run the whole pipeline again on a new event log; any other answer ends the program.
+
+% -------------------------------------------------------
+\subsection{Known Limitations}
+Most features from earlier sprints are now fully functional. The following limitations remain worth keeping in mind:
+
+\begin{itemize}
+    \item \textbf{Genetic Miner} --- discovery is very slow on larger logs (around 19 minutes on the 1050-case Sepsis log, versus seconds for Inductive/Alpha), and the discovered net may not be ``easy sound''. In that case any alignment-based path (future-deviation labels, diagnostics or hybrid features) fails with a caught \verb|[EXTRACTION ERROR]| and the program exits cleanly. Prefer the Inductive or Alpha Miner for alignment-based targets.
+    \item \textbf{Future deviations on short prefixes} --- with a short fixed prefix and \texttt{T=0}, all training prefixes may be non-deviant, leaving a single training class. The training step is not wrapped in error handling, so this can terminate the program with a traceback instead of a friendly message. Use a longer prefix, the varying prefix mode, or full traces to avoid it.
+    \item \textbf{CSV log format} --- only supported if the file uses the exact column names \verb|case:concept:name|, \verb|concept:name|, and \verb|time:timestamp|.
+    \item \textbf{Multi-outcome cases} --- for the process-outcome target, a case containing more than one (or none) of the specified outcome activities receives the label \verb|uncertain_outcome| rather than a specific class.
+\end{itemize}
+
+\end{document}

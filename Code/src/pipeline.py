@@ -7,10 +7,10 @@ from src import io, config, feature_extraction, model_training, evaluation
 from src import visualization as vis
 
 def run_conformance_prediction_pipeline(
-    X_test=np.ndarray,
-    y_test=np.ndarray,
-    X_train=np.ndarray,
-    y_train=np.ndarray,
+    X_test: pd.DataFrame,
+    y_test: np.ndarray,
+    X_train: pd.DataFrame,
+    y_train: np.ndarray,
     ml_params: Optional[Dict[str, Any]] = None,
     preloaded_model=None,
     test_prefix_lengths: Optional[np.ndarray] = None,
@@ -28,9 +28,13 @@ def run_conformance_prediction_pipeline(
         trained_model = model_training.train_regression_model(X_train, y_train, ml_params=ml_params)
     else:
         print(f"--- Training model with parameters: {ml_params} ---")
-        trained_model = model_training.train_model(X_train, y_train, ml_params)
+        # Standalone fallback (the CLI always passes preloaded_model): default Decision
+        # Tree classifier. Build+fit directly rather than via train_classification_model
+        # so this path keeps working on degenerate single-class splits, as before.
+        trained_model = model_training.create_classification_pipeline(ml_params=ml_params)
+        trained_model.fit(X_train, y_train)
 
-    # 6. Evaluation (HL-16)
+    # Evaluation (HL-16)
     print("--- Evaluating model ---")
 
     # Align test columns to training columns — fills any activity/move seen only in

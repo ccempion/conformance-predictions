@@ -20,11 +20,6 @@ class PredictionFeature(Enum):
     DIAGNOSTICS = "DIAGNOSTICS"
     CASE_ATTRIBUTES = "CASE_ATTRIBUTES"
     HYBRID = "HYBRID"
-    
-class Algorithm(Enum):
-    DECISION_TREE = "DECISION_TREE"
-    ALGORITHM_2 = "ALGORITHM_2"
-    ALGORITHM_3 = "ALGORITHM_3"
 
 class RegressionAlgorithm(Enum):
     DECISION_TREE = "DECISION_TREE"
