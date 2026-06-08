@@ -23,8 +23,20 @@ def run_conformance_prediction_pipeline(
     test_prefix_lengths: Optional[np.ndarray] = None,
     is_regression: bool = False,
 ) -> Dict[str, Any]:
-    """
-    Main orchestration function for the entire pipeline.
+    """Main orchestration function for the entire pipeline.
+
+    Args:
+        X_test (pd.DataFrame): Feature test dataframe.
+        y_test (np.ndarray): Target test vector.
+        X_train (pd.DataFrame): Feature train dataframe.
+        y_train (np.ndarray): Target train vector.
+        ml_params (Optional[Dict[str, Any]], optional): User specified machine learning (ML) parameters. Defaults to None.
+        preloaded_model (_type_, optional): Already existing model - if provided, the this model is used instead of training a new one. Defaults to None.
+        test_prefix_lengths (Optional[np.ndarray], optional): Prefix lengths to test. Defaults to None.
+        is_regression (bool, optional): Wether this pipeline is regression or classification. Defaults to False.
+
+    Returns:
+        Dict[str, Any]: A dictionary with the trained model and other information such as the predictions and target probabilities.
     """
 
     if preloaded_model is not None:
@@ -76,12 +88,21 @@ def prepare_log_and_model(
     discovery_params: Optional[Dict[str, Any]] = None,
     vis_params: Optional[Dict[str, Any]] = None
 ) -> Tuple[Tuple[PetriNet, Marking, Marking], pd.DataFrame]:
-    """
-    Orchestrates the loading of data, model acquisition (load or discovery),
+    """Orchestrates the loading of data, model acquisition (load or discovery),
     and optional visualization.
-    
+
+    Args:
+        log_path (str): Path to the event log. 
+        model_path (Optional[str], optional): Path to the model. Defaults to None.
+        discovery_alg (Optional[config.Discovery_alg], optional): User specified discovery algorithm. Defaults to None.
+        discovery_params (Optional[Dict[str, Any]], optional): Corresponding parameters for the discovery algorithm. Defaults to None.
+        vis_params (Optional[Dict[str, Any]], optional): Parameters for the initial model visualization. Defaults to None.
+
+    Raises:
+        ValueError: _description_
+
     Returns:
-        A tuple containing ((Net, Initial Marking, Final Marking), Event Log DataFrame).
+        Tuple[Tuple[PetriNet, Marking, Marking], pd.DataFrame]: _description_
     """
     
     # Load the Event Log
@@ -115,6 +136,15 @@ def prepare_log_and_model(
     return model, log
 
 
+    """
+    Orchestrates the extraction of labels (y) and features (X).
+    Ensures that the features and targets are aligned by case/prefix.
+
+    Returns:
+        X: feature matrix.
+        y: encoded label vector.
+        class_names: ordered list of original class labels.
+    """
 def extract_target_and_feature(
     target: config.PredictionTarget,
     feature: config.PredictionFeature,
@@ -125,14 +155,21 @@ def extract_target_and_feature(
     selected_case_attributes: Optional[List[str]] = None,
     deviation_cost_threshold: int = 0,
 ) -> Tuple[pd.DataFrame, np.ndarray, List[str]]:
-    """
-    Orchestrates the extraction of labels (y) and features (X).
+    """Orchestrates the extraction of labels (y) and features (X).
     Ensures that the features and targets are aligned by case/prefix.
 
+    Args:
+        target (config.PredictionTarget): User specified target of prediction. 
+        feature (config.PredictionFeature): User specified features basis. 
+        model (Tuple[Any, Any, Any]): Internal (PM4Py) Petri Net representation of the process model.
+        log (pd.DataFrame): Internal event log representation as dataframe. 
+        outcome_activities (Optional[List[str]], optional): User specified outcome activities (only necessary if 'process outcome' is selected as prediction target). Defaults to None.
+        prefix_length (Optional[int], optional): User specified length of prefixes that are to be extracted from traces. Defaults to None.
+        selected_case_attributes (Optional[List[str]], optional): user specified case attributes (only necessary if case attributes are to be part of the feature basis). Defaults to None.
+        deviation_cost_threshold (int, optional): Deviation cost threshhold (only necessary for prediction type of remaining time). Defaults to 0.
+
     Returns:
-        X: feature matrix.
-        y: encoded label vector.
-        class_names: ordered list of original class labels.
+        Tuple[pd.DataFrame, np.ndarray, List[str]]: Extracted feature dataframe and target vector as well as target class names.
     """
     # Determine if alignments are required
     needs_alignments_for_feature = (
@@ -192,11 +229,11 @@ def extract_target_and_feature_over_prefixes(
     deviation_cost_threshold: int = 0,
 ) -> Tuple[pd.DataFrame, np.ndarray, List[str], np.ndarray]:
     """
-    Prefix-level (pooled) variant of extract_target_and_feature (LL-07.1).
+    Prefix-level (pooled) variant of extract_target_and_feature.
 
     Expands each case into varying-length prefixes (exactly-k => min==max==k;
     varying 1..k => min=1, max=k), pools them into one (X, y) dataset, and returns
-    each row's prefix length as metadata for by-length analysis (HL-17).
+    each row's prefix length as metadata for by-length analysis.
 
     Labels are computed once on the FULL log per original case and broadcast to that
     case's prefixes; for PROCESS_OUTCOME, prefixes are gated to end before the first
@@ -206,8 +243,22 @@ def extract_target_and_feature_over_prefixes(
     each prefix's end to case completion), computed per prefix rather than broadcast, and
     explicit temporal features (elapsed / since-previous / event-count) are appended.
 
+    Args:
+        target (config.PredictionTarget): User specified target of prediction. 
+        feature (config.PredictionFeature): User specified features basis. 
+        model (Tuple[Any, Any, Any]): Internal (PM4Py) Petri Net representation of the process model.
+        log (pd.DataFrame): Internal event log representation as dataframe. 
+        outcome_activities (Optional[List[str]], optional): User specified outcome activities (only necessary if 'process outcome' is selected as prediction target). Defaults to None.
+        prefix_length (Optional[int], optional): User specified length of prefixes that are to be extracted from traces. Defaults to None.
+        selected_case_attributes (Optional[List[str]], optional): user specified case attributes (only necessary if case attributes are to be part of the feature basis). Defaults to None.
+        deviation_cost_threshold (int, optional): Deviation cost threshhold (only necessary for prediction type of remaining time). Defaults to 0.
+        min_length (int, optional): Lower bound of prefix lengths. Defaults to 1.
+        max_length (Optional[int], optional): Lower bound of prefix lengths. Defaults to None.
+        step (int, optional): Step interval between lower and upper bound. Defaults to 1.
+        gate_outcome (bool, optional): Defaults to True.
+
     Returns:
-        X, y, class_names, prefix_lengths   (prefix_lengths row-aligned to X)
+        Tuple[pd.DataFrame, np.ndarray, List[str]]: Extracted feature dataframe and target vector as well as target class names and prefix_lengths (prefix_lengths row-aligned to X).
     """
     case_id_key = "case:concept:name"
 
