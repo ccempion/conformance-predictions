@@ -329,18 +329,22 @@ def plot_processing_times(
         plt.show()
 
 
-def plot_runtime_log_size_relation(data: List[Tuple[float, float]], output_path: str):
+def plot_runtime_log_size_relation(log_sizes: List[float], runtimes: List[float], output_path: str = None):
+    """
+    Plots a simple line graph of log size vs runtime.
+    """
     fig, ax = plt.subplots(figsize=(10, 6))
     
-    ax.plot(data["log_sizes"], data["runtimes"], marker="o", label="Runtimes")
+    ax.plot(log_sizes, runtimes, marker="o", linestyle="-", label="Total Runtime")
     
     ax.set_xlabel("Log Size")
-    ax.set_ylabel("Runtime")
-    ax.set_title("Relation of runtimes and log sizes.")
-    # ax.legend()
+    ax.set_ylabel("Total Runtime")
+    ax.set_title("Relation of Total Runtime and Log Sizes")
     ax.grid(True, linestyle='--', alpha=0.7)
+    ax.legend()
     
     plt.tight_layout()
+    
     if output_path:
         plt.savefig(output_path, dpi=150)
         plt.close(fig)
