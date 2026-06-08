@@ -1,14 +1,13 @@
 """
-Evaluation module for the conformance-aware predictive monitoring pipeline.
+Evaluation module for the predictive monitoring pipeline.
 
-Responsibilities:
-  1. Infrastructure utilities (called by pipeline.py during execution):
-       - measure_runtime / measure_memory: wrappers around conformance and feature steps
-
-  2. Reporting (called by pipeline.py after predictions are collected):
-       - compute_classification_metrics: standard sklearn metrics for one model run
-       - evaluate_by_prefix_length: metrics sliced by prefix length
-       - compare_models: aggregated table across multiple seeds (baseline vs conformance-aware)
+This module is responsible for (list not guaranteed to be complete):
+1. Infrastructure utilities (called during the execution of our CLI):
+    - measure_runtime / measure_memory: wrappers around (relatively big) pipeline fragments
+2. Reporting (called by pipeline fragments and CLI after predictions are collected):
+    - compute_classification_metrics: standard sklearn metrics for one model run
+    - compute_regression_metrics: standard metrics for one model run
+    - evaluate_by_prefix_length: metrics of models masked by a prefix of given length 
 """
 
 from __future__ import annotations
