@@ -1,6 +1,14 @@
 """
-Module for training and applying predictive models (HL-08, HL-09).
-Implements scikit-learn-style objects for preprocessing and prediction.
+Module for training and applying predictive models using scikit-learn. Supported are 
+1. Regression: 
+    - Random Forest
+    - Decision Tree
+    - Gradient Boosting
+2. Regression: 
+    - Logistic regression
+    - Decision Tree
+    - Gradient Boosting
+predictors. Preprocessed training data is used to train these predictors and targets can be predicted using feature data from the test split.
 """
 
 import pandas as pd
