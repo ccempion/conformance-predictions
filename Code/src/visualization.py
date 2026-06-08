@@ -1,3 +1,8 @@
+"""
+In this module, all visualizations, that can be created for our conformance predictions project, are bundled. This includes a great variety of different visualizations.
+The are mainly created using matplotlib or built-in visualizations from other libraries that we listed in our requirements engineering document.
+"""
+
 from __future__ import annotations
 
 import pandas as pd
