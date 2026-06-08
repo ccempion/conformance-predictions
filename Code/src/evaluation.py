@@ -110,6 +110,43 @@ def compute_pr_curve(y_true: np.ndarray, y_score: np.ndarray, pos_label=None) ->
         avg_prec = float(metrics.average_precision_score(y_true, y_score))
     return (prec, recall, avg_prec)
 
+def prepare_curve_data(
+    y_true: np.ndarray,
+    y_prob: np.ndarray,
+    class_names: List[str],
+) -> Tuple[Dict[str, Tuple[np.ndarray, np.ndarray]], Dict[str, Tuple[np.ndarray, np.ndarray, float]]]:
+    """Prepare ROC and PR data for both binary and multi-class scenarios.
+
+    Returns:
+        roc_data: Mapping label -> (fpr, tpr)
+        pr_data: Mapping label -> (precision, recall, avg_precision)
+    """
+    roc_data = {}
+    pr_data = {}
+    n_classes = len(class_names)
+
+    if n_classes == 2:
+        # Binary case: use probabilities of the positive class (assumed to be index 1)
+        y_score = y_prob[:, 1] if y_prob.ndim == 2 else y_prob
+        fpr, tpr = compute_roc_curve(y_true, y_score, pos_label=1)
+        roc_data["Model"] = (fpr, tpr)
+        
+        prec, recall, avg_prec = compute_pr_curve(y_true, y_score, pos_label=1)
+        pr_data["Model"] = (prec, recall, avg_prec)
+    else:
+        # Multi-class: One-vs-Rest for each class
+        for i, class_name in enumerate(class_names):
+            y_true_binary = (y_true == i).astype(int)
+            y_score = y_prob[:, i]
+            
+            fpr, tpr = compute_roc_curve(y_true_binary, y_score, pos_label=1)
+            roc_data[class_name] = (fpr, tpr)
+            
+            prec, recall, avg_prec = compute_pr_curve(y_true_binary, y_score, pos_label=1)
+            pr_data[class_name] = (prec, recall, avg_prec)
+            
+    return roc_data, pr_data
+
 def metrics_by_prefix_length(
     y_true: np.ndarray,
     y_pred: np.ndarray,

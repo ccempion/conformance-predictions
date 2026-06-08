@@ -172,6 +172,29 @@ def save_evaluation_visuals(
     return str(folder)
 
 
+def save_curve_visuals(
+    roc_data: Dict[str, Tuple[np.ndarray, np.ndarray]],
+    pr_data: Dict[str, Tuple[np.ndarray, np.ndarray, float]],
+    base_dir: Optional[str] = None,
+) -> str:
+    """Create a timestamped folder and save ROC and PR curves inside it.
+
+    Returns the absolute path of the created folder.
+    """
+    import pathlib
+    import datetime
+
+    root = pathlib.Path(base_dir) if base_dir else pathlib.Path.home() / "Downloads"
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    folder = root / f"conformance_curves_{timestamp}"
+    folder.mkdir(parents=True, exist_ok=True)
+
+    plot_roc_curves(roc_data, output_path=str(folder / "roc_curves.png"))
+    plot_pr_curves(pr_data, output_path=str(folder / "pr_curves.png"))
+
+    return str(folder)
+
+
 def plot_roc_curves(
     roc_data: Dict[str, Tuple[np.ndarray, np.ndarray]],
     output_path: Optional[str] = None,
