@@ -1,3 +1,11 @@
+"""
+This module is responsible for extracting features from input data such as 
+1. Log (pandas dataframe): case attributes, control flow, conformance insights i.e. alignments
+2. Model (petri net): conformance insights i.e. alignments
+
+This data is also preprocesed for ML by applying scaling and ensuring that the extracted label- and feature-vectors
+for the train and test sets are not missing any cells.
+"""
 from typing import List, Dict, Optional, Any, Tuple
 
 import pandas as pd
@@ -11,16 +19,21 @@ from src import config
 
 
 def compute_alignments(log: pd.DataFrame, model: Tuple[PetriNet, Marking, Marking]) -> List[Dict[str, Any]]:
-    """
-    Computes optimal alignments between the log and the model (Petri Net).
-    Returns the standard PM4Py alignment output (list of dictionaries), ordered to match
-    ``log[case_id].unique()`` (first-appearance order).
+    """Computes optimal alignments between the log and the model (Petri Net).
 
     Ordering matters: pm4py does NOT guarantee that the returned alignment list follows
     the case order of ``log[...].unique()`` (passing a DataFrame sorts cases by id
     internally). Every consumer here pairs alignments to cases positionally, so we convert
     to an EventLog once, key each alignment by its case id, and re-emit in appearance
     order — making the positional pairing correct regardless of pm4py's internal ordering.
+
+    Args:
+        log (pd.DataFrame): Event log.
+        model (Tuple[PetriNet, Marking, Marking]): Petri net model (net, im, fm).
+
+    Returns:
+        List[Dict[str, Any]]: The standard PM4Py alignment output (list of dictionaries),
+        ordered to match ``log[case_id].unique()`` (first-appearance order).
     """
     case_id_key = "case:concept:name"
     (net, im, fm) = model
@@ -52,10 +65,21 @@ def generate_prefixes(
     strictly before the first occurrence of any gate activity are emitted, so the outcome is
     never already inside the prefix.
 
+    Args:
+        log (pd.DataFrame): The original event log.
+        min_length (int, optional): Minimum prefix length. Defaults to 1.
+        max_length (Optional[int], optional): Maximum prefix length. Defaults to None.
+        step (int, optional): Step size between prefix lengths. Defaults to 1.
+        gate_activities (Optional[List[str]], optional): Activities that gate prefix generation. Defaults to None.
+        case_id_key (str, optional): Key for case ID. Defaults to "case:concept:name".
+        timestamp_key (str, optional): Key for timestamp. Defaults to "time:timestamp".
+        activity_key (str, optional): Key for activity name. Defaults to "concept:name".
+
     Returns:
-        prefix_log:   event-level DataFrame, case_id_key replaced by the unique prefix id,
-                      every other column (events, case attributes, timestamp) preserved.
-        prefix_index: DataFrame [prefix_id, orig_case_id, prefix_length].
+        Tuple[pd.DataFrame, pd.DataFrame]: A tuple containing:
+            prefix_log: event-level DataFrame, case_id_key replaced by the unique prefix id,
+                every other column (events, case attributes, timestamp) preserved.
+            prefix_index: DataFrame [prefix_id, orig_case_id, prefix_length].
     """
     # Order events within each case; mergesort keeps original order for equal timestamps.
     g = log.sort_values([case_id_key, timestamp_key], kind="mergesort").copy()
@@ -125,14 +149,15 @@ def extract_remaining_time(
     inside the features; "now" is the prefix's last event.
 
     Args:
-        full_log:     complete event log (original case ids).
-        prefix_log:   prefix event log from generate_prefixes; its case_id_key column
-                      already holds the unique prefix id.
-        prefix_index: [prefix_id, orig_case_id, prefix_length] from generate_prefixes.
+        full_log (pd.DataFrame): Complete event log (original case ids).
+        prefix_log (pd.DataFrame): Prefix event log from generate_prefixes; its case_id_key column
+            already holds the unique prefix id.
+        prefix_index (pd.DataFrame): [prefix_id, orig_case_id, prefix_length] from generate_prefixes.
+        case_id_key (str, optional): Key for case ID. Defaults to "case:concept:name".
+        timestamp_key (str, optional): Key for timestamp. Defaults to "time:timestamp".
 
     Returns:
-        Series indexed by prefix_id, name "remaining_time_seconds" (float), row-aligning
-        to extract_features(prefix_log) exactly like the existing label flow.
+        pd.Series: Series indexed by prefix_id, name "remaining_time_seconds" (float).
     """
     # Completion time of each ORIGINAL case.
     case_end = full_log.groupby(case_id_key)[timestamp_key].max()
@@ -152,11 +177,18 @@ def extract_temporal_features(
 ) -> pd.DataFrame:
     """Per-prefix temporal predictors for remaining-time prediction.
 
-    These are the standard, high-impact time signals for remaining-time models. Columns
-    (indexed by prefix id, prefixed 'tf_' to avoid collisions with cf_act_/ca_/sync_):
-        tf_elapsed_s     time from the prefix's first to last event (how long it has run)
-        tf_since_prev_s  gap between the last two events of the prefix (0 if one event)
-        tf_n_events      number of events observed so far
+    These are the standard, high-impact time signals for remaining-time models.
+
+    Args:
+        prefix_log (pd.DataFrame): Prefix event log.
+        case_id_key (str, optional): Key for case ID. Defaults to "case:concept:name".
+        timestamp_key (str, optional): Key for timestamp. Defaults to "time:timestamp".
+
+    Returns:
+        pd.DataFrame: DataFrame indexed by prefix id with columns:
+            tf_elapsed_s: time from the prefix's first to last event (how long it has run)
+            tf_since_prev_s: gap between the last two events of the prefix (0 if one event)
+            tf_n_events: number of events observed so far
     """
     g = prefix_log.sort_values([case_id_key, timestamp_key], kind="mergesort").copy()
     grp_ts = g.groupby(case_id_key)[timestamp_key]
@@ -187,6 +219,12 @@ def real_deviation_cost(alignment_moves: List[Tuple[Any, Any]]) -> int:
     Silent/tau moves are normal routing in (e.g.) Inductive-Miner models and carry zero
     cost; counting them as deviations is exactly the bug this helper avoids. Mirrors the
     move classification used for DIAGNOSTICS features in extract_features.
+
+    Args:
+        alignment_moves (List[Tuple[Any, Any]]): List of alignment moves.
+
+    Returns:
+        int: Total cost of real deviations.
     """
     cost = 0
     for log_move, model_move in alignment_moves:
@@ -207,12 +245,26 @@ def extract_label(
     alignments: Optional[List[Dict[str, Any]]] = None,
     deviation_cost_threshold: int = 0,
 ) -> pd.Series:
-    """
-    Derives labels for each case.
+    """Derives labels for each case.
+
     - PROCESS_OUTCOME: Checks if any activity in 'outcome_activities' exists in the trace.
     - FUTURE_DEVIATIONS: label = 1 if the case's real deviation cost exceeds
       deviation_cost_threshold (HL-08). Real cost ignores silent/tau routing moves.
     - REMAINING_TIME: per-prefix regression label (see extract_remaining_time).
+
+    Args:
+        log (pd.DataFrame): Event log.
+        target_type (PredictionTarget): Type of prediction target.
+        outcome_activities (Optional[List[str]], optional): Activities defining outcomes. Defaults to None.
+        alignments (Optional[List[Dict[str, Any]]], optional): Alignment results. Defaults to None.
+        deviation_cost_threshold (int, optional): Threshold for future deviations. Defaults to 0.
+
+    Raises:
+        ValueError: If required arguments for target types are missing.
+        NotImplementedError: If target type is not supported.
+
+    Returns:
+        pd.Series: Series of labels indexed by case ID.
     """
     case_id_key = 'case:concept:name'
     activity_key = 'concept:name'
@@ -286,6 +338,12 @@ def list_case_attributes(log: pd.DataFrame) -> List[str]:
     attributes — its value is constant within every case. Standard event/
     system columns (concept:name, time:timestamp, lifecycle:transition, ...)
     are always excluded.
+
+    Args:
+        log (pd.DataFrame): Event log.
+
+    Returns:
+        List[str]: List of case-level attribute column names.
     """
     case_id_key = 'case:concept:name'
     cols = [c for c in log.columns if c != case_id_key]
@@ -306,9 +364,16 @@ def list_case_attributes(log: pd.DataFrame) -> List[str]:
 
 
 def summarize_case_attributes(log: pd.DataFrame) -> pd.DataFrame:
-    """Small summary table for CLI display: one row per case-level attribute
-    with columns [attribute, dtype, n_unique, example]. Helps the analyst
-    choose meaningful attributes (HL-03/HL-04)."""
+    """Small summary table for CLI display of case-level attributes.
+
+    Helps the analyst choose meaningful attributes (HL-03/HL-04).
+
+    Args:
+        log (pd.DataFrame): Event log.
+
+    Returns:
+        pd.DataFrame: Summary table with columns [attribute, dtype, n_unique, example].
+    """
     case_id_key = 'case:concept:name'
     rows = []
     for col in list_case_attributes(log):
@@ -330,12 +395,25 @@ def extract_features(
     alignments: Optional[List[Dict[str, Any]]] = None,
     selected_case_attributes: Optional[List[str]] = None,
 ) -> pd.DataFrame:
-    """
-    Extracts features. 
+    """Extracts features based on the specified feature type.
+
     - CONTROL_FLOW: Extracts the trace prefix (Bag-of-activities).
     - DIAGNOSTICS: Extracts the alignment-based trace prefix diagnostics (Bag-of-move-types).
     - CASE_ATTRIBUTES: Extracts static attributes about the case.
     - HYBRID: Combines the active feature sets.
+
+    Args:
+        log (pd.DataFrame): Event log.
+        feature_type (PredictionFeature): Type of features to extract.
+        model (Optional[Tuple], optional): Process model. Defaults to None.
+        alignments (Optional[List[Dict[str, Any]]], optional): Alignment results. Defaults to None.
+        selected_case_attributes (Optional[List[str]], optional): Subset of case attributes. Defaults to None.
+
+    Raises:
+        ValueError: If required data for feature type is missing or if feature type is unsupported.
+
+    Returns:
+        pd.DataFrame: Feature matrix indexed by case ID.
     """
     case_id_key = 'case:concept:name'
     activity_key = 'concept:name'
@@ -419,20 +497,19 @@ def preprocess_for_ml(
     y_raw: pd.Series,
     is_regression: bool = False,
 ) -> Tuple[pd.DataFrame, np.ndarray, List[str]]:
-    """
-    Encodes and scales the raw data for ML training.
+    """Encodes and scales the raw data for ML training.
 
     Args:
-        X_raw: raw feature matrix.
-        y_raw: raw label vector.
-        is_regression: when True the target is continuous (e.g. remaining time in
-            seconds) — it is kept numeric and NOT label-encoded; class_names is empty.
+        X_raw (pd.DataFrame): Raw feature matrix.
+        y_raw (pd.Series): Raw label vector.
+        is_regression (bool, optional): When True the target is continuous (e.g. remaining 
+            time in seconds) — it is kept numeric and NOT label-encoded. Defaults to False.
 
     Returns:
-        X: feature DataFrame (columns preserved for downstream alignment).
-        y: encoded label vector (classification) or float vector (regression).
-        class_names: ordered list of original class labels for classification, [] for
-            regression (index i maps to encoded integer i).
+        Tuple[pd.DataFrame, np.ndarray, List[str]]: A tuple containing:
+            - X: feature DataFrame (columns preserved for downstream alignment).
+            - y: encoded label vector (classification) or float vector (regression).
+            - class_names: ordered list of original class labels for classification, [] for regression.
     """
 
     # Feature Preprocessing (X)

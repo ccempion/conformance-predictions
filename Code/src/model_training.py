@@ -1,6 +1,14 @@
 """
-Module for training and applying predictive models (HL-08, HL-09).
-Implements scikit-learn-style objects for preprocessing and prediction.
+Module for training and applying predictive models using scikit-learn. Supported are 
+1. Regression: 
+    - Random Forest
+    - Decision Tree
+    - Gradient Boosting
+2. Regression: 
+    - Logistic regression
+    - Decision Tree
+    - Gradient Boosting
+predictors. Preprocessed training data is used to train these predictors and targets can be predicted using feature data from the test split.
 """
 
 import pandas as pd
@@ -18,17 +26,14 @@ from src.config import RegressionAlgorithm, ClassificationAlgorithm
 
 
 def predict(model: Pipeline, X: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
-    """
-    Applies the fitted model to generate predictions.
-    
+    """Applies the fitted model to generate predictions.
+
     Args:
-        model: A fitted scikit-learn Pipeline.
-        X: Feature matrix for which to generate predictions.
-        
+        model (Pipeline): A fitted scikit-learn Pipeline.
+        X (pd.DataFrame): Feature matrix for which to generate predictions.
+
     Returns:
-        A tuple containing:
-            - Hard predictions (0/1)
-            - Predicted probabilities for the positive class
+        Tuple[np.ndarray, np.ndarray]: Tuple containing hard predictions (0/1), probabilities for the positive class. 
     """
     y_pred = model.predict(X)
 
@@ -47,10 +52,6 @@ def predict(model: Pipeline, X: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     return y_pred, y_prob
 
 
-# ------------------------------------------
-# Classification algorithm menu (PROCESS_OUTCOME / FUTURE_DEVIATIONS)
-# ------------------------------------------
-
 # Per-algorithm defaults. Decision Tree caps depth at 4 to keep the tree readable; the
 # others use sklearn defaults plus a fixed seed / enough iterations to converge.
 _CLASSIFIER_DEFAULTS: Dict[ClassificationAlgorithm, Dict[str, Any]] = {
@@ -64,12 +65,14 @@ def create_classification_pipeline(
     algorithm: ClassificationAlgorithm = ClassificationAlgorithm.DECISION_TREE,
     ml_params: Optional[Dict[str, Any]] = None,
 ) -> Pipeline:
-    """
-    Build a StandardScaler + classifier pipeline for deviation/outcome risk prediction.
+    """Build a StandardScaler + classifier pipeline for deviation/outcome risk prediction.
 
-    Counterpart to create_regression_pipeline. Every classifier here exposes predict_proba,
-    so the existing predict() yields a risk probability. The estimator step is named
-    'classifier' so predict() and visualize_decision_tree keep working unchanged.
+    Args:
+        algorithm (ClassificationAlgorithm, optional): User specified classification algorithm (Logistic Regression / Gradient Boosting / Decision Tree). Defaults to ClassificationAlgorithm.DECISION_TREE.
+        ml_params (Optional[Dict[str, Any]], optional): Parameters that are to be passed through to the specified classification algorithm. Defaults to None.
+
+    Returns:
+        Pipeline: A Pipeline object modified with the given parameters.
     """
     defaults = dict(_CLASSIFIER_DEFAULTS.get(algorithm, {}))
     if ml_params:
@@ -94,7 +97,20 @@ def train_classification_model(
     algorithm: ClassificationAlgorithm = ClassificationAlgorithm.DECISION_TREE,
     ml_params: Optional[Dict[str, Any]] = None,
 ) -> Pipeline:
-    """Fit a classification pipeline (deviation/outcome risk) to the training data."""
+    """Creates a pipeline by calling @create_classification_pipeline and then fits the classification pipeline using the provided data.
+
+    Args:
+        X_train (pd.DataFrame): Training data: feature dataframe.
+        y_train (np.ndarray): Training data: target vector.
+        algorithm (ClassificationAlgorithm, optional): User specified classification algorithm. Defaults to ClassificationAlgorithm.DECISION_TREE.
+        ml_params (Optional[Dict[str, Any]], optional): User specified parameters for the provided classification algorithm. Defaults to None.
+
+    Raises:
+        ValueError: Raises a ValueError if parameters or algorithm does not fit.
+
+    Returns:
+        Pipeline: A fitted sklearn pipeline object.
+    """
     classes = np.unique(y_train)
     if len(classes) < 2:
         raise ValueError(
@@ -109,11 +125,7 @@ def train_classification_model(
     return pipeline
 
 
-# ------------------------------------------
-# Regression (REMAINING_TIME target)
-# ------------------------------------------
-
-# Per-algorithm defaults. Decision Tree mirrors the classification depth cap (4) so its
+# Regression: per-algorithm defaults. Decision Tree mirrors the classification depth cap (4) so its
 # tree stays readable; the ensembles use sklearn defaults plus a fixed seed.
 _REGRESSOR_DEFAULTS: Dict[RegressionAlgorithm, Dict[str, Any]] = {
     RegressionAlgorithm.DECISION_TREE: {"max_depth": 4, "random_state": 42},
@@ -126,13 +138,14 @@ def create_regression_pipeline(
     algorithm: RegressionAlgorithm = RegressionAlgorithm.DECISION_TREE,
     ml_params: Optional[Dict[str, Any]] = None,
 ) -> Pipeline:
-    """
-    Build a StandardScaler + regressor pipeline for remaining-time prediction.
+    """Build a StandardScaler + regressor pipeline for remaining-time prediction.
 
-    Counterpart to create_classification_pipeline: selects a regressor from the
-    chosen RegressionAlgorithm. ml_params overrides the per-algorithm defaults. The
-    classifier step in the classification pipeline is named 'classifier'; here it is
-    named 'regressor' so the two are unambiguous downstream.
+    Args:
+        algorithm (RegressionAlgorithm, optional): User specified regression algorithm. Defaults to RegressionAlgorithm.DECISION_TREE.
+        ml_params (Optional[Dict[str, Any]], optional): Corresponding regression algorithm parameters. Defaults to None.
+
+    Returns:
+        Pipeline: Sklearn pipeline object modified given the provided parameters. 
     """
     defaults = dict(_REGRESSOR_DEFAULTS.get(algorithm, {}))
     if ml_params:
@@ -157,13 +170,31 @@ def train_regression_model(
     algorithm: RegressionAlgorithm = RegressionAlgorithm.DECISION_TREE,
     ml_params: Optional[Dict[str, Any]] = None,
 ) -> Pipeline:
-    """Fit a regression pipeline to the training data (remaining time in seconds)."""
+    """Fit a regression pipeline to the training data (remaining time in seconds).
+
+    Args:
+        X_train (pd.DataFrame): Training data: feature dataframe. 
+        y_train (np.ndarray): Training data: target vector. 
+        algorithm (RegressionAlgorithm, optional): User specified regression algorithm. Defaults to RegressionAlgorithm.DECISION_TREE.
+        ml_params (Optional[Dict[str, Any]], optional): Corresponding regression algorithm parameters. Defaults to None.
+
+    Returns:
+        Pipeline: Sklearn pipeline object fitted to provided training data.
+    """
     pipeline = create_regression_pipeline(algorithm, ml_params)
     pipeline.fit(X_train, y_train)
     return pipeline
 
 
 def predict_regression(model: Pipeline, X: pd.DataFrame) -> np.ndarray:
-    """Apply a fitted regression pipeline; returns continuous predictions (no proba)."""
+    """Apply a fitted regression pipeline; returns continuous predictions (no proba).
+
+    Args:
+        model (Pipeline): Sklearn pipeline object (specified and fitted).
+        X (pd.DataFrame): Input data: feature dataframe. 
+
+    Returns:
+        np.ndarray: Predicted values vector. 
+    """
     return model.predict(X)
 
