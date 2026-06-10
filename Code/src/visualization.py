@@ -416,12 +416,64 @@ def plot_runtime_log_size_relation(log_sizes: List[float], runtimes: List[float]
         plt.show()
 
 def plot_feature_importance(
-    importances: pd.Series,
-    conformance_feature_names: List[str],
-    top_n: int = 20,
+    importances: pd.DataFrame,
     output_path: Optional[str] = None,
 ) -> None:
-    ...
+    """Renders a bar chart of the top predictive features.
+    
+    Color-codes features based on their origin:
+    - Green: Conformance-derived (sync_move, log_move, model_move)
+    - Skyblue: Control-flow (cf_act)
+    - Lightgray: Case attributes (ca)
+
+    Args:
+        importances (pd.DataFrame): Dataframe of ranked feature importances.
+        output_path (Optional[str], optional): Path to save the plot. Defaults to None.
+    """
+    if importances.empty:
+        print("No feature importance data to plot.")
+        return
+
+    # Sort by importance ascending for the horizontal bar chart
+    df = importances.sort_values('importance', ascending=True)
+
+    # Assign colors based on feature prefix
+    colors = []
+    for feat in df.index:
+        if any(x in feat for x in ['sync_move_', 'log_move_', 'model_move_']):
+            colors.append('green')       # Conformance-derived
+        elif feat.startswith('cf_act_'):
+            colors.append('skyblue')     # Control-flow
+        elif feat.startswith('ca_'):
+            colors.append('lightgray')   # Case attributes
+        else:
+            colors.append('gray')        # Others (e.g. temporal features)
+
+    fig, ax = plt.subplots(figsize=(10, max(5, len(df) * 0.5)))
+    ax.barh(df.index, df['importance'], color=colors, alpha=0.8)
+    
+    ax.set_xlabel('Importance Score (normalized)')
+    ax.set_title('Top Predictive Features')
+    ax.grid(axis='x', linestyle='--', alpha=0.7)
+
+    # Create a custom legend
+    from matplotlib.lines import Line2D
+    legend_elements = [
+        Line2D([0], [0], color='green', lw=6, label='Conformance-derived'),
+        Line2D([0], [0], color='skyblue', lw=6, label='Control-flow'),
+        Line2D([0], [0], color='lightgray', lw=6, label='Case attributes')
+    ]
+    if 'gray' in colors:
+         legend_elements.append(Line2D([0], [0], color='gray', lw=6, label='Other'))
+         
+    ax.legend(handles=legend_elements, loc='lower right')
+
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150, bbox_inches='tight')
+        plt.close(fig)
+    else:
+        plt.show()
 
 
 # ------------------------------------------

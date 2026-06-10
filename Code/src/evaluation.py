@@ -379,7 +379,7 @@ def feature_importance_comparison(X_train: pd.DataFrame, model: Pipeline) -> pd.
         model (Pipeline): Scikit-learn pipeline object.
 
     Returns:
-        pd.DataFrame: Dataframe containing the five most important attributes for the predictor. Cols: {- (Feature name), importance, rank}
+        pd.DataFrame: Dataframe containing the ten most important attributes for the predictor. Cols: {- (Feature name), importance, rank}
     """
     # The pipeline is assumed to be [("scaler", ...), ("classifier/regressor", estimator)]
     # Extract the final estimator
@@ -405,4 +405,4 @@ def feature_importance_comparison(X_train: pd.DataFrame, model: Pipeline) -> pd.
     importances = pd.DataFrame(index=features)
     importances['importance'] = importances_values
     importances['rank'] = importances['importance'].rank(ascending=False)
-    return importances.sort_values('rank').head()
+    return importances.sort_values('rank').head(10)
