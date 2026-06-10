@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 import psutil
 import sklearn.metrics as metrics
+from sklearn.pipeline import Pipeline
 from src import pipeline
 from src import config
 
@@ -360,3 +361,48 @@ def compute_mae(
     """
     n = len(y_true)
     return (1/n)*(sum(np.abs(y_true-y_pred)))
+
+
+    """Extracts and ranks feature importances from a fitted pipeline.
+
+    Supports models with 'feature_importances_' (e.g., Decision Trees, Random Forests)
+    and linear models with 'coef_' (e.g., Logistic Regression).
+    """
+def feature_importance_comparison(X_train: pd.DataFrame, model: Pipeline) -> pd.DataFrame:
+    """Extracts and ranks feature importances from a fitted pipeline.
+
+    Supports models with 'feature_importances_' (e.g., Decision Trees, Random Forests)
+    and linear models with 'coef_' (e.g., Logistic Regression).
+
+    Args:
+        X_train (pd.DataFrame): Training data: feature dataframe. 
+        model (Pipeline): Scikit-learn pipeline object.
+
+    Returns:
+        pd.DataFrame: Dataframe containing the ten most important attributes for the predictor. Cols: {- (Feature name), importance, rank}
+    """
+    # The pipeline is assumed to be [("scaler", ...), ("classifier/regressor", estimator)]
+    # Extract the final estimator
+    estimator = model.steps[-1][1]
+
+    if hasattr(estimator, 'feature_importances_'):
+        importances_values = estimator.feature_importances_
+    elif hasattr(estimator, 'coef_'):
+        # For linear models, use absolute coefficients as a proxy for importance.
+        # If multi-class, coef_ has shape (n_classes, n_features).
+        if estimator.coef_.ndim > 1:
+            importances_values = np.mean(np.abs(estimator.coef_), axis=0)
+        else:
+            importances_values = np.abs(estimator.coef_.flatten())
+    else:
+        return pd.DataFrame(columns=['importance', 'rank'])
+
+    features = list(X_train.columns)
+    # Ensure dimensions match (sometimes coef_ might be different if scaling/encoding changed it)
+    if len(importances_values) != len(features):
+        return pd.DataFrame(columns=['importance', 'rank'])
+
+    importances = pd.DataFrame(index=features)
+    importances['importance'] = importances_values
+    importances['rank'] = importances['importance'].rank(ascending=False)
+    return importances.sort_values('rank').head(10)
