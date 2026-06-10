@@ -517,6 +517,10 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
 
     is_classification = not is_remaining_time
 
+    prompt = "\nDo you want to save a visualization of the feature importance? (y/N): "
+    if not results["feature_importance"].empty and input(prompt).lower().strip() == "y":
+        ...
+    
     metrics = results.get("metrics") or {}
     if metrics:
         target_str = "Regression" if is_remaining_time else "Classification"

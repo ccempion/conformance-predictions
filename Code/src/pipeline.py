@@ -55,7 +55,13 @@ def run_conformance_prediction_pipeline(
 
     # Evaluation (HL-16)
     print("--- Evaluating model ---")
-
+    print("--- Feature Importance ---")
+    feature_importance = evaluation.feature_importance_comparison(X_train=X_train, model=trained_model)
+    if not feature_importance.empty:
+        print(feature_importance)
+    else:
+        print("Feature importance not available for this model type.")
+        
     # Align test columns to training columns — fills any activity/move seen only in
     # one split with 0, preventing shape mismatches in the StandardScaler.
     X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
@@ -79,6 +85,9 @@ def run_conformance_prediction_pipeline(
     }
     if test_prefix_lengths is not None:
         results["prefix_lengths"] = test_prefix_lengths
+    
+    if not feature_importance.empty:
+        results["feature_importance"] = feature_importance
     return results
 
 def prepare_log_and_model(
