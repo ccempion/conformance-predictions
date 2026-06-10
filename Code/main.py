@@ -513,7 +513,25 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
     offers to save evaluation visuals (HL-16, HL-17)."""
     y_pred = results["y_pred"]
     y_test_arr = results["y_test"]
+    y_prob = results.get("y_prob")
+    feature_importance = results.get("feature_importance", None)
 
+    is_classification = not is_remaining_time
+
+    if feature_importance is not None and len(feature_importance) > 0 and input("\nSave feature importance chart? (y/N): ").lower().strip() == 'y':
+        path_input = input("Folder to save in (press Enter for Downloads): ").strip()
+        base_dir = path_input if path_input else None
+        
+        import pathlib
+        import datetime
+        root = pathlib.Path(base_dir) if base_dir else pathlib.Path.home() / "Downloads"
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        folder = root / f"feature_importance_{timestamp}"
+        folder.mkdir(parents=True, exist_ok=True)
+        
+        vis.plot_feature_importance(feature_importance, output_path=str(folder / "feature_importance.png"))
+        print(f"Feature importance saved to: {folder}")
+    
     metrics = results.get("metrics") or {}
     if metrics:
         target_str = "Regression" if is_remaining_time else "Classification"
@@ -526,7 +544,7 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
         for name, value in metrics.items():
             print(f"  {name}: {value}")
 
-    if is_process_outcome:
+    if is_classification:
         if test_prefix_lengths is not None:
             unique_lens = sorted(np.unique(test_prefix_lengths))
             print(f"\nOverall Confusion Matrix (Pooled over lengths {unique_lens}):")
@@ -538,12 +556,12 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
     # Prefix-length performance breakdown (HL-17) — only meaningful when lengths vary.
     if test_prefix_lengths is not None and len(set(test_prefix_lengths)) > 1:
         by_len = evaluation.metrics_by_prefix_length(
-            y_test_arr, y_pred, results.get("y_prob"), test_prefix_lengths, is_regression=is_remaining_time
+            y_test_arr, y_pred, y_prob, test_prefix_lengths, is_regression=is_remaining_time
         )
         print("\nMetrics by prefix length:")
         print(by_len.to_string(index=False))
 
-        if not is_remaining_time:
+        if is_classification:
             while True:
                 prompt = "\nEnter a prefix length to see its specific confusion matrix (or 'N' to skip): "
                 choice = input(prompt).strip().lower()
@@ -566,11 +584,19 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
             by_len_output_path = input("Enter filename (default: by_len_vis.png): ").strip() or "by_len_vis.png"
             vis.plot_evaluate_by_prefix_length(by_len, by_len_output_path)
 
-    if is_process_outcome and input("\nSave confusion matrix and accuracy chart? (y/N): ").lower().strip() == 'y':
+    if is_classification and input("\nSave confusion matrix and accuracy chart? (y/N): ").lower().strip() == 'y':
         path_input = input("Folder to save in (press Enter for Downloads): ").strip()
         base_dir = path_input if path_input else None
         saved_to = vis.save_evaluation_visuals(y_test_arr, y_pred, class_names, base_dir)
         print(f"Results saved to: {saved_to}")
+
+    if is_classification and y_prob is not None and input("\nSave Receiver Operating Characteristic and Precision-Recall curves? (y/N): ").lower().strip() == 'y':
+        path_input = input("Folder to save in (press Enter for Downloads): ").strip()
+        base_dir = path_input if path_input else None
+        
+        roc_data, pr_data = evaluation.prepare_curve_data(y_test_arr, y_prob, class_names)
+        saved_to = vis.save_curve_visuals(roc_data, pr_data, base_dir)
+        print(f"Curves saved to: {saved_to}")
 
 
 def run_interactive_cli() -> List[Tuple[str, float]]:
@@ -643,7 +669,7 @@ def run_interactive_cli() -> List[Tuple[str, float]]:
             X_train, y_train, time_list
         )
 
-    # Decision Tree visualisation + reconfigure loop — only for a single Decision Tree.
+    # Decision Tree visualisation + reconfigure loop - only for a single Decision Tree.
     show_tree = (
         (is_remaining_time and regression_algorithm == config.RegressionAlgorithm.DECISION_TREE)
         or (not is_remaining_time and classification_algorithm == config.ClassificationAlgorithm.DECISION_TREE)

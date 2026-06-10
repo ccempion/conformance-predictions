@@ -148,3 +148,88 @@ The three sprints also helped us to improve our workflow and to find a sound bal
 This sprint was the most chill and straightforward one, as we had already implemented all necessary functionalities and were mostly focusing on finalizing the whole software artifact and on documentation. It was rather an intentional setting, because we both have submissions in other courses until the 14. June, and we wanted to have a more relaxed sprint to be able to focus more on the other submissions. Furthermore, I learned much more about the usage of Github, how to build a CLI, what to consider while building a software artifact, how to use ML algorithms in a prediction pipeline and how to document it. With Richard I have had an excellent partner, who dedicates to deliver and also has a great sense of humor, which made the whole project much more enjoyable. Additionally, he helped me a lot with understanding specific Process Mining concepts and with the implementation of the software artifact. I'm very happy with the outcome of our work and I think we have delivered a great software artifact considering the time limitations and the complexity of the task. Finally, I'm looking foward to evaluate the software artifacta
 
 \end{document}
+
+
+%%% Visualization of feature importance
+% === Conformance Predictions ===
+% Do you have a normative process model? (y/N): 
+% Enter the path to the event log (XES/CSV): event_logs/sepsis.xes
+% Model discovery will be used.
+
+% Which discovery algorithm should be used?
+% 1. Inductive Miner (recommended)
+% 2. Alpha Miner
+% 3. Genetic Miner
+% Select option (1-3): 1
+% Noise threshold (default 0.0): 0.01
+% Disable fall-throughs? (y/N): 
+
+% Do you want a visualization of the discovered normative model saved (s) or directly displayed (d) or not (N)? (s/d/N): 
+% --- Loading event log: event_logs/sepsis.xes ---
+% /home/schuppener/spi/conformance-predictions/Code/.venv/lib/python3.14/site-packages/pm4py/utils.py:1027: UserWarning: Install the optional requirement `r4pm` to import/export files faster. `rustxes` remains supported as a fallback.
+%   warnings.warn(
+% parsing log, completed traces :: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1050/1050 [00:00<00:00, 3463.56it/s]
+% --- Discovering model using INDUCTIVE ---
+
+% What should be predicted?
+% 1. Future conformance deviations
+% 2. Process outcome
+% 3. Remaining time
+% Select option (1-3): 3
+
+% What should the prediction be based upon?
+% 1. Plain trace (control-flow)
+% 2. Trace and alignment-based diagnostics
+% 3. Case features
+% 4. Mixture of all available information
+% Select option (1-4): 2
+
+% Prefix mode (required for remaining time)?
+%   [Enter] varying 1..median (13)  (pooled - prefixes of length 1..k)
+%   1)      exactly k          (one prefix per case at length k)
+% Select (Enter/1): 1
+%   prefix length k: 7
+
+% Enter a split value for the train- / test-split (default=0.7): 
+% Invalid choice. Defaulting to 0.7
+% --- Generating prefixes (min=7, max=7, step=1, gate=off) ---
+% --- Extracting features over 628 prefixes: DIAGNOSTICS ---
+% aligning log, completed variants :: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 143/143 [00:10<00:00, 13.15it/s]
+% --- Preprocessing and encoding data ---
+% --- Generating prefixes (min=7, max=7, step=1, gate=off) ---
+% --- Extracting features over 293 prefixes: DIAGNOSTICS ---
+% aligning log, completed variants :: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 101/101 [00:06<00:00, 15.16it/s]
+% --- Preprocessing and encoding data ---
+
+% Which regression algorithm do you want to apply?
+% (1) Decision Tree Regressor
+% (2) Random Forest Regressor
+% (3) Gradient Boosting Regressor
+% Select option (1-3): 3
+% GRADIENT_BOOSTING selected.
+
+% Do you want to configure the parameters yourself? (y/N): 
+
+% Training model...
+
+% Starting evaluation pipeline...
+% --- Using pre-trained model ---
+% --- Evaluating model ---
+% --- Feature Importance ---
+%                           importance  rank
+% tf_elapsed_s                0.595429   1.0
+% tf_since_prev_s             0.320741   2.0
+% sync_move_LacticAcid        0.038742   3.0
+% sync_move_CRP               0.013689   4.0
+% sync_move_IV Liquid         0.008439   5.0
+% sync_move_Release A         0.007868   6.0
+% sync_move_IV Antibiotics    0.006360   7.0
+% sync_move_Leucocytes        0.003936   8.0
+% sync_move_Admission NC      0.003470   9.0
+% sync_move_Admission IC      0.000713  10.0
+
+% Pipeline completed successfully!
+
+% Save feature importance chart? (y/N): y
+% #Folder to save in (press Enter for Downloads): ~/spi/conformance-predictions/Code
+% Feature importance saved to: #~/spi/conformance-predictions/Code/feature_importance_2026-06-10_16-23-15

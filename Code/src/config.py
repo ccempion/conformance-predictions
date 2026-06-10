@@ -1,3 +1,7 @@
+"""
+Configuration module that holds static enum classes for better code interoperability between modules.
+"""
+
 from enum import Enum
 
 class Discovery_alg(Enum):

@@ -1,3 +1,8 @@
+"""
+In this module, all visualizations, that can be created for our conformance predictions project, are bundled. This includes a great variety of different visualizations.
+The are mainly created using matplotlib or built-in visualizations from other libraries that we listed in our requirements engineering document.
+"""
+
 from __future__ import annotations
 
 import pandas as pd
@@ -18,25 +23,32 @@ from src.config import ModelRepresentation
 # Image display (and save)
 # ------------------------------------------
 
-def visualize_process_model(model: Tuple[PetriNet, Marking, Marking], path: Optional[str], model_representation: ModelRepresentation):
+def visualize_process_model(model: Tuple[PetriNet, Marking, Marking], output_path: Optional[str], model_representation: ModelRepresentation):
+    """Visualize a process model with PM4Py.
+
+    Args:
+        model (Tuple[PetriNet, Marking, Marking]): Petri Net as internal (PM4Py) representation.
+        output_path (Optional[str]): Path where output of visualizations shall be saved to.
+        model_representation (ModelRepresentation): Desired model representation (BPMN / Petri Net / Process Tree).
+    """
     net, im, fm = model
     if model_representation == ModelRepresentation.PROCESS_TREE:
         process_tree = pm4py.convert_to_process_tree(net, im, fm)
-        if path:
-            pm4py.save_vis_process_tree(process_tree, path)
+        if output_path:
+            pm4py.save_vis_process_tree(process_tree, output_path)
         else:
             pm4py.view_process_tree(process_tree)
 
     elif model_representation == ModelRepresentation.BPMN:
         bpmn = pm4py.convert_to_bpmn(net, im, fm)
-        if path:
-            pm4py.save_vis_bpmn(bpmn, path)
+        if output_path:
+            pm4py.save_vis_bpmn(bpmn, output_path)
         else:
             pm4py.view_bpmn(bpmn)
 
     elif model_representation == ModelRepresentation.PETRI_NET:
-        if path:
-            pm4py.save_vis_petri_net(net, im, fm, path)
+        if output_path:
+            pm4py.save_vis_petri_net(net, im, fm, output_path)
         else:
             pm4py.view_petri_net(net, im, fm)
 
@@ -45,14 +57,17 @@ def visualize_decision_tree(
     model: Pipeline,
     feature_names: List[str],
     class_names: List[str],
-    output_path: Optional[str] = None,
+    output_path: Optional[str],
 ) -> None:
-    """
-    Renders the fitted Decision Tree from the pipeline.
+    """Renders the fitted Decision Tree from the pipeline.
     If output_path is given, saves to that file; otherwise opens an interactive window.
+
+    Args:
+        model (Pipeline): Sklearn pipeline object. 
+        feature_names (List[str]): Names of features. 
+        class_names (List[str]): Names of target classes.
+        output_path (Optional[str], optional): Path where output of visualizations shall be saved to.
     """
-    # Support both the classification pipeline ('classifier' step) and the
-    # remaining-time regression pipeline ('regressor' step).
     steps = model.named_steps
     estimator = steps.get('classifier') or steps.get('regressor')
     fig, ax = plt.subplots(figsize=(20, 10))
@@ -76,9 +91,16 @@ def plot_confusion_matrix_image(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     class_names: List[str],
-    output_path: str,
+    output_path: Optional[str],
 ) -> None:
-    """Save a simple confusion-matrix heatmap to *output_path*."""
+    """Plots a atandard confusion matrix and saves it to the specified output path.
+
+    Args:
+        y_true (np.ndarray): Target vector.
+        y_pred (np.ndarray): Predicted vector.
+        class_names (List[str]): Class names of targets.
+        output_path (Optional[str]): Path where output of visualizations shall be saved to.
+    """
     cm = metrics.confusion_matrix(
         y_true, y_pred, labels=list(range(len(class_names))))
     n = len(class_names)
@@ -105,17 +127,27 @@ def plot_confusion_matrix_image(
             )
 
     plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
-    plt.close(fig)
+    if output_path:
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
 
 
 def plot_per_class_bar_chart(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     class_names: List[str],
-    output_path: str,
+    output_path: Optional[str],
 ) -> None:
-    """Save a stacked bar chart (green = correct, red = incorrect) per class."""
+    """Save a stacked bar chart (green = correct, red = incorrect) per class.
+
+    Args:
+        y_true (np.ndarray): Target vector.
+        y_pred (np.ndarray): Predicted vector.
+        class_names (List[str]): Class names of targets.
+        output_path (Optional[str]): Path where output of visualizations shall be saved to.
+    """
     cm = metrics.confusion_matrix(
         y_true, y_pred, labels=list(range(len(class_names))))
 
@@ -141,8 +173,11 @@ def plot_per_class_bar_chart(
     ax.legend()
 
     plt.tight_layout()
-    plt.savefig(output_path, dpi=150)
-    plt.close(fig)
+    if output_path: 
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
 
 
 def save_evaluation_visuals(
@@ -172,18 +207,59 @@ def save_evaluation_visuals(
     return str(folder)
 
 
+def save_curve_visuals(
+    roc_data: Dict[str, Tuple[np.ndarray, np.ndarray]],
+    pr_data: Dict[str, Tuple[np.ndarray, np.ndarray, float]],
+    base_dir: Optional[str] = None,
+) -> str:
+    """Create a timestamped folder and save ROC and PR curves inside it.
+
+    Returns the absolute path of the created folder.
+    """
+    import pathlib
+    import datetime
+
+    root = pathlib.Path(base_dir) if base_dir else pathlib.Path.home() / "Downloads"
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    folder = root / f"conformance_curves_{timestamp}"
+    folder.mkdir(parents=True, exist_ok=True)
+
+    plot_roc_curves(roc_data, output_path=str(folder / "roc_curves.png"))
+    plot_pr_curves(pr_data, output_path=str(folder / "pr_curves.png"))
+
+    return str(folder)
+
+
 def plot_roc_curves(
-    roc_data: Dict[str, Tuple[np.ndarray, np.ndarray, float]],
+    roc_data: Dict[str, Tuple[np.ndarray, np.ndarray]],
     output_path: Optional[str] = None,
 ) -> None:
     """Plot overlaid ROC curves for multiple models.
 
     Args:
-        roc_data: Mapping model_name -> (fpr, tpr, auc_value).
-            Compute with sklearn.metrics.roc_curve + roc_auc_score before calling.
-        output_path: If given, save figure to this path; otherwise display interactively.
+        roc_data (Dict[str, Tuple[np.ndarray, np.ndarray]]): Mapping of label -> list of (false positive rate, true positive rate) tuples.
+        output_path (Optional[str], optional): Path where output of visualizations shall be saved to. Defaults to None.
     """
-    ...
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    for name, (fpr, tpr) in roc_data.items():
+        roc_auc = metrics.auc(fpr, tpr)
+        display = metrics.RocCurveDisplay(
+            fpr=fpr, tpr=tpr, roc_auc=roc_auc, name=name
+        )
+        display.plot(ax=ax)
+    
+    ax.plot([0, 1], [0, 1], color='navy', linestyle='--', label='Chance')
+    ax.set_title("Receiver Operating Characteristic (ROC) Curves")
+    ax.legend(loc="lower right")
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
 
 
 def plot_pr_curves(
@@ -191,13 +267,31 @@ def plot_pr_curves(
     output_path: Optional[str] = None,
 ) -> None:
     """Plot overlaid Precision-Recall curves for multiple models.
-
+    
     Args:
-        pr_data: Mapping model_name -> (precision, recall, pr_auc_value).
-            Compute with sklearn.metrics.precision_recall_curve + auc before calling.
-        output_path: If given, save figure; otherwise display interactively.
+        pr_data (Dict[str, Tuple[np.ndarray, np.ndarray]]): Mapping of label -> (precision, recall, average_precision)
+        output_path (Optional[str], optional): Path where output of visualizations shall be saved to. If None, show interactively.
     """
-    ...
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    for name, (precision, recall, avg_prec) in pr_data.items():
+        display = metrics.PrecisionRecallDisplay(
+            precision=precision, recall=recall, 
+            average_precision=avg_prec, name=name
+        )
+        display.plot(ax=ax)
+    
+    ax.set_title("Precision-Recall Curves")
+    ax.legend(loc="lower left")
+    ax.grid(True, linestyle='--', alpha=0.7)
+    
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
+
 
 
 def plot_evaluate_by_prefix_length(
@@ -239,9 +333,13 @@ def plot_processing_times(
     time_list: List[Tuple[str, float]],
     output_path: Optional[str] = None,
 ) -> None:
-    """
-    Creates a pie chart of processing times for different pipeline steps.
+    """Creates a pie chart of processing times for different pipeline steps.
     If output_path is provided, saves to that path; otherwise displays interactively.
+
+
+    Args:
+        time_list (List[Tuple[str, float]]): List of keyed times: (function name, time).
+        output_path (Optional[str], optional): Path where output of visualizations shall be saved to. Defaults to None.
     """
     if not time_list:
         print("No timing data available to visualize.")
@@ -262,7 +360,7 @@ def plot_processing_times(
     
     wedges, texts, autotexts = ax.pie(
         sizes, 
-        labels=None,  # We'll use a legend for clarity
+        labels=None,
         autopct='%1.1f%%', 
         startangle=140, 
         colors=colors,
@@ -270,7 +368,6 @@ def plot_processing_times(
         explode=[0.05] * len(time_list)  # Slight separation for better visibility
     )
 
-    # Add a legend
     ax.legend(
         wedges, 
         labels,
@@ -279,7 +376,6 @@ def plot_processing_times(
         bbox_to_anchor=(1, 0, 0.5, 1)
     )
 
-    # Formatting
     plt.setp(autotexts, size=10, weight="bold")
     ax.set_title("Processing Time Distribution per Pipeline Step", pad=20)
     
@@ -293,24 +389,91 @@ def plot_processing_times(
         plt.show()
 
 
-
-def plot_feature_importance(
-    importances: pd.Series,
-    conformance_feature_names: List[str],
-    top_n: int = 20,
-    output_path: Optional[str] = None,
-) -> None:
-    """Bar chart of feature importances with conformance features highlighted.
+def plot_runtime_log_size_relation(log_sizes: List[float], runtimes: List[float], output_path: str = None):
+    """Plots a simple line graph of log size vs runtime.
 
     Args:
-        importances: Series mapping feature_name -> importance score.
-            Obtain from model.feature_importances_ or a permutation importance result.
-        conformance_feature_names: List of feature names that are conformance-derived,
-            as declared by feature_extraction.py. Used for color coding.
-        top_n: How many top features to display.
-        output_path: If given, save figure; otherwise display interactively.
+        log_sizes (List[float]): List of log sizes (in MB). 
+        runtimes (List[float]): List of runtimes per log. 
+        output_path (str, optional): Path where output of visualizations shall be saved to. Defaults to None.
     """
-    ...
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    ax.plot(log_sizes, runtimes, marker="o", linestyle="-", label="Total Runtime")
+    
+    ax.set_xlabel("Log Size")
+    ax.set_ylabel("Total Runtime")
+    ax.set_title("Relation of Total Runtime and Log Sizes")
+    ax.grid(True, linestyle='--', alpha=0.7)
+    ax.legend()
+    
+    plt.tight_layout()
+    
+    if output_path:
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
+
+def plot_feature_importance(
+    importances: pd.DataFrame,
+    output_path: Optional[str] = None,
+) -> None:
+    """Renders a bar chart of the top predictive features.
+    
+    Color-codes features based on their origin:
+    - Green: Conformance-derived (sync_move, log_move, model_move)
+    - Skyblue: Control-flow (cf_act)
+    - Lightgray: Case attributes (ca)
+
+    Args:
+        importances (pd.DataFrame): Dataframe of ranked feature importances.
+        output_path (Optional[str], optional): Path to save the plot. Defaults to None.
+    """
+    if importances.empty:
+        print("No feature importance data to plot.")
+        return
+
+    # Sort by importance ascending for the horizontal bar chart
+    df = importances.sort_values('importance', ascending=True)
+
+    # Assign colors based on feature prefix
+    colors = []
+    for feat in df.index:
+        if any(x in feat for x in ['sync_move_', 'log_move_', 'model_move_']):
+            colors.append('green')       # Conformance-derived
+        elif feat.startswith('cf_act_'):
+            colors.append('skyblue')     # Control-flow
+        elif feat.startswith('ca_'):
+            colors.append('lightgray')   # Case attributes
+        else:
+            colors.append('gray')        # Others (e.g. temporal features)
+
+    fig, ax = plt.subplots(figsize=(10, max(5, len(df) * 0.5)))
+    ax.barh(df.index, df['importance'], color=colors, alpha=0.8)
+    
+    ax.set_xlabel('Importance Score (normalized)')
+    ax.set_title('Top Predictive Features')
+    ax.grid(axis='x', linestyle='--', alpha=0.7)
+
+    # Create a custom legend
+    from matplotlib.lines import Line2D
+    legend_elements = [
+        Line2D([0], [0], color='green', lw=6, label='Conformance-derived'),
+        Line2D([0], [0], color='skyblue', lw=6, label='Control-flow'),
+        Line2D([0], [0], color='lightgray', lw=6, label='Case attributes')
+    ]
+    if 'gray' in colors:
+         legend_elements.append(Line2D([0], [0], color='gray', lw=6, label='Other'))
+         
+    ax.legend(handles=legend_elements, loc='lower right')
+
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150, bbox_inches='tight')
+        plt.close(fig)
+    else:
+        plt.show()
 
 
 # ------------------------------------------
@@ -323,7 +486,13 @@ def display_confusion_matrix_text(
     y_pred: np.ndarray,
     class_names: List[str],
 ) -> None:
-    """Print a formatted confusion matrix to the terminal."""
+    """Print a formatted confusion matrix to the terminal.
+
+    Args:
+        y_true (np.ndarray): Target vector. 
+        y_pred (np.ndarray): Predicted vector. 
+        class_names (List[str]): Target class names. 
+    """
     cm = metrics.confusion_matrix(
         y_true, y_pred, labels=list(range(len(class_names))))
     col_w = max(max(len(n) for n in class_names), 6) + 2
@@ -343,7 +512,13 @@ def display_per_class_stats(
     y_pred: np.ndarray,
     class_names: List[str],
 ) -> None:
-    """Print per-class correct / incorrect percentages to the terminal."""
+    """Print per-class correct / incorrect percentages to the terminal.
+
+    Args:
+        y_true (np.ndarray): Target vector. 
+        y_pred (np.ndarray): Predicted vector.
+        class_names (List[str]): Target class names. 
+    """
     cm = metrics.confusion_matrix(
         y_true, y_pred, labels=list(range(len(class_names))))
 
@@ -356,3 +531,4 @@ def display_per_class_stats(
         pct_w = wrong / total * 100 if total > 0 else 0.0
         print(
             f"  {name}: {pct_c:.1f}% correct ({correct}/{total}),  {pct_w:.1f}% incorrect ({wrong}/{total})")
+
