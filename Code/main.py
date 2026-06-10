@@ -514,12 +514,23 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
     y_pred = results["y_pred"]
     y_test_arr = results["y_test"]
     y_prob = results.get("y_prob")
+    feature_importance = results.get("feature_importance", None)
 
     is_classification = not is_remaining_time
 
-    prompt = "\nDo you want to save a visualization of the feature importance? (y/N): "
-    if not results["feature_importance"].empty and input(prompt).lower().strip() == "y":
-        ...
+    if feature_importance is not None and len(feature_importance) > 0 and input("\nSave feature importance chart? (y/N): ").lower().strip() == 'y':
+        path_input = input("Folder to save in (press Enter for Downloads): ").strip()
+        base_dir = path_input if path_input else None
+        
+        import pathlib
+        import datetime
+        root = pathlib.Path(base_dir) if base_dir else pathlib.Path.home() / "Downloads"
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        folder = root / f"feature_importance_{timestamp}"
+        folder.mkdir(parents=True, exist_ok=True)
+        
+        vis.plot_feature_importance(feature_importance, output_path=str(folder / "feature_importance.png"))
+        print(f"Feature importance saved to: {folder}")
     
     metrics = results.get("metrics") or {}
     if metrics:
