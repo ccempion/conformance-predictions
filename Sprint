@@ -1,0 +1,12 @@
+{
+    "runtimes": {
+        "Read and Discovery": 1.5190504170022905,
+        "Train/Test Split": 0.037815499992575496,
+        "Alignment & Feature Extraction (Train split)": 9.315641916997265,
+        "Alignment & Feature Extraction (Test split)": 6.721948292048182,
+        "Model Training": 0.23713449999922886,
+        "Evaluation": 0.01591862499481067
+    },
+    "peak_memory_mb": 200.328125,
+    "total_processing_time": 17.847509251034353
+}

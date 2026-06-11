@@ -138,7 +138,7 @@ def prepare_log_and_model(
         print(f"--- Generating visualization ({vis_params['representation'].name}) ---")
         vis.visualize_process_model(
             model=model,
-            path=vis_params.get('output_path'),
+            output_path=vis_params.get('output_path'),
             model_representation=vis_params['representation']
         )
         

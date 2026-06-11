@@ -6,6 +6,8 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
 \usepackage{todonotes}
 \setuptodonotes{inline}
 
@@ -30,39 +32,245 @@ Alessandro Berti\\[6ex]
 \newpage
 
 \section{Summary of Sprint 3}
-In this sprint, we focused on implementing all the remaining functionalities required for a fully functional end-to-end pipeline for conformance predictions. We intend to use the final sprint to further refine and optimise these functionalities, so that we can deliver a well-aligned and polished software artifact that fulfils Alessandro's requirements in the most sophisticated way. We also tested the functionality of the whole artifact for all options and combinations of options, as we can finally say that the artifact is functioning as intended and appropriate for a third sprint.
+In this sprint, we focused on implementing all the remaining functionalities required for a fully functional end-to-end pipeline for conformance predictions. We intended to use the final sprint to further refine and optimise these functionalities, so that we can deliver a well-aligned and polished software artifact that fulfils Alessandro's requirements in the most sophisticated way. We also tested the functionality of the whole artifact for all options and combinations of options, as we can finally say that the artifact is functioning as intended and appropriate for a third sprint.
 
-\todo{mention the last achievements}
-
-%% new documents: user Guide, technical documentation, README
-
+\begin{itemize}
+    \item \textbf{Documentation \& User Guide:} Complete function and module-level docstrings (Google format) were added across all modules (io, feature\_extraction, model\_training, evaluation, pipeline, visualization, config). The codebase documentation is now automatically generated via \texttt{pdoc} and a PDF version is available. Furthermore, a comprehensive User Guide and an updated general README were established.
+    \item \textbf{ROC and PR Curves:} Added functions and plotting capabilities to compute ROC and Precision-Recall curves using scikit-learn metrics. These are now fully tested and integrated directly into the main CLI.
+    \item \textbf{Feature Importance Evaluation:} Developed new evaluation functions to retrieve and visualize the most important features for the prediction models. This functionality and its corresponding visualization have been seamlessly integrated into the main CLI pipeline.
+    \item \textbf{Resource Scaling Visualization:} Implemented functionality to visualize the relation between system resource usage (runtime and memory) and the size of the event log.
+    \item \textbf{CLI Testing \& Refactoring:} Implemented a test runner for the CLI and conducted extensive functionality testing. Addressed minor bugs, refactored classification options for process outcomes, and fixed issues regarding predictions on new data.
+\end{itemize}
 \section{Codebase Structure}
-The codebase remained organized as in spint 2, so no further final changes.
+The codebase remained organized as in sprint 2, so no further final changes.
 
 \section{Testing}
-Our testing modules are also complete and covering all the expectations stated in the project profile document.
+Our testing modules are also complete and covering all the expectations stated in the project profile document. We have implemented unit tests for all the modules, and we have also implemented a test runner for the CLI called \texttt{cli\_test\_runner.py}, which allows us to test the whole pipeline with different options and combinations of options. We have also tested the functionality of the whole artifact for all options and combinations of options, as we can finally say that the artifact is functioning as intended and appropriate for a third sprint.
+\section{User Guide}
+The User Guide is complete and can be used as a concise reference for the CLI options and usage.
 
-\section{Requirements Coverage Status - Overview per Module}
+\section{Team settings and Workflow}
+\subsection{Team settings}
+Throughout the three sprints, we maintained a consistent rotation of responsibilities across all modules. Since the third sprint was more about adding the last functionalities we were focusing on documentation and finalization for the final sprint, which led to much more joint work. The documentation was a product of boths contributions, and we also worked togehter on the CLI and config modules, as they are relatively small. The 2nd and 3rd sprint were also characterized by private and work-related boundaries regarding the workflow, as we both had travelled, other due submissions, and private commitments. We managed to work around these boundaries by supporting each other and by maintaing communication about our progress and challenges. 
+The three sprints also helped us to improve our workflow and to find a sound balance between managing our time and orchestrating limitations. We also grew together, as we had to learn to adapt to each others working style and to find a common ground of understanding.
 
-\subsection{IO}
+\section{Sprint review}
+
+\subsection{Richard Schuppener}
+
+\subsection{Cem Colak}
+This sprint was the most chill and straightforward one, as we had already implemented all necessary functionalities and were mostly focusing on finalizing the whole software artifact and on documentation. It was rather an intentional setting, because we both have submissions in other courses until the 14. June, and we wanted to have a more relaxed sprint to be able to focus more on the other submissions. Furthermore, I learned much more about the usage of Github, how to build a CLI, what to consider while building a software artifact, how to use ML algorithms in a prediction pipeline and how to document it. With Richard I have had an excellent partner, who dedicates to deliver and also has a great sense of humor, which made the whole project much more enjoyable. Additionally, he helped me a lot with understanding specific Process Mining concepts and with the implementation of the software artifact. I'm very happy with the outcome of our work and I think we have delivered a great software artifact considering the time limitations and the complexity of the task. Finally, I'm looking foward to evaluate the software artifact and finally finish the project with a good oral examination.
+
+\section{Appendix}
+
+\subsection{CLI Walkthrough}
+%%% Visualization of feature importance
+\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=CLI Output,arc=2mm]
+\begin{verbatim}
+=== Conformance Predictions ===
+Do you have a normative process model? (y/N): 
+Enter the path to the event log (XES/CSV): event_logs/sepsis.xes
+Model discovery will be used.
+
+Which discovery algorithm should be used?
+1. Inductive Miner (recommended)
+2. Alpha Miner
+3. Genetic Miner
+Select option (1-3): 1
+Noise threshold (default 0.0): 0.01
+Disable fall-throughs? (y/N): 
+
+Do you want a visualization of the discovered normative model saved (s) or directly displayed (d) or not (N)? (s/d/N): 
+--- Loading event log: event_logs/sepsis.xes ---
+/home/schuppener/spi/conformance-predictions/Code/.venv/lib/python3.14/site-packages/pm4py/utils.py:1027: UserWarning: Install the optional requirement `r4pm` to import/export files faster. `rustxes` remains supported as a fallback.
+  warnings.warn(
+parsing log, completed traces :: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1050/1050 [00:00<00:00, 3463.56it/s]
+
+--- Discovering model using INDUCTIVE ---
+
+--- Visualizing model ---
+
+\end{verbatim}
+\end{tcolorbox}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/bpmn.png}
+    \caption{BPMN visualization of the discovered event log.}
+\end{figure}
+\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=CLI Output,arc=2mm]
+\begin{verbatim}
+What should be predicted?
+1. Future conformance deviations
+2. Process outcome
+3. Remaining time
+Select option (1-3): 2
+
+Define the target outcome:
+Enter activity names that signify a outcome (one per line).
+Type 'done' when finished.
+> Release A
+> Release B
+> Release C
+> Release D
+> Release E
+> done
+
+What should the prediction be based upon?
+1. Plain trace (control-flow)
+2. Trace and alignment-based diagnostics
+3. Case features
+4. Mixture of all available information
+Select option (1-4): 2
+
+ Prefix mode (required for remaining time)?
+   [Enter] varying 1..median (13)  (pooled - prefixes of length 1..k)
+   1)      exactly k          (one prefix per case at length k)
+ Select (Enter/1): 1
+  prefix length k: 7
+
+Enter a split value for the train- / test-split (default=0.7): 
+Invalid choice. Defaulting to 0.7
+--- Generating prefixes (min=7, max=7, step=1, gate=off) ---
+--- Extracting features over 628 prefixes: DIAGNOSTICS ---
+aligning log, completed variants :: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 143/143 [00:10<00:00, 13.15it/s]
+--- Preprocessing and encoding data ---
+--- Generating prefixes (min=7, max=7, step=1, gate=off) ---
+--- Extracting features over 293 prefixes: DIAGNOSTICS ---
+aligning log, completed variants :: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 101/101 [00:06<00:00, 15.16it/s]
+--- Preprocessing and encoding data ---
+
+Which regression algorithm do you want to apply?
+(1) Decision Tree
+(2) Random Forest
+(3) Gradient Boosting
+Select option (1-3): 3
+GRADIENT_BOOSTING selected.
+
+Do you want to configure the parameters yourself? (y/N): 
+
+Training model...
+
+Starting evaluation pipeline...
+--- Using pre-trained model ---
+--- Evaluating model ---
+--- Feature Importance ---
+                             importance  rank
+sync_move_Admission NC         0.205193   1.0
+sync_move_LacticAcid           0.193603   2.0
+sync_move_Leucocytes           0.161959   3.0
+sync_move_IV Liquid            0.145095   4.0
+sync_move_IV Antibiotics       0.082441   5.0
+sync_move_Admission IC         0.071276   6.0
+sync_move_CRP                  0.063321   7.0
+model_move_ER Sepsis Triage    0.041845   8.0
+sync_move_ER Sepsis Triage     0.035268   9.0
+sync_move_ER Registration      0.000000  10.5
+
+Pipeline completed successfully!
+
+Save feature importance chart? (y/N): n
+
+Classification metrics (Global Pooled - Lengths: [np.int64(7)]):
+  accuracy: 0.7142857142857143
+  precision: 0.6649606417048278
+  recall: 0.7142857142857143
+  f1: 0.5990229771742377
+  roc_auc: 0.4247287100556097
+  brier_score: 0.0
+
+\end{verbatim}
+\end{tcolorbox}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/confusion_matrix.png}
+    \caption{Confusion matrix for the classification model.}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/per_class_accuracy.png}
+    \caption{Per-class accuracy for the classification model.}
+\end{figure}
+\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=CLI Output,arc=2mm]
+\begin{verbatim}
+
+Save Receiver Operating Characteristic and Precision-Recall curves? (y/N): y
+
+\end{verbatim}
+\end{tcolorbox}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/roc_curves.png}
+    \caption{ROC curve for the classification model.}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/pr_curves.png}
+    \caption{Precision-Recall curve for the classification model.}
+\end{figure}
+\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=CLI Output,arc=2mm]
+\begin{verbatim}
+
+The program consumed 206.6875 MB memory in peak.
+---------------------------------------
+The program took 0.6406 seconds to execute the following step: 
+Read and Discovery
+---------------------------------------
+The program took 0.0465 seconds to execute the following step: 
+Train/Test Split
+---------------------------------------
+The program took 9.2909 seconds to execute the following step: 
+Alignment & Feature Extraction (Train split)
+---------------------------------------
+The program took 7.5695 seconds to execute the following step: 
+Alignment & Feature Extraction (Test split)
+---------------------------------------
+The program took 0.4176 seconds to execute the following step: 
+Model Training
+---------------------------------------
+The program took 0.0220 seconds to execute the following step: 
+Evaluation
+---------------------------------------
+In total, it took 17.9871 seconds from start to finish (processing time only).
+
+Do you want to visualize the processing times as a pie chart? (y/N): y
+
+\end{verbatim}
+\end{tcolorbox}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/processing_time.png}
+    \caption{Runtime distribution across pipeline steps.}
+\end{figure}
+\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=CLI Output,arc=2mm]
+\begin{verbatim}
+
+Do you want to save the runtime and memory measurements as JSON? (y/N): n
+
+Do you want to perform predictions on new data? This will restart the CLI. (y/N): n
+
+
+\end{verbatim}
+\end{tcolorbox}
+\subsection{Detailed requirements coverage}
+\subsubsection{IO}
 \textbf{All Covered}
 \begin{itemize}
     \item \textbf{LL-01.1}: \texttt{io.discover\_process\_model()} supports Inductive, Alpha, and Genetic Miner via PM4Py, enabling automatic model discovery when no normative model is available.
     \item \textbf{LL-01.2}: \texttt{visualization.visualize\_process\_model()} renders the model as Petri net, BPMN, or Process Tree, with optional file saving or direct display.
     \item \textbf{HL-05}: Event log loading, model import, and model discovery are all functional; the foundational data-acquisition step of the pipeline is complete.
     \item \textbf{LL-05.1}: \texttt{pm4py.read\_xes} for XES logs; \texttt{pd.read\_csv} combined with \texttt{pm4py.format\_dataframe} for CSV logs in \texttt{io.load\_event\_log()}.
-    \item \textbf{LL-05.2} (partially): Petri net loading via \texttt{pm4py.read\_pnml} implemented; BPMN files loaded via \texttt{pm4py.read\_bpmn} and Process Tree files via \texttt{pm4py.read\_ptml}, both internally converted to a Petri net.
+    \item \textbf{LL-05.2}: Petri net loading via \texttt{pm4py.read\_pnml} implemented; BPMN files loaded via \texttt{pm4py.read\_bpmn} and Process Tree files via \texttt{pm4py.read\_ptml}, both internally converted to a Petri net.
     \item \textbf{LL-05.3}: Inductive, Alpha, and Genetic Miner available as fallback discovery algorithms when no normative model file is provided.
     \item \textbf{HL-04}: \texttt{try/except} blocks in \texttt{main.py} catch and report setup errors, preprocessing failures, and pipeline exceptions to \texttt{stderr} with descriptive labels.
     \item \textbf{HL-01}: End-to-end prediction of conformance deviations is now fully operational; the \textit{Future Deviations} target is wired through the complete pipeline -- label extraction via \texttt{real\_deviation\_cost}, configurable threshold $T$, classification training, and evaluation.
     \item \textbf{LL-05.2}: Standalone loading of BPMN and Process Tree files as direct model inputs (without forced internal conversion to a Petri net).
 \end{itemize}
 
-\subsection{Feature Extraction}
+\subsubsection{Feature Extraction}
 
-\textbf{All Covered}
+\textbf{Covered}
 \begin{itemize}
-    \item \textbf{HL-06} (partially): \texttt{feature\_extraction.compute\_alignments()} invokes \texttt{pm4py.conformance\_diagnostics\_alignments}; log-moves, model-moves, and synchronous moves are extracted per case. Distance-to-completion indicators are not yet included.
+    \item \textbf{HL-06}: \texttt{feature\_extraction.compute\_alignments()} invokes \texttt{pm4py.conformance\_diagnostics\_alignments}; log-moves, model-moves, and synchronous moves are extracted per case. Distance-to-completion indicators are not yet included.
     \item \textbf{LL-06.1}: PM4Py alignment dictionaries are computed for every trace against the normative Petri net using the standard cost function. Alignments are now keyed by case ID and re-emitted in first-appearance order, eliminating the silent ordering issue that previously misaligned diagnostics with cases.
     \item \textbf{LL-06.2}: Alignment moves are parsed by \texttt{real\_deviation\_cost()} to count genuine deviations (log-moves and visible model-moves) per case; cumulative alignment cost is extracted while silent ($\tau$) routing moves are correctly excluded.
     \item \textbf{HL-07}: \texttt{feature\_extraction.extract\_features()} now supports control-flow features (Bag-of-Activities), alignment-based diagnostic features (Bag-of-move-types per activity), case-attribute features, and the hybrid combination of all three.
@@ -76,7 +284,7 @@ Our testing modules are also complete and covering all the expectations stated i
     \item \textbf{LL-13.2}: \textit{We left this out.} \noindent Disk-based persistence of alignment results via \texttt{joblib}.
 \end{itemize}
 
-\subsection{Model Training}
+\subsubsection{Model Training}
 \textbf{All Covered}
 \begin{itemize}
     \item \textbf{HL-08}: \texttt{train\_classification\_model()} wraps a configurable classifier (Decision Tree, Logistic Regression, or Gradient Boosting) in a \texttt{sklearn.Pipeline}. The binary deviation label is derived from the case's real alignment cost via the configurable threshold $T$, so the target is fully driven by alignment-based deviation cost.
@@ -85,7 +293,7 @@ Our testing modules are also complete and covering all the expectations stated i
     \item \textbf{LL-08.2}: Additional ML algorithms are available beyond the Decision Tree: \textit{Logistic Regression} and \textit{Gradient Boosting} for classification, and \textit{Random Forest}, \textit{Gradient Boosting}, and \textit{Decision Tree Regressor} for regression. All are exposed via the CLI and selectable per run.
 \end{itemize}
 
-\subsection{Evaluation}
+\subsubsection{Evaluation}
 
 \textbf{Covered}
 \begin{itemize}
@@ -99,12 +307,12 @@ Our testing modules are also complete and covering all the expectations stated i
     \item \textbf{HL-15}: The main pipeline uses \texttt{pm4py.split\_train\_test} with a user-configurable train ratio (default $0.7$).
     \item \textbf{LL-16.2}: \texttt{compute\_mae}, \texttt{compute\_mse}, and \texttt{compute\_rmse} are available in the evaluation module for evaluating remaining-time regression targets.
     \item \textbf{HL-17}: \texttt{evaluation.metrics\_by\_prefix\_length()} slices the predictions of a single pooled model by prefix length and reports the full metric set per length; the CLI prints this table whenever prefix lengths vary.
-    \item \textbf{HL-16}: \textit{left out.} Conformance quality metrics for the normative model (fitness), and wiring of the regression metrics into the pipeline's \texttt{compute\_regression\_metrics} hook so they are reported automatically for the remaining-time target.
+    \item \textbf{HL-16}: \textit{We left this out. } Conformance quality metrics for the normative model (fitness), and wiring of the regression metrics into the pipeline's \texttt{compute\_regression\_metrics} hook so they are reported automatically for the remaining-time target.
 \end{itemize}
 
-\subsection{Config \& Pipeline}
+\subsubsection{Config \& Pipeline}
 
-\textbf{Fully Covered}
+\textbf{Covered}
 \begin{itemize}
     \item \textbf{HL-03}: \texttt{main.py} provides an interactive CLI that guides the user through model path/discovery selection, prediction target (future deviations, process outcome, remaining time), feature basis (including case attributes), prefix mode, train/test split ratio, and ML algorithm configuration.
     \item \textbf{LL-03.1}: Prediction target and feature basis options are fully defined in \texttt{config.py} and selectable in the CLI; both the case-attribute feature path and the conformance-deviation target are now fully wired through the pipeline.
@@ -116,7 +324,7 @@ Our testing modules are also complete and covering all the expectations stated i
     \item \textbf{LL-14.4}: Runtime and resource metrics are printed to the console and can be persisted to a structured JSON log file at the end of the run.
 \end{itemize}
 
-\subsection{Project Infrastructure \& Testing}
+\subsubsection{Project Infrastructure \& Testing}
 \textbf{Covered}
 \begin{itemize}
     \item \textbf{HL-18}: PM4Py, scikit-learn, pandas, NumPy, and Matplotlib are used as the primary library stack throughout all modules.
@@ -130,106 +338,4 @@ Our testing modules are also complete and covering all the expectations stated i
     \item \textbf{HL-21}: Technical documentation of system architecture.
 \end{itemize}
 
-\section{User Guide}
-The User Guide is now fully implemented and mature to use as a reference for users who want to understand the options within the usage of the CLI. We believe that the User Guide is a crucial part of our Software Artifact, as it allows users with few to no background in process mining to make valuable use of our software. 
-
-\section{Team settings and Workflow}
-As already stated in the first sprint review, we rotated responsibilities for this sprint. Cem was responsible for IO, Model Training, and Feature Extraction, while Richard was responsible for the new visualization module, evaluation, and pipeline. Both of us were jointly responsible for the CLI and config modules, as they are relatively small and we wanted to work on them together to maintain a shared understanding of the user interface and configuration options. This division of responsibilities worked well, as it allowed each of us to understand and reflect on the other's past contributions and to extend them with new capabilities.
-
-For the next sprint, we plan to keep the same split on the implementation side and place a stronger focus on documentation. We intend to work together on the User Guide, the technical documentation, the README, and the phase review. This will allow us to review each other's content under the four-eyes principle, ensuring more robust output quality.
-\subsection{Team settings}
-Throughout the three sprints, we maintained a consistent rotation of responsibilities across all modules, although we kept the per module split more stable for the last two sprints since the third sprint was more about adding the last functionalities and focusing on documentation and finalization for the final sprint. The documentation was a product of boths contributions through joint work, and we also worked togehter on the CLI and config modules, as they are relatively small.  The 3rd and 2nd sprint were also characterized by private and work-related boundaries regarding the workflow, as we both had travelled, had other due submissions, and private commitments. We managed to work around these boundaries by supporting each other and by maintaing communication about our progress and challenges. 
-
-The three sprints also helped us to improve our workflow and to find a sound balance between managing our timeand orchestrating time limitations. We also grew together, as we had to learn to adapt to each others working style and to find a common ground of understaning.  
-\section{Sprint review}
-\subsection{Richard Schuppener}
-
-\subsection{Cem Colak}
-This sprint was the most chill and straightforward one, as we had already implemented all necessary functionalities and were mostly focusing on finalizing the whole software artifact and on documentation. It was rather an intentional setting, because we both have submissions in other courses until the 14. June, and we wanted to have a more relaxed sprint to be able to focus more on the other submissions. Furthermore, I learned much more about the usage of Github, how to build a CLI, what to consider while building a software artifact, how to use ML algorithms in a prediction pipeline and how to document it. With Richard I have had an excellent partner, who dedicates to deliver and also has a great sense of humor, which made the whole project much more enjoyable. Additionally, he helped me a lot with understanding specific Process Mining concepts and with the implementation of the software artifact. I'm very happy with the outcome of our work and I think we have delivered a great software artifact considering the time limitations and the complexity of the task. Finally, I'm looking foward to evaluate the software artifacta
-
 \end{document}
-
-
-%%% Visualization of feature importance
-% === Conformance Predictions ===
-% Do you have a normative process model? (y/N): 
-% Enter the path to the event log (XES/CSV): event_logs/sepsis.xes
-% Model discovery will be used.
-
-% Which discovery algorithm should be used?
-% 1. Inductive Miner (recommended)
-% 2. Alpha Miner
-% 3. Genetic Miner
-% Select option (1-3): 1
-% Noise threshold (default 0.0): 0.01
-% Disable fall-throughs? (y/N): 
-
-% Do you want a visualization of the discovered normative model saved (s) or directly displayed (d) or not (N)? (s/d/N): 
-% --- Loading event log: event_logs/sepsis.xes ---
-% /home/schuppener/spi/conformance-predictions/Code/.venv/lib/python3.14/site-packages/pm4py/utils.py:1027: UserWarning: Install the optional requirement `r4pm` to import/export files faster. `rustxes` remains supported as a fallback.
-%   warnings.warn(
-% parsing log, completed traces :: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1050/1050 [00:00<00:00, 3463.56it/s]
-% --- Discovering model using INDUCTIVE ---
-
-% What should be predicted?
-% 1. Future conformance deviations
-% 2. Process outcome
-% 3. Remaining time
-% Select option (1-3): 3
-
-% What should the prediction be based upon?
-% 1. Plain trace (control-flow)
-% 2. Trace and alignment-based diagnostics
-% 3. Case features
-% 4. Mixture of all available information
-% Select option (1-4): 2
-
-% Prefix mode (required for remaining time)?
-%   [Enter] varying 1..median (13)  (pooled - prefixes of length 1..k)
-%   1)      exactly k          (one prefix per case at length k)
-% Select (Enter/1): 1
-%   prefix length k: 7
-
-% Enter a split value for the train- / test-split (default=0.7): 
-% Invalid choice. Defaulting to 0.7
-% --- Generating prefixes (min=7, max=7, step=1, gate=off) ---
-% --- Extracting features over 628 prefixes: DIAGNOSTICS ---
-% aligning log, completed variants :: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 143/143 [00:10<00:00, 13.15it/s]
-% --- Preprocessing and encoding data ---
-% --- Generating prefixes (min=7, max=7, step=1, gate=off) ---
-% --- Extracting features over 293 prefixes: DIAGNOSTICS ---
-% aligning log, completed variants :: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 101/101 [00:06<00:00, 15.16it/s]
-% --- Preprocessing and encoding data ---
-
-% Which regression algorithm do you want to apply?
-% (1) Decision Tree Regressor
-% (2) Random Forest Regressor
-% (3) Gradient Boosting Regressor
-% Select option (1-3): 3
-% GRADIENT_BOOSTING selected.
-
-% Do you want to configure the parameters yourself? (y/N): 
-
-% Training model...
-
-% Starting evaluation pipeline...
-% --- Using pre-trained model ---
-% --- Evaluating model ---
-% --- Feature Importance ---
-%                           importance  rank
-% tf_elapsed_s                0.595429   1.0
-% tf_since_prev_s             0.320741   2.0
-% sync_move_LacticAcid        0.038742   3.0
-% sync_move_CRP               0.013689   4.0
-% sync_move_IV Liquid         0.008439   5.0
-% sync_move_Release A         0.007868   6.0
-% sync_move_IV Antibiotics    0.006360   7.0
-% sync_move_Leucocytes        0.003936   8.0
-% sync_move_Admission NC      0.003470   9.0
-% sync_move_Admission IC      0.000713  10.0
-
-% Pipeline completed successfully!
-
-% Save feature importance chart? (y/N): y
-% #Folder to save in (press Enter for Downloads): ~/spi/conformance-predictions/Code
-% Feature importance saved to: #~/spi/conformance-predictions/Code/feature_importance_2026-06-10_16-23-15
