@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 790" width="100%" height="100%">
+  <defs>
+    <!-- Arrow Markers matching the color highlighting of the destination or general paths -->
+    <marker id="arrowBlack" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#000000" />
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#2563EB" />
+    </marker>
+    <marker id="arrowTeal" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0D9488" />
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7C3AED" />
+    </marker>
+    <marker id="arrowIndigo" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#4F46E5" />
+    </marker>
+    <marker id="arrowCrimson" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#E11D48" />
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#059669" />
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#EA580C" />
+    </marker>
+    <marker id="arrowDashed" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#475569" />
+    </marker>
+  </defs>
+
+  <style>
+    .title-main { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 24px; font-weight: 800; fill: #000000; letter-spacing: 0.5px; }
+    .subtitle-main { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 13px; fill: #475569; }
+    .card-title { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; }
+    .card-subtitle { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 9.5px; font-weight: 600; fill: #64748B; }
+    .card-body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 10.5px; fill: #1E293B; line-height: 1.4; }
+    .card-body-bold { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 10.5px; font-weight: 700; fill: #000000; }
+    .data-flow-label { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 9.5px; font-weight: 700; fill: #1E293B; text-anchor: middle; }
+  </style>
+
+  <!-- Background (Pure White) -->
+  <rect width="1120" height="790" fill="#FFFFFF" />
+
+  <!-- Header -->
+  <g transform="translate(40, 60)">
+    <rect x="0" y="-12" width="5" height="36" fill="#000000" />
+    <text x="18" y="8" class="title-main">CONFORMANCE PREDICTIONS</text>
+    <text x="18" y="24" class="subtitle-main">Software Architecture &amp; Data Flow Diagram (Professional Style)</text>
+  </g>
+
+  <!-- ==================== CARD 1: INPUTS ==================== -->
+  <g transform="translate(40, 150)">
+    <rect width="190" height="195" rx="6" fill="#F8FAFC" stroke="#2563EB" stroke-width="1.5" />
+    <rect width="190" height="4" rx="2" fill="#2563EB" />
+    <text x="15" y="30" class="card-title" fill="#2563EB">INPUTS</text>
+    <line x1="15" y1="42" x2="175" y2="42" stroke="#E2E8F0" stroke-width="1" />
+    
+    <text x="15" y="65" class="card-body-bold">Event Logs</text>
+    <text x="15" y="80" class="card-body">• XES Format (.xes)</text>
+    <text x="15" y="95" class="card-body">• CSV Format (.csv)</text>
+
+    <text x="15" y="130" class="card-body-bold">Normative Models</text>
+    <text x="15" y="145" class="card-body">• Petri Nets (.pnml)</text>
+    <text x="15" y="160" class="card-body">• BPMN (.bpmn) / Trees</text>
+  </g>
+
+  <!-- ==================== CARD 2: DATA I/O ==================== -->
+  <g transform="translate(290, 150)">
+    <rect width="200" height="195" rx="6" fill="#F8FAFC" stroke="#0D9488" stroke-width="1.5" />
+    <rect width="200" height="4" rx="2" fill="#0D9488" />
+    <text x="15" y="28" class="card-title" fill="#0D9488">DATA I/O</text>
+    <text x="15" y="40" class="card-subtitle">(src/io.py)</text>
+    <line x1="15" y1="48" x2="185" y2="48" stroke="#E2E8F0" stroke-width="1" />
+
+    <text x="15" y="70" class="card-body-bold">File Parser &amp; Loader</text>
+    <text x="15" y="85" class="card-body">Loads log to DataFrame</text>
+    <text x="15" y="100" class="card-body">Converts models to Petri Net</text>
+
+    <text x="15" y="135" class="card-body-bold">Model Discovery</text>
+    <text x="15" y="150" class="card-body">Falls back to PM4Py:</text>
+    <text x="15" y="165" class="card-body">• Inductive, Alpha, Genetic</text>
+  </g>
+
+  <!-- ==================== CARD 3: FEATURE EXTRACTION ==================== -->
+  <g transform="translate(550, 150)">
+    <rect width="220" height="195" rx="6" fill="#F8FAFC" stroke="#7C3AED" stroke-width="1.5" />
+    <rect width="220" height="4" rx="2" fill="#7C3AED" />
+    <text x="15" y="28" class="card-title" fill="#7C3AED">FEATURE EXTRACTION</text>
+    <text x="15" y="40" class="card-subtitle">(src/feature_extraction.py)</text>
+    <line x1="15" y1="48" x2="205" y2="48" stroke="#E2E8F0" stroke-width="1" />
+
+    <text x="15" y="70" class="card-body-bold">Prefix Generator</text>
+    <text x="15" y="85" class="card-body">Extracts exactly k / 1..k prefixes</text>
+
+    <text x="15" y="115" class="card-body-bold">Alignment Engine</text>
+    <text x="15" y="130" class="card-body">Computes PM4Py alignments once,</text>
+    <text x="15" y="145" class="card-body">caches Move diagnostics in-memory</text>
+
+    <text x="15" y="175" class="card-body">Extracts control-flow, case, temporal</text>
+  </g>
+
+  <!-- ==================== CARD 4: MODEL TRAINING ==================== -->
+  <g transform="translate(830, 150)">
+    <rect width="200" height="195" rx="6" fill="#F8FAFC" stroke="#4F46E5" stroke-width="1.5" />
+    <rect width="200" height="4" rx="2" fill="#4F46E5" />
+    <text x="15" y="28" class="card-title" fill="#4F46E5">MODEL TRAINING</text>
+    <text x="15" y="40" class="card-subtitle">(src/model_training.py)</text>
+    <line x1="15" y1="48" x2="185" y2="48" stroke="#E2E8F0" stroke-width="1" />
+
+    <text x="15" y="70" class="card-body-bold">Train / Test Split</text>
+    <text x="15" y="85" class="card-body">Partitions prefixes (default 70/30)</text>
+
+    <text x="15" y="120" class="card-body-bold">Pipeline Fit</text>
+    <text x="15" y="135" class="card-body">Applies StandardScaler</text>
+    <text x="15" y="150" class="card-body">Trains Model (DT, RF, LR, GB)</text>
+  </g>
+
+  <!-- ==================== CARD 5: EVALUATION ==================== -->
+  <g transform="translate(830, 440)">
+    <rect width="200" height="195" rx="6" fill="#F8FAFC" stroke="#E11D48" stroke-width="1.5" />
+    <rect width="200" height="4" rx="2" fill="#E11D48" />
+    <text x="15" y="28" class="card-title" fill="#E11D48">EVALUATION</text>
+    <text x="15" y="40" class="card-subtitle">(src/evaluation.py)</text>
+    <line x1="15" y1="48" x2="185" y2="48" stroke="#E2E8F0" stroke-width="1" />
+
+    <text x="15" y="70" class="card-body-bold">Metric Calculator</text>
+    <text x="15" y="85" class="card-body">Classification: Accuracy, F1, Recall,</text>
+    <text x="15" y="100" class="card-body">Precision, ROC-AUC, Brier score</text>
+    <text x="15" y="115" class="card-body">Regression: MAE, MSE, RMSE</text>
+
+    <text x="15" y="145" class="card-body-bold">Prefix Length Breakdown</text>
+    <text x="15" y="160" class="card-body">Slices evaluation results per length</text>
+  </g>
+
+  <!-- ==================== CARD 6: VISUALIZATION ==================== -->
+  <g transform="translate(550, 440)">
+    <rect width="220" height="195" rx="6" fill="#F8FAFC" stroke="#059669" stroke-width="1.5" />
+    <rect width="220" height="4" rx="2" fill="#059669" />
+    <text x="15" y="28" class="card-title" fill="#059669">VISUALIZATION</text>
+    <text x="15" y="40" class="card-subtitle">(src/visualization.py)</text>
+    <line x1="15" y1="48" x2="205" y2="48" stroke="#E2E8F0" stroke-width="1" />
+
+    <text x="15" y="70" class="card-body-bold">Diagnostic Plotters</text>
+    <text x="15" y="85" class="card-body">Renders Petri Net / BPMN models</text>
+    <text x="15" y="100" class="card-body">Confusion matrix heatmaps</text>
+    <text x="15" y="115" class="card-body">ROC and Precision-Recall curves</text>
+    <text x="15" y="130" class="card-body">Feature importance charts</text>
+    <text x="15" y="145" class="card-body">Runtime scaling &amp; memory pie charts</text>
+  </g>
+
+  <!-- ==================== CARD 7: OUTPUTS ==================== -->
+  <g transform="translate(230, 440)">
+    <rect width="200" height="195" rx="6" fill="#F8FAFC" stroke="#EA580C" stroke-width="1.5" />
+    <rect width="200" height="4" rx="2" fill="#EA580C" />
+    <text x="15" y="30" class="card-title" fill="#EA580C">OUTPUTS</text>
+    <line x1="15" y1="42" x2="185" y2="42" stroke="#E2E8F0" stroke-width="1" />
+
+    <text x="15" y="65" class="card-body">• Console Metrics &amp; Breakdowns</text>
+    <text x="15" y="85" class="card-body">• Performance Report (.json)</text>
+    <text x="15" y="105" class="card-body">• Saved Visualizations (.png / .svg)</text>
+    <text x="15" y="125" class="card-body">• HTML/PDF Docs (docs/index.html)</text>
+    <text x="15" y="145" class="card-body">• Discovered models (.png)</text>
+  </g>
+
+  <!-- ==================== CONNECTION PATHS ==================== -->
+  <!-- 1. Inputs -> Data I/O -->
+  <path d="M 230 245 L 282 245" fill="none" stroke="#2563EB" stroke-width="1.5" marker-end="url(#arrowBlue)" />
+  <text x="260" y="235" class="data-flow-label" fill="#2563EB">Raw Files</text>
+
+  <!-- 2. Data I/O -> Feature Extraction -->
+  <path d="M 490 245 L 542 245" fill="none" stroke="#0D9488" stroke-width="1.5" marker-end="url(#arrowTeal)" />
+  <text x="516" y="225" class="data-flow-label" fill="#0D9488">Log DF</text>
+  <text x="516" y="238" class="data-flow-label" fill="#0D9488">&amp; Petri Net</text>
+
+  <!-- 3. Feature Extraction -> Model Training -->
+  <path d="M 770 245 L 822 245" fill="none" stroke="#7C3AED" stroke-width="1.5" marker-end="url(#arrowPurple)" />
+  <text x="796" y="225" class="data-flow-label" fill="#7C3AED">Prefixes</text>
+  <text x="796" y="238" class="data-flow-label" fill="#7C3AED">&amp; Features</text>
+
+  <!-- 4. Model Training -> Evaluation -->
+  <path d="M 930 345 L 930 432" fill="none" stroke="#4F46E5" stroke-width="2" marker-end="url(#arrowIndigo)" />
+  <text x="930" y="390" class="data-flow-label" fill="#4F46E5">Trained Pipeline</text>
+
+  <!-- 5. Feature Extraction -> Evaluation (Test Split Bypass) -->
+  <path d="M 660 345 L 660 390 L 880 390 L 880 432" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="4,4" marker-end="url(#arrowDashed)" />
+  <text x="780" y="382" class="data-flow-label" fill="#475569">Test Split Features &amp; Labels</text>
+
+  <!-- 6. Evaluation -> Visualization -->
+  <path d="M 830 537 L 778 537" fill="none" stroke="#E11D48" stroke-width="2" marker-end="url(#arrowCrimson)" />
+  <text x="804" y="522" class="data-flow-label" fill="#E11D48">Metrics</text>
+  <text x="804" y="548" class="data-flow-label" fill="#E11D48">&amp; Results</text>
+
+  <!-- 7. Visualization -> Outputs -->
+  <path d="M 550 537 L 438 537" fill="none" stroke="#059669" stroke-width="1.5" marker-end="url(#arrowGreen)" />
+  <text x="494" y="525" class="data-flow-label" fill="#059669">Rendered Plots</text>
+
+  <!-- 8. Evaluation -> Outputs (Data metrics bypass) -->
+  <path d="M 930 635 L 930 680 L 330 680 L 330 638" fill="none" stroke="#E11D48" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrowCrimson)" />
+  <text x="630" y="672" class="data-flow-label" fill="#E11D48">Numerical Metrics &amp; Run Statistics</text>
+</svg>

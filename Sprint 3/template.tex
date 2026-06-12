@@ -60,6 +60,17 @@ To ensure maintainability, we thoroughly documented our codebase using the follo
 \end{itemize}
 While comprehensively documenting all functions and matching the Google format was a highly demanding effort, it ensures the pipeline remains fully accessible and easy to extend.
 
+\subsection{Codebase Architecture}
+To illustrate the flow of data through our modular codebase, we designed a pipeline architecture diagram (shown in Figure \ref{fig:architecture}). It maps out the stages from raw inputs (logs and models) through Data I/O, Feature Extraction, Model Training, and Evaluation/Visualization, highlighting the dependencies between the respective Python source modules.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/architecture.png}
+    \caption{Data Flow and Pipeline Architecture Diagram}
+    \label{fig:architecture}
+\end{figure}
+
+
 \section{Team settings and Workflow}
 \subsection{Team settings}
 Throughout the three sprints, we maintained a consistent rotation of responsibilities across all modules. Since the third sprint was more about adding the last functionalities we were focusing on documentation and finalization for the final sprint, which led to much more joint work. The documentation was a product of boths contributions, and we also worked togehter on the CLI and config modules, as they are relatively small. The 2nd and 3rd sprint were also characterized by private and work-related boundaries regarding the workflow, as we both had travelled, other due submissions, and private commitments. We managed to work around these boundaries by supporting each other and by maintaing communication about our progress and challenges. 
