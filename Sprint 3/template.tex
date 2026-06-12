@@ -48,6 +48,17 @@ Our testing modules are also complete and covering all the expectations stated i
 \section{User Guide}
 The User Guide is complete and can be used as a concise reference for the CLI options and usage.
 
+\section{Technical Documentation}
+To ensure maintainability, we thoroughly documented our codebase using the following workflow:
+\begin{itemize}
+    \item \textbf{Documentation Format:} Each module includes a high-level summary docstring, and every function contains Google-style docstrings describing its behavior, arguments (\texttt{Args:}), exceptions (\texttt{Raises:}), and return values (\texttt{Returns:}).
+    \item \textbf{Generation \& Access:} The HTML documentation is automatically built using \texttt{pdoc} via:
+    \begin{verbatim}
+    pdoc --docformat google src/ -o docs/
+    \end{verbatim}
+    This can be opened interactively via \texttt{Code/docs/index.html} in a browser. Additionally, a compiled PDF version is available as \texttt{documentation.pdf} in the \texttt{Sprint 3} directory.
+\end{itemize}
+While comprehensively documenting all functions and matching the Google format was a highly demanding effort, it ensures the pipeline remains fully accessible and easy to extend.
 
 \section{Team settings and Workflow}
 \subsection{Team settings}
