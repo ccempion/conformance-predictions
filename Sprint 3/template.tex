@@ -1,5 +1,5 @@
 \documentclass[12pt,a4paper]{article}
-
+\usepackage{geometry}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
@@ -7,7 +7,6 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{xcolor}
-\usepackage{tcolorbox}
 \usepackage{todonotes}
 \setuptodonotes{inline}
 
@@ -49,6 +48,7 @@ Our testing modules are also complete and covering all the expectations stated i
 \section{User Guide}
 The User Guide is complete and can be used as a concise reference for the CLI options and usage.
 
+
 \section{Team settings and Workflow}
 \subsection{Team settings}
 Throughout the three sprints, we maintained a consistent rotation of responsibilities across all modules. Since the third sprint was more about adding the last functionalities we were focusing on documentation and finalization for the final sprint, which led to much more joint work. The documentation was a product of boths contributions, and we also worked togehter on the CLI and config modules, as they are relatively small. The 2nd and 3rd sprint were also characterized by private and work-related boundaries regarding the workflow, as we both had travelled, other due submissions, and private commitments. We managed to work around these boundaries by supporting each other and by maintaing communication about our progress and challenges. 
@@ -61,11 +61,13 @@ The three sprints also helped us to improve our workflow and to find a sound bal
 \subsection{Cem Colak}
 This sprint was the most chill and straightforward one, as we had already implemented all necessary functionalities and were mostly focusing on finalizing the whole software artifact and on documentation. It was rather an intentional setting, because we both have submissions in other courses until the 14. June, and we wanted to have a more relaxed sprint to be able to focus more on the other submissions. Furthermore, I learned much more about the usage of Github, how to build a CLI, what to consider while building a software artifact, how to use ML algorithms in a prediction pipeline and how to document it. With Richard I have had an excellent partner, who dedicates to deliver and also has a great sense of humor, which made the whole project much more enjoyable. Additionally, he helped me a lot with understanding specific Process Mining concepts and with the implementation of the software artifact. I'm very happy with the outcome of our work and I think we have delivered a great software artifact considering the time limitations and the complexity of the task. Finally, I'm looking foward to evaluate the software artifact and finally finish the project with a good oral examination.
 
+
+\appendix
 \section{Appendix}
 
 \subsection{CLI Walkthrough}
 %%% Visualization of feature importance
-\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=CLI Output,arc=2mm]
+\newgeometry{vmargin={15mm}, hmargin={10mm,10mm}}   % set the margins
 \begin{verbatim}
 === Conformance Predictions ===
 Do you have a normative process model? (y/N): 
@@ -80,25 +82,19 @@ Select option (1-3): 1
 Noise threshold (default 0.0): 0.01
 Disable fall-throughs? (y/N): 
 
-Do you want a visualization of the discovered normative model saved (s) or directly displayed (d) or not (N)? (s/d/N): 
+Do you want a visualization of the discovered normative model saved 
+(s) or directly displayed (d) or not (N)? (s/d/N): 
 --- Loading event log: event_logs/sepsis.xes ---
-/home/schuppener/spi/conformance-predictions/Code/.venv/lib/python3.14/site-packages/pm4py/utils.py:1027: UserWarning: Install the optional requirement `r4pm` to import/export files faster. `rustxes` remains supported as a fallback.
+/home/schuppener/spi/conformance-predictions/Code/.venv/lib/python3.14/site-packages/pm4py/utils.py:1027: 
+-> UserWarning: Install the optional requirement `r4pm` to import/export files faster. 
+`rustxes` remains supported as a fallback.
   warnings.warn(
-parsing log, completed traces :: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1050/1050 [00:00<00:00, 3463.56it/s]
+parsing log, completed traces :: 100%|-------------| 1050/1050 [00:00<00:00, 3463.56it/s]
 
 --- Discovering model using INDUCTIVE ---
 
 --- Visualizing model ---
 
-\end{verbatim}
-\end{tcolorbox}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/bpmn.png}
-    \caption{BPMN visualization of the discovered event log.}
-\end{figure}
-\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=CLI Output,arc=2mm]
-\begin{verbatim}
 What should be predicted?
 1. Future conformance deviations
 2. Process outcome
@@ -132,11 +128,11 @@ Enter a split value for the train- / test-split (default=0.7):
 Invalid choice. Defaulting to 0.7
 --- Generating prefixes (min=7, max=7, step=1, gate=off) ---
 --- Extracting features over 628 prefixes: DIAGNOSTICS ---
-aligning log, completed variants :: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 143/143 [00:10<00:00, 13.15it/s]
+aligning log, completed variants :: 100%|--------------| 143/143 [00:10<00:00, 13.15it/s]
 --- Preprocessing and encoding data ---
 --- Generating prefixes (min=7, max=7, step=1, gate=off) ---
 --- Extracting features over 293 prefixes: DIAGNOSTICS ---
-aligning log, completed variants :: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 101/101 [00:06<00:00, 15.16it/s]
+aligning log, completed variants :: 100%|--------------| 101/101 [00:06<00:00, 15.16it/s]
 --- Preprocessing and encoding data ---
 
 Which regression algorithm do you want to apply?
@@ -178,37 +174,7 @@ Classification metrics (Global Pooled - Lengths: [np.int64(7)]):
   roc_auc: 0.4247287100556097
   brier_score: 0.0
 
-\end{verbatim}
-\end{tcolorbox}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/confusion_matrix.png}
-    \caption{Confusion matrix for the classification model.}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/per_class_accuracy.png}
-    \caption{Per-class accuracy for the classification model.}
-\end{figure}
-\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=CLI Output,arc=2mm]
-\begin{verbatim}
-
 Save Receiver Operating Characteristic and Precision-Recall curves? (y/N): y
-
-\end{verbatim}
-\end{tcolorbox}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/roc_curves.png}
-    \caption{ROC curve for the classification model.}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/pr_curves.png}
-    \caption{Precision-Recall curve for the classification model.}
-\end{figure}
-\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=CLI Output,arc=2mm]
-\begin{verbatim}
 
 The program consumed 206.6875 MB memory in peak.
 ---------------------------------------
@@ -234,26 +200,15 @@ In total, it took 17.9871 seconds from start to finish (processing time only).
 
 Do you want to visualize the processing times as a pie chart? (y/N): y
 
-\end{verbatim}
-\end{tcolorbox}
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/processing_time.png}
-    \caption{Runtime distribution across pipeline steps.}
-\end{figure}
-\begin{tcolorbox}[colback=black!5!white,colframe=black!75!black,title=CLI Output,arc=2mm]
-\begin{verbatim}
-
 Do you want to save the runtime and memory measurements as JSON? (y/N): n
 
 Do you want to perform predictions on new data? This will restart the CLI. (y/N): n
 
 
 \end{verbatim}
-\end{tcolorbox}
 \subsection{Detailed requirements coverage}
 \subsubsection{IO}
-\textbf{All Covered}
+\textbf{Covered}
 \begin{itemize}
     \item \textbf{LL-01.1}: \texttt{io.discover\_process\_model()} supports Inductive, Alpha, and Genetic Miner via PM4Py, enabling automatic model discovery when no normative model is available.
     \item \textbf{LL-01.2}: \texttt{visualization.visualize\_process\_model()} renders the model as Petri net, BPMN, or Process Tree, with optional file saving or direct display.
@@ -270,7 +225,7 @@ Do you want to perform predictions on new data? This will restart the CLI. (y/N)
 
 \textbf{Covered}
 \begin{itemize}
-    \item \textbf{HL-06}: \texttt{feature\_extraction.compute\_alignments()} invokes \texttt{pm4py.conformance\_diagnostics\_alignments}; log-moves, model-moves, and synchronous moves are extracted per case. Distance-to-completion indicators are not yet included.
+    \item \textbf{HL-06}: \texttt{feature\_extraction.compute\_alignments()} invokes PM4Py's \\\texttt{conformance\_diagnostics\_alignments}; log-moves, model-moves, and synchronous moves are extracted per case. Distance-to-completion indicators are not yet included.
     \item \textbf{LL-06.1}: PM4Py alignment dictionaries are computed for every trace against the normative Petri net using the standard cost function. Alignments are now keyed by case ID and re-emitted in first-appearance order, eliminating the silent ordering issue that previously misaligned diagnostics with cases.
     \item \textbf{LL-06.2}: Alignment moves are parsed by \texttt{real\_deviation\_cost()} to count genuine deviations (log-moves and visible model-moves) per case; cumulative alignment cost is extracted while silent ($\tau$) routing moves are correctly excluded.
     \item \textbf{HL-07}: \texttt{feature\_extraction.extract\_features()} now supports control-flow features (Bag-of-Activities), alignment-based diagnostic features (Bag-of-move-types per activity), case-attribute features, and the hybrid combination of all three.
@@ -285,7 +240,7 @@ Do you want to perform predictions on new data? This will restart the CLI. (y/N)
 \end{itemize}
 
 \subsubsection{Model Training}
-\textbf{All Covered}
+\textbf{Covered}
 \begin{itemize}
     \item \textbf{HL-08}: \texttt{train\_classification\_model()} wraps a configurable classifier (Decision Tree, Logistic Regression, or Gradient Boosting) in a \texttt{sklearn.Pipeline}. The binary deviation label is derived from the case's real alignment cost via the configurable threshold $T$, so the target is fully driven by alignment-based deviation cost.
     \item \textbf{LL-08.1}: \texttt{StandardScaler} is integrated as the first step in every sklearn Pipeline, ensuring scale-consistent feature distributions.
@@ -332,24 +287,30 @@ Do you want to perform predictions on new data? This will restart the CLI. (y/N)
     \item \textbf{HL-20}: \texttt{requirements.txt} and \texttt{README.md} are present in the repository.
     \item \textbf{LL-20.1}: \texttt{requirements.txt} as a plain text file is implemented and considered satisfactory for dependency management.
     \item \textbf{HL-11}: An automated pytest test suite covering IO, feature extraction, model training, and evaluation is executable via a single command (\texttt{pytest tests/}) and runs in the GitLab CI pipeline on every push or merge.
-    \item \textbf{LL-11.3}: \texttt{test\_generate\_prefixes\_lengths\_and\_content} asserts that a prefix of length $k$ contains exactly the first $k$ events of the original trace; the related \texttt{test\_pooled\_extraction\_broadcasts\_labels\_without\_leakage} test additionally confirms that outcome activities are gated out of the feature vector.
+    \item \textbf{LL-11.3}: \texttt{test\_generate\_prefixes\_lengths\_and\_content} asserts that a prefix of length $k$ contains exactly the first $k$ events of the original trace; the related \\\texttt{test\_pooled\_extraction\_broadcasts\_labels\_without\_leakage} test additionally confirms that outcome activities are gated out of the feature vector.
     \item \textbf{LL-11.1}: Dedicated pytest fixtures providing a synthetic, fully conforming XES log and a matching Petri net (currently the tests use ad-hoc DataFrame helpers).
     \item \textbf{LL-11.2}: Explicit test assertion that the alignment cost equals $0.0$ on a fully conforming synthetic dataset.
     \item \textbf{HL-21}: Technical documentation of system architecture.
 \end{itemize}
 
 \subsection{Visualizations}
-As mentioned in the previous sprint review document, we devoted a great part of our time to create meaningful and insightful visualizations to help us with the evaluation and the user with understanding the effect of the pipeline. As of Sprint 3, we implemented three more visualizations: a resource scaling plot. \\
-\textbf{Covered}\\\\
+As mentioned in the previous sprint review document, we devoted a great part of our time to create meaningful and insightful visualizations to help us with the evaluation and the user with understanding the effect of the pipeline. As of Sprint 3, we implemented three more visualizations: a resource scaling plot, "Precision-Recall" and "Receiver Operating Characteristic" curves and a feature importance comparison plot. \\\\
+\textbf{Covered}\\
 \begin{itemize}
     \item \textbf{Process Model Visualization}: \texttt{visualize\_process\_model} supports interactive viewing or saving of normative models (either discovered or provided) in three formats: Petri Net, BPMN, and Process Tree.
     \item \textbf{Decision Tree Visualization}: \texttt{visualize\_decision\_tree} renders the fitted scikit-learn Decision Tree (classifier or regressor), clearly showing the splitting criteria, node purity, and leaf values. This is crucial for the "white-box" interpretability requirement. An example output can be found in \ref{decision-tree}.
     \item \textbf{Confusion Matrix Heatmap}: \texttt{plot\_confusion\_matrix\_image} generates a clear, color-coded heatmap (blues colormap) of the confusion matrix for classification tasks. The matrix contrasts predicted vs. actual outcomes, highlighting true positives and false positives. An example output can be found in \ref{confusion-matrix}.
     \item \textbf{Per-Class Accuracy Chart}: \texttt{plot\_per\_class\_bar\_chart} complements the confusion matrix by rendering a stacked bar chart displaying the percentage of correct (green) versus incorrect (red) predictions for each class label. An example output can be found in \ref{class-accuracy}.
-    \item \newcov{Processing Times Distribution}: \texttt{plot\_processing\_times} creates a pie chart that visualizes the proportion of time spent in each pipeline phase (e.g., IO, Alignment, Model Training). An example output can be found in \ref{processing-time}.
-    \item \newcov{Performance by Prefix Length}: \texttt{plot\_evaluate\_by\_prefix\_length} plots prediction metrics (Accuracy, F1 Score, or MAE for regression) on the Y-axis against the prefix length on the X-axis. This visually demonstrates whether adding more events to a trace improves the model's predictive power. An example output can be found in \ref{prefix-classification} and \ref{prefix-regression}.
+    \item \textbf{Processing Times Distribution}: \texttt{plot\_processing\_times} creates a pie chart that visualizes the proportion of time spent in each pipeline phase (e.g., IO, Alignment, Model Training). An example output can be found in \ref{processing-time}.
+    \item \textbf{Performance by Prefix Length}: \texttt{plot\_evaluate\_by\_prefix\_length} plots prediction metrics (Accuracy, F1 Score, or MAE for regression) on the Y-axis against the prefix length on the X-axis. This visually demonstrates whether adding more events to a trace improves the model's predictive power. An example output can be found in \ref{prefix-classification} and \ref{prefix-regression}.
 \end{itemize}
 
+\noindent \textbf{Implemented in Sprint 3}
+\begin{itemize}
+    \item \newcov{Feature Importance Comparison}: \texttt{plot\_feature\_importance} \ref{feature-importance} renders a bar chart of the top predictive features, color-coding conformance-derived features to visually separate their impact versus standard control-flow features.
+    \item \newcov{ROC and PR Curves}: \texttt{plot\_roc\_curves} \ref{roc-curve} and \texttt{plot\_pr\_curves} \ref{pr-curve} implement the overlay of curves of baseline vs. conformance-aware models, providing a standard ML evaluation visualization for binary risk targets.
+    \item \newcov{Resource Scaling Plot}: \texttt{plot\_runtime\_log\_size\_relation} plots runtime and memory usage as a function of log size (number of cases/events) to empirically demonstrate the computational overhead of alignment extraction and other computationally expensive pipeline steps. This visualization will be included in the evaluation.
+\end{itemize}
 
 \begin{figure}[htbp]
 	\centering
@@ -406,28 +367,5 @@ As mentioned in the previous sprint review document, we devoted a great part of 
     \label{feature-importance}
 \end{figure}
 
-\noindent \textbf{Implemented in Sprint 3}
-\begin{itemize}
-    \item \newcov{Feature Importance Comparison}: \texttt{plot\_feature\_importance} \ref{feature-importance} renders a bar chart of the top predictive features, color-coding conformance-derived features to visually separate their impact versus standard control-flow features.
-    \item \newcov{ROC and PR Curves}: \texttt{plot\_roc\_curves} \ref{roc-curve} and \texttt{plot\_pr\_curves} \ref{pr-curve} implement the overlay of curves of baseline vs. conformance-aware models, providing a standard ML evaluation visualization for binary risk targets.
-    \item \newcov{Resource Scaling Plot}: \texttt{plot\_runtime\_log\_size\_relation} plots runtime and memory usage as a function of log size (number of cases/events) to empirically demonstrate the computational overhead of alignment extraction and other computationally expensive pipeline steps. This visualization will be included in the evaluation.
-\end{itemize}
-
-\section{User Guide}
-The User Guide is now fully implemented and mature to use as a reference for users who want to understand the options within the usage of the CLI. We believe that the User Guide is a crucial part of our Software Artifact, as it allows users with few to no background in process mining to make valuable use of our software. 
-
-\section{Team settings and Workflow}
-As already stated in the first sprint review, we rotated responsibilities for this sprint. Cem was responsible for IO, Model Training, and Feature Extraction, while Richard was responsible for the new visualization module, evaluation, and pipeline. Both of us were jointly responsible for the CLI and config modules, as they are relatively small and we wanted to work on them together to maintain a shared understanding of the user interface and configuration options. This division of responsibilities worked well, as it allowed each of us to understand and reflect on the other's past contributions and to extend them with new capabilities.
-
-For the next sprint, we plan to keep the same split on the implementation side and place a stronger focus on documentation. We intend to work together on the User Guide, the technical documentation, the README, and the phase review. This will allow us to review each other's content under the four-eyes principle, ensuring more robust output quality.
-\subsection{Team settings}
-Throughout the three sprints, we maintained a consistent rotation of responsibilities across all modules, although we kept the per module split more stable for the last two sprints since the third sprint was more about adding the last functionalities and focusing on documentation and finalization for the final sprint. The documentation was a product of boths contributions through joint work, and we also worked togehter on the CLI and config modules, as they are relatively small.  The 3rd and 2nd sprint were also characterized by private and work-related boundaries regarding the workflow, as we both had travelled, had other due submissions, and private commitments. We managed to work around these boundaries by supporting each other and by maintaing communication about our progress and challenges. 
-
-The three sprints also helped us to improve our workflow and to find a sound balance between managing our timeand orchestrating time limitations. We also grew together, as we had to learn to adapt to each others working style and to find a common ground of understaning.  
-\section{Sprint review}
-\subsection{Richard Schuppener}
-
-\subsection{Cem Colak}
-This sprint was the most chill and straightforward one, as we had already implemented all necessary functionalities and were mostly focusing on finalizing the whole software artifact and on documentation. It was rather an intentional setting, because we both have submissions in other courses until the 14. June, and we wanted to have a more relaxed sprint to be able to focus more on the other submissions. Furthermore, I learned much more about the usage of Github, how to build a CLI, what to consider while building a software artifact, how to use ML algorithms in a prediction pipeline and how to document it. With Richard I have had an excellent partner, who dedicates to deliver and also has a great sense of humor, which made the whole project much more enjoyable. Additionally, he helped me a lot with understanding specific Process Mining concepts and with the implementation of the software artifact. I'm very happy with the outcome of our work and I think we have delivered a great software artifact considering the time limitations and the complexity of the task. Finally, I'm looking foward to evaluate the software artifacta
 
 \end{document}
