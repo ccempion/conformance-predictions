@@ -23,6 +23,41 @@ We're building a Python-based tool that combines process mining and machine lear
 ## Repository layout
 
 - **`Code/`** — the software: the interactive pipeline, source modules, and tests. See [`Code/README.md`](Code/README.md) to install and run it.
+  ```text
+  Code/
+  ├── cli_test_runner.py
+  ├── docs/
+  │   ├── index.html
+  │   ├── search.js
+  │   ├── src/
+  │   │   ├── config.html
+  │   │   ├── evaluation.html
+  │   │   ├── feature_extraction.html
+  │   │   ├── io.html
+  │   │   ├── model_training.html
+  │   │   ├── pipeline.html
+  │   │   └── visualization.html
+  │   └── src.html
+  ├── main.py
+  ├── README.md
+  ├── requirements.txt
+  ├── src/
+  │   ├── config.py
+  │   ├── evaluation.py
+  │   ├── feature_extraction.py
+  │   ├── __init__.py
+  │   ├── io.py
+  │   ├── model_training.py
+  │   ├── pipeline.py
+  │   └── visualization.py
+  └── tests/
+      ├── evaluation_test.py
+      ├── feature_extraction_test.py
+      ├── __init__.py
+      ├── io_test.py
+      ├── model_training_test.py
+      └── visualization_test.py
+  ```
 - **`Requirements Engineering/`**, **`Project Setup/`**, **`Sprint 1–3/`**, **`Assessment/`** — academic deliverables (LaTeX/PDF), including the per-sprint **User Guide**.
 - **`Sources/`** — reference literature.
 
