@@ -108,19 +108,19 @@ Which discovery algorithm should be used?
 Select option (1-3):
 \end{verbatim}
 
-\textbf{Option 1 --- Inductive Miner} is the recommended choice for most logs. Two additional parameters are requested:
+\textbf{Option 1 --- Inductive Miner} is the recommended choice for most logs. It is the standard algorithm for process discovery. Two additional parameters are requested:
 \begin{verbatim}
 Noise threshold (default 0.0):
 Disable fall-throughs? (y/N):
 \end{verbatim}
 The noise threshold (a value between 0.0 and 1.0) controls how aggressively infrequent behavior is filtered out before model construction. A value of 0.0 keeps all behavior; higher values produce simpler models. Press \texttt{Enter} to accept the defaults.
 
-\textbf{Option 2 --- Alpha Miner} has no configurable parameters. The tool will confirm this and continue:
+\textbf{Option 2 --- Alpha Miner} is a weaker but in some cases sufficient algorithm. It has no configurable parameters. The tool will confirm this and continue:
 \begin{verbatim}
 Alpha Miner has no configurable parameters.
 \end{verbatim}
 
-\textbf{Option 3 --- Genetic Miner} requests six parameters:
+\textbf{Option 3 --- Genetic Miner} takes very long to run. We recommend it only for specific use cases, where it is needed. It requests six parameters:
 \begin{verbatim}
 Population size (default 500):
 Elitism rate (default 0.01):
@@ -153,10 +153,9 @@ Select option (1-3):
     \begin{verbatim}
 Enter the path to save the visualization (e.g., model.png):
     \end{verbatim}
-
-    \item \textbf{d --- Display:} the same representation prompt is shown, then the figure(png) is opened in an interactive window. No file is written.
-
-    \item \textbf{N --- Skip:} no visualization is produced, and the pipeline continues immediately.
+Remark: The path must end with an image file extension and should be a valid path on your system. Otherwise, an error occurs.
+    \item \textbf{d --- Display:} the same representation prompt is shown, then the figure(png) is opened in an interactive window. No file is written. Note: You can still save the file through the applications menu of the visualization window. 
+    \item \textbf{N --- Skip:} no visualization is produced, and the pipeline continues immediately. Recommended for subsequent runs after you are familiar with the model.
 \end{itemize}
 % -------------------------------------------------------
 \subsection{Step 3: Prediction Target}
@@ -168,11 +167,11 @@ What should be predicted?
 Select option (1-3):
 \end{verbatim}
 
-\textbf{Option 1 --- Future conformance deviations} predicts whether a case will exhibit a further deviation from the normative model. The label is binary: 0 means no (further) deviation is expected, 1 means a deviation is expected. After selecting this option, one additional prompt appears:
+\textbf{Option 1 --- Future conformance deviations} predicts whether a case will exhibit a further deviation from the normative model. It is derived by the amount of future alignment deviations. The label is binary: 0 means no (further) deviation is expected, 1 means a deviation is expected. After selecting this option, one additional prompt appears:
 \begin{verbatim}
 Deviation cost threshold T (default 0):
 \end{verbatim}
-A case is counted as \emph{deviant} when its real alignment cost --- the number of genuine log-only and visible model-only moves, with silent routing excluded --- exceeds the threshold \texttt{T}. With \texttt{T=0} (the default) any real deviation makes the case deviant; raising \texttt{T} tolerates minor deviations before a case is labelled deviant. Press \texttt{Enter} to keep \texttt{T=0}. \textit{Fully implemented.}
+A case is counted as \emph{deviant} when its real alignment cost --- the number of genuine log-only and visible model-only moves, with silent routing excluded --- exceeds the threshold \texttt{T}. With \texttt{T=0} (the default) any real deviation makes the case deviant; raising \texttt{T} tolerates minor deviations before a case is labelled deviant. Press \texttt{Enter} to keep \texttt{T=0}.
 
 \textbf{Option 2 --- Process outcome} predicts which of several predefined outcomes a case will reach. After selecting this option, the following prompt appears:
 \begin{verbatim}
@@ -181,9 +180,9 @@ Enter activity names that signify a outcome (one per line).
 Type 'done' when finished.
 >
 \end{verbatim}
-Enter each outcome activity name \textbf{exactly as it appears in the event log}, including capitalization, one name per line. Type \texttt{done} and press \texttt{Enter} when finished. Each case is labelled with the outcome activity that appears in it, provided exactly one of the specified activities is present. Cases containing none or more than one of the specified activities receive the label \verb|uncertain_outcome|. These uncertain cases indicate, that the chosen outcome activities are not given. \textit{Fully implemented.}
+Enter each outcome activity name \textbf{exactly as it appears in the event log}, including capitalization, one name per line. Type \texttt{done} and press \texttt{Enter} when finished. Each case is labelled with the outcome activity that appears in it, provided exactly one of the specified activities is present. Cases containing none or more than one of the specified activities receive the label \verb|uncertain_outcome|. It is assumed, that outcome activities are mutually exclusive for each case, so this is also an indicator how uncertain the labelling of the outcomes is.
 
-\textbf{Option 3 --- Remaining time} predicts, from a partial trace, how much time (in seconds) remains until the case completes. This is a regression target rather than a classification target, so it leads to the regression algorithm menu in Step 5. Because the remaining time of a completed case is always zero, this target \textbf{requires prefixing} (see Step 4.1); the ``no prefixing'' option is therefore not offered for it. \textit{Fully implemented.}
+\textbf{Option 3 --- Remaining time} predicts, from a partial trace, how much time (in seconds) remains until the case completes. This is a regression target rather than a classification target, so it leads to the regression algorithm menu in Step 5. Because the remaining time of a completed case is always zero, this target \textbf{requires prefixing} (see Step 4.1); the ``no prefixing'' option is therefore not offered for it.
 
 % -------------------------------------------------------
 \subsection{Step 4: Feature Type}
@@ -196,13 +195,13 @@ What should the prediction be based upon?
 Select option (1-4):
 \end{verbatim}
 
-\textbf{Option 1 --- Control-flow} uses a bag-of-activities representation. For each case the feature vector contains the count of each activity observed in the log. \textit{Fully implemented.}
+\textbf{Option 1 --- Control-flow} uses a bag-of-activities representation. For each case the feature vector contains the count of each activity observed in the log. This is the cheapest option, as it does not require any alignment computation.
 
-\textbf{Option 2 --- Alignment-based diagnostics} runs optimal alignment between the log and the model and encodes, for each case, the counts of synchronous moves, log-only moves, and model-only moves per activity. This is computationally more expensive than option 1 for large logs. \textit{Fully implemented.}
+\textbf{Option 2 --- Alignment-based diagnostics} runs optimal alignment between the log and the model and encodes, for each case, the counts of synchronous moves, log-only moves, and model-only moves per activity. This is computationally more expensive than option 1 for large logs. This is the most expensive option and should be used with a powerful device or only in cases where alignments are truly important for interpretation.
 
-\textbf{Option 3 --- Case features} uses static case-level attributes (e.g.\ a patient's age or admission department) stored in the event log. \textit{Fully implemented.}
+\textbf{Option 3 --- Case features} uses static case-level attributes (e.g.\ a patient's age or admission department) stored in the event log. This option is recommended, if case features do 1. exist and 2. are categorical.
 
-\textbf{Option 4 --- Hybrid} combines all of the above: control-flow counts, alignment-based diagnostics, and the selected case attributes. \textit{Fully implemented.}
+\textbf{Option 4 --- Hybrid} combines all of the above: control-flow counts, alignment-based diagnostics, and the selected case attributes. This is the most comprehensive option and should be used when a detailed analysis is required. It is also the most computationally expensive. Nontheless, it provides the mosst detailed insights and a mean to chose the best feature space of the three above.
 
 \subsubsection{Selecting case attributes}
 If you chose option 3 or option 4, the tool lists the case-level attributes it found in the log and asks you to select which to use:
@@ -212,7 +211,7 @@ Available case-level attributes:
   2. ...
 Select attributes (comma-separated numbers, or 'all'):
 \end{verbatim}
-Enter the numbers of the attributes you want, separated by commas, or type \texttt{all} (or press \texttt{Enter}) to use every listed attribute. If the log contains no case-level attributes, the tool prints a notice and continues without case features.
+Enter the numbers of the attributes you want, separated by commas, or type \texttt{all} (or press \texttt{Enter}) to use every listed attribute. If the log contains no case-level attributes, the tool prints a notice and continues without case features. It is recommended to use the categorical case attributes of the log, especially for the process-outcome target, as they often contain useful information about the case that can help to predict the outcome.
 
 % -------------------------------------------------------
 \subsection{Step 4.1: Prefix mode}
@@ -238,6 +237,7 @@ Select (Enter/1/2):
   max length k (blank = median case length):
   step (default 1):
     \end{verbatim}
+    This will create prefixes of length 1, 1+step, 1+2*step, ... up to \texttt{k} for each case. This is the most expensive option, as it requires multiple alignments per case, but it also provides the most detailed insights into how predictive performance evolves as more of the case is observed.
 \end{itemize}
 Note: when the feature type is \emph{pure case attributes} (option 3 in Step 4), no prefix is needed --- the prompt is skipped and the model runs on full traces by design.
 
@@ -269,7 +269,7 @@ Which classification algorithm do you want to apply?
 (3) Gradient Boosting
 Select option (1-3):
 \end{verbatim}
-All three are fully implemented and support binary and multi-class targets.
+All three support binary and multi-class targets.
 
 \subsubsection{Regression algorithms (remaining time)}
 \begin{verbatim}
@@ -333,7 +333,8 @@ or not shown (N)? (s/d/N):
     \begin{verbatim}
 Enter the path to save the decision tree (e.g., tree.png):
     \end{verbatim}
-    The tree is rendered with feature names and class labels and saved as an image file.
+    Remark: The path must end with an image file extension and should be a valid path on your system. Otherwise, an error occurs.
+    The tree is then rendered with feature names and class labels and saved as an image file.
     \item \textbf{d --- Display:} the tree is opened in an interactive Matplotlib window.
     \item \textbf{N --- Skip:} no visualization is produced.
 \end{itemize}
@@ -343,7 +344,7 @@ Immediately after the visualization choice, the tool asks:
 Do you want to reconfigure the hyperparameters and retrain? (y/N):
 \end{verbatim}
 
-If you answer \texttt{y}, the Decision Tree parameter prompt from Step 5 is shown again. The model is retrained with the new settings and the visualization prompt is repeated, allowing you to inspect the new tree before deciding again. This loop continues until you answer \texttt{n}.
+If you answer \texttt{y}, the Decision Tree parameter prompt from Step 5 is shown again. The model is retrained with the new settings and the visualization prompt is repeated, allowing you to inspect the new tree before deciding again. It is recommended to use this option to iteratively refine the tree structure and inspect the changes after each iteration. That is considered as a good practice since it allows for a more thorough exploration of the resulting feature space. This loop continues until you answer \texttt{n}.
 
 % -------------------------------------------------------
 \subsection{Step 7: Evaluation Results}
@@ -371,7 +372,7 @@ Enter filename (default: by_len_vis.png):
 
 % -------------------------------------------------------
 \subsection{Step 8: Saving Evaluation Visuals}
-\textit{This prompt only appears for the process-outcome target.}
+\textit{The prompts in this step appear for the classification targets (process outcome and future deviations).} The first prompt offers to save the confusion matrix and accuracy chart:
 \begin{verbatim}
 Save confusion matrix and accuracy chart? (y/N):
 \end{verbatim}
@@ -385,6 +386,23 @@ Press \texttt{Enter} to save to your system's \texttt{Downloads} folder, or type
     \item \texttt{confusion\_matrix.png} --- a color-coded heatmap of the confusion matrix.
     \item \texttt{per\_class\_accuracy.png} --- a stacked bar chart with green segments (correct predictions) and red segments (incorrect predictions) per class.
 \end{itemize}
+
+\subsubsection{ROC and Precision-Recall curves}
+For both classification targets (process outcome and future deviations), whenever the trained model produces class probabilities, an additional prompt offers to save Receiver Operating Characteristic (ROC) and Precision-Recall (PR) curves:
+\begin{verbatim}
+Save Receiver Operating Characteristic and Precision-Recall curves? (y/N):
+\end{verbatim}
+
+If you answer \texttt{y}, you are asked where to save them, exactly as for the confusion matrix chart:
+\begin{verbatim}
+Folder to save in (press Enter for Downloads):
+\end{verbatim}
+Press \texttt{Enter} to save to your system's \texttt{Downloads} folder, or type a custom folder path. The tool creates a timestamped subfolder \\(e.g.\ \verb|conformance_curves_2026-05-15_14-30-00|) inside the chosen location and saves two image files:
+\begin{itemize}
+    \item \texttt{roc\_curves.png} --- the ROC curve(s), plotting the true positive rate against the false positive rate, together with the area under the curve (AUC) for each curve and a diagonal ``chance'' reference line.
+    \item \texttt{pr\_curves.png} --- the Precision-Recall curve(s), plotting precision against recall, together with the average precision for each curve.
+\end{itemize}
+For a binary target (e.g.\ future deviations, or an outcome with two classes) a single curve is drawn for the positive class. For a multi-class outcome target one curve is drawn per class, using a One-vs-Rest scheme, and all curves are overlaid in the same figure for comparison.
 
 % -------------------------------------------------------
 \subsection{Step 9: Runtime Report}
@@ -414,7 +432,7 @@ This is the final prompt, shown only after the runtime report so that the curren
 
 % -------------------------------------------------------
 \subsection{Known Limitations}
-Most features from earlier sprints are now fully functional. The following limitations remain worth keeping in mind:
+The following limitations remain worth keeping in mind:
 
 \begin{itemize}
     \item \textbf{Genetic Miner} --- discovery is very slow on larger logs (around 19 minutes on the 1050-case Sepsis log, versus seconds for Inductive/Alpha), and the discovered net may not be ``easy sound''. In that case any alignment-based path (future-deviation labels, diagnostics or hybrid features) fails with a caught \verb|[EXTRACTION ERROR]| and the program exits cleanly. Prefer the Inductive or Alpha Miner for alignment-based targets.
