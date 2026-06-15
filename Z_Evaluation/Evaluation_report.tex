@@ -1,0 +1,79 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{todonotes}
+\setuptodonotes{inline}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+Rheinisch-Westf\"alische Technische Hochschule Aachen \\
+Alessandro Berti\\[6ex]
+
+\LARGE
+\textbf{Evaluation: Does conformance information derived from a process model improve the prediction of future deviations and compliance risks?} \\[6ex]
+        \centering{Group 4:}\\
+	\textit{Richard Schuppener, Cem Colak} \\[6ex]
+\end{center}
+
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Experimental Study}
+\begin{comment}
+1. A clear definition of the prediction problem and label construction: for example, defining a
+case as “deviant” if its final alignment cost exceeds a chosen threshold, if a particular rule is
+violated (e.g., an LTL constraint), or if conformance checking detects a specific type of non-
+compliant pattern. Motivations for the chosen definition must be documented.
+\end{comment}
+
+
+\section{Example Dataset}
+%including its characteristics and why it is suitable for the study
+\section{}
+
+\section{Sprint review}
+\subsection{Richard Schuppener}
+\section{Content for the evaluation}
+Lab Evaluation Report: deliverables and content
+
+1 Definition of the prediction problem and label construction for conformance deviation targets
+
+explaining both technical details and conceptual implications for organizations that wish to anticipate and mitigate non-compliant behavior.
+
+2 Choosing dataset for the prediction problem
+
+3 definition of the dedicated CLI walkthrough
+-> Maybe 2-3 cases which are based on prefix length
+
+4  evaluation protocol: How will the data be processed and what splitting etc. is applied and why exactly that
+
+5.1 Application of Baseline Model 
+
+5.2 Application of Conformance-aware model (which may augment the results)
+-> Clearly state the chosen parameters and why they were chosen for the specific usecase
+
+6 Evaluate the target with the evaluation module’s outputs. 
+
+7 COMPARISON: baseline/conformance target predictions
+-> Usage of visualizations and metrics
+
+Discussion on computational aspects: Measure, reporting of runtime, feasability
+-> mention the conformance deviations
+-> mention that if prefix-generation with rising length makes the whole process taking much more computational power
+
+8 General discussion: 
+-> does it improve predictions using conformance features?
+-> Which indicators are useful
+-> threats to validity?
+——> Mention alignment noise, multiple target labels for one case, definition of labels, missing labels for cases, bad data quality, highly individual data, 
+-> limitations and Ideas to future work
+
+\end{document}
