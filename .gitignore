@@ -26,3 +26,5 @@ Code/tests/__pycache__/
 .python-version
 .pytest_cache/
 Code/event_logs/
+Code/docs/
+Code/.cli_test_out/
