@@ -1,10 +1,10 @@
 import pytest
 import pandas as pd
 import numpy as np
-from src import feature_extraction as fe
-from src import pipeline
-from src.feature_extraction import extract_label, preprocess_for_ml
-from src.config import PredictionTarget, PredictionFeature
+from conformance_predictions import feature_extraction as fe
+from conformance_predictions import pipeline
+from conformance_predictions.feature_extraction import extract_label, preprocess_for_ml
+from conformance_predictions.config import PredictionTarget, PredictionFeature
 
 def test_extract_label_process_outcome():
     d = {'case:concept:name': ['1', '1', '2', '2'], 

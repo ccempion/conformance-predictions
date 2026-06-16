@@ -10,8 +10,8 @@ import pandas as pd
 import numpy as np
 from pm4py.objects.petri_net.obj import PetriNet, Marking
 import pm4py
-from src import io, config, feature_extraction, model_training, evaluation
-from src import visualization as vis
+from conformance_predictions import io, config, feature_extraction, model_training, evaluation
+from conformance_predictions import visualization as vis
 
 def run_conformance_prediction_pipeline(
     X_test: pd.DataFrame,
@@ -54,7 +54,6 @@ def run_conformance_prediction_pipeline(
         trained_model.fit(X_train, y_train)
 
     # Evaluation (HL-16)
-    print("--- Evaluating model ---")
     print("--- Feature Importance ---")
     feature_importance = evaluation.feature_importance_comparison(X_train=X_train, model=trained_model)
     if not feature_importance.empty:

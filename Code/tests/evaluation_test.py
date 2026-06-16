@@ -2,8 +2,8 @@ import pytest
 import numpy as np
 import pandas as pd
 import os
-from src.evaluation import compute_classification_metrics, evaluate_by_prefix_length, compute_regression_metrics
-from src import config, io
+from conformance_predictions.evaluation import compute_classification_metrics, evaluate_by_prefix_length, compute_regression_metrics
+from conformance_predictions import config, io
 
 def test_compute_classification_metrics():
     y_true = np.array([0, 1, 0, 1])
@@ -69,7 +69,7 @@ def test_evaluate_by_prefix_length():
     assert "f1" in results_default.columns
 
 def test_plot_evaluate_by_prefix_length(tmp_path):
-    from src.visualization import plot_evaluate_by_prefix_length
+    from conformance_predictions.visualization import plot_evaluate_by_prefix_length
     
     # Create dummy results
     df = pd.DataFrame({

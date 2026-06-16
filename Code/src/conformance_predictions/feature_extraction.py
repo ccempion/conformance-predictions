@@ -14,8 +14,8 @@ import pm4py
 from pm4py.objects.petri_net.obj import PetriNet, Marking
 from sklearn.preprocessing import LabelEncoder
 
-from src.config import PredictionTarget, PredictionFeature
-from src import config
+from conformance_predictions.config import PredictionTarget, PredictionFeature
+from conformance_predictions import config
 
 
 def compute_alignments(log: pd.DataFrame, model: Tuple[PetriNet, Marking, Marking]) -> List[Dict[str, Any]]:

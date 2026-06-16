@@ -7,7 +7,7 @@ import pm4py
 from typing import Tuple
 from pm4py.objects.petri_net.obj import PetriNet, Marking
 
-from src.config import Discovery_alg
+from conformance_predictions.config import Discovery_alg
 
 
 def load_event_log(file_path: str) -> pd.DataFrame:

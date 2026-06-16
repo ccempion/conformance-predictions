@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "conformance-predictions"
+version = "0.1.0"
+description = "Interactive CLI and pipeline for process conformance predictions."
+readme = "Code/README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "pm4py>=2.7.22",
+    "scikit-learn>=1.8.0",
+    "numpy>=2.0.0",
+    "pandas>=2.0.0",
+    "matplotlib>=3.8.0",
+    "tqdm>=4.66.0",
+    "networkx>=3.0",
+    "graphviz>=0.20",
+    "lxml>=5.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+conformance-predictions = "conformance_predictions.main:main"
+
+[tool.setuptools.packages.find]
+where = ["Code/src"]

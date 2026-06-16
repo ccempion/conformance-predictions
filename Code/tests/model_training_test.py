@@ -1,12 +1,12 @@
 import pytest
 import pandas as pd
 import numpy as np
-from src.model_training import (
+from conformance_predictions.model_training import (
     predict,
     create_regression_pipeline, train_regression_model, predict_regression,
     create_classification_pipeline, train_classification_model,
 )
-from src.config import RegressionAlgorithm, ClassificationAlgorithm
+from conformance_predictions.config import RegressionAlgorithm, ClassificationAlgorithm
 
 
 # --------------------------------------------------------------------------

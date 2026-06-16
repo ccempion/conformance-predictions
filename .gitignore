@@ -23,8 +23,15 @@ Code/__pycache__/
 Code/experiment_runners/
 Code/src/__pycache__/
 Code/tests/__pycache__/
+Code/src/conformance_predictions/__pycache__/
 .python-version
 .pytest_cache/
 Code/event_logs/
 Code/docs/
 Code/.cli_test_out/
+
+# Python build and packaging artifacts
+*.egg-info/
+build/
+dist/
+__pycache__/

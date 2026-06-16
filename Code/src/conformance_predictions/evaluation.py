@@ -27,8 +27,8 @@ import pandas as pd
 import psutil
 import sklearn.metrics as metrics
 from sklearn.pipeline import Pipeline
-from src import pipeline
-from src import config
+from conformance_predictions import pipeline
+from conformance_predictions import config
 
 def measure_runtime(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, float]:
     """Measure the runtime of an arbitrary function.
