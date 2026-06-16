@@ -1,0 +1,66 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{geometry}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{todonotes}
+\setuptodonotes{inline}
+
+% Highlight for requirement IDs that moved from "Planned" to "Covered" this sprint.
+\newcommand{\newcov}[1]{\colorbox{green!40}{\textbf{#1}}}
+
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+Rheinisch-Westf\"alische Technische Hochschule Aachen \\
+Alessandro Berti\\[6ex]
+
+\LARGE
+	\textbf{Phase Review: Testing and Assessment} \\[6ex]
+        \centering{Group 4:}\\
+	\textit{Richard Schuppener, Cem Colak} \\[6ex]
+\end{center}
+
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Summary}
+In this phase, we focused on gaining actual insights about the central question "Does conformance information derived from a process model improve the prediction of future deviations and compliance risks?". Furthermore we packaged the whole software artifact as an installable python project, and cleaned out obsolete CLI output artifacts. 
+
+\section{Technical Documentation}
+To ensure maintainability, we thoroughly documented our codebase using the following workflow:
+\begin{itemize}
+    \item \textbf{Documentation Format:} Each module includes a high-level summary docstring, and every function contains Google-style docstrings describing its behavior, arguments (\texttt{Args:}), exceptions (\texttt{Raises:}), and return values (\texttt{Returns:}).
+    \item \textbf{Generation \& Access:} The HTML documentation is automatically built using \texttt{pdoc} via:
+    \begin{verbatim}
+    pdoc --docformat google src/ -o docs/
+    \end{verbatim}
+    This can be opened interactively via \texttt{Code/docs/index.html} in a browser. Additionally, a compiled PDF version is available as \texttt{Technical_doc.pdf} in the \texttt{Z_Evaluation} directory.
+\end{itemize}
+While comprehensively documenting all functions and matching the Google format was a highly demanding effort, it ensures the pipeline remains fully accessible and easy to extend.
+
+\subsection{Codebase Architecture}
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/architecture.png}
+    \caption{Data Flow and Pipeline Architecture Diagram}
+    \label{fig:architecture}
+\end{figure}
+
+\section{Team settings and Workflow}
+
+\section{Sprint review}
+
+\subsection{Richard Schuppener}
+
+\subsection{Cem Colak}
+
+\end{document}
