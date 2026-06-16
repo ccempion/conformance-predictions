@@ -19,8 +19,10 @@
 .DS_Store
 Code/.venv
 Code/data/
+Code/__pycache__/
 Code/experiment_runners/
 Code/src/__pycache__/
 Code/tests/__pycache__/
 .python-version
+.pytest_cache/
 Code/event_logs/
