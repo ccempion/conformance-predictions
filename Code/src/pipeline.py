@@ -206,6 +206,12 @@ def extract_target_and_feature(
     else:
         log_to_feature = log
 
+    # Filter out outcome activities from features if predicting PROCESS_OUTCOME
+    if target == config.PredictionTarget.PROCESS_OUTCOME and outcome_activities:
+        print(f"--- Filtering out outcome activities from features: {outcome_activities} ---")
+        activity_key = 'concept:name'
+        log_to_feature = log_to_feature[~log_to_feature[activity_key].isin(outcome_activities)].copy()
+
     # Extract Features from SLICED log
     print(f"--- Extracting features: {feature.name} ---")
     feature_alignments = feature_extraction.compute_alignments(log_to_feature, model) if needs_alignments_for_feature else None
@@ -302,6 +308,12 @@ def extract_target_and_feature_over_prefixes(
     )
     if prefix_log.empty:
         raise ValueError("No prefixes generated — check the prefix length range (and outcome gating).")
+
+    # Filter out outcome activities from features if predicting PROCESS_OUTCOME
+    if target == config.PredictionTarget.PROCESS_OUTCOME and outcome_activities:
+        print(f"--- Filtering out outcome activities from features: {outcome_activities} ---")
+        activity_key = 'concept:name'
+        prefix_log = prefix_log[~prefix_log[activity_key].isin(outcome_activities)].copy()
 
     # 3. Features on the prefix log (one alignment per prefix when needed).
     print(f"--- Extracting features over {len(prefix_index)} prefixes: {feature.name} ---")
