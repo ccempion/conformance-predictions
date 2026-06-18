@@ -69,7 +69,7 @@ Discussion on computational aspects: Measure, reporting of runtime, feasability
 
 
 
-\section{Experimental study 2: Sepsis Cases}
+\section{Experimental study 2: Process Outcome of Sepsis Cases}
 In the event log \textit{Sepsis Cases}, cases represent patients going through a sepsis-specific handling pathway in a hospital. The data is anonymized and timestamps have been randomized. Events were recorded using an ERP. Additionally, 39 case attributes are present in the log. 
 A suitable application would be to predict the outcome of a case. Since there is a set of different discharge types (\textit{Release A-E}), we can easily set these as the \texttt{Process Outcome} prediction type in our CLI. To do so, we need to select \texttt{Process Outcome} as prediction goal and specify the activity names that represent the outcomes.
 In the following, we will present results based on:
@@ -78,7 +78,7 @@ In the following, we will present results based on:
         \item Case-attributes only
         \item Control-flow and alignments (conformance aware)
         \item Hybrid approach combining 1.-3.
-        \item Different Prefix lengths (only relevant for control-flow and alignments)
+        \item Different prefix lengths (only relevant for control-flow and alignments)
 \end{enumerate}
 \subsection{Control-flow only}
 \begin{itemize}
@@ -86,40 +86,75 @@ In the following, we will present results based on:
         \item Prediction target: Process outcome with outcome activties \textit{Release A-E}
         \item Classification algorithm: Gradient Boosting with standard hyper-parameters
 \end{itemize}
-We observe, that the model predicts (pooled over the different prefixes) the majority label (\textit{Release A}) in nearly all cases, as seen in the figure displaying the confusion matrix \ref{fig:control_flow_confusion_matrix}.
-Thus the per-class accuracy is also very high vor \textit{Release A} but catastrophic for every other outcome. This can be seen in \ref{fig:control_flow_per_class_accuracy}.
+We observe that the model predicts primarily the majority labels (such as \textit{Release A} and \textit{uncertain\_outcome}). For prefix length 9 (lower quartile) and prefix length 13 (median), the confusion matrices and per-class accuracies are displayed in Figures \ref{fig:control_flow_confusion_matrices} and \ref{fig:control_flow_per_class_accuracies}.
 
-\begin{figure}[t]
-	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_per_class_accuracy.png}
-	\caption{Per class accuracy for control-flow only classifier.}
-	\label{fig:control_flow_per_class_accuracy}
+The model achieves high accuracy on the majority class \textit{Release A} (around 97\%) and the \textit{uncertain\_outcome} class (around 87-89\%), but performs poorly on the minority outcomes (\textit{Release B-E}), which are rarely predicted correctly due to the class imbalance.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_confusion_matrix_len9.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_confusion_matrix_len13.png}
+	\caption{Confusion matrices for prefix length 9 (left) and 13 (right) for control-flow only classifier.}
+	\label{fig:control_flow_confusion_matrices}
 \end{figure}
-\begin{figure}[t]
-	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_confusion_matrix.png}
-	\caption{Pooled confusion matrix over all prefixes for control-flow only classifier.}
-	\label{fig:control_flow_confusion_matrix}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_per_class_accuracy_len9.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_per_class_accuracy_len13.png}
+	\caption{Per-class accuracies for prefix length 9 (left) and 13 (right) for control-flow only classifier.}
+	\label{fig:control_flow_per_class_accuracies}
 \end{figure}
+
 Naturally, we are interested in the question
 \begin{quotation}
 \textit{What influence does the length of the prefixes have on the prediction quality (e.g. accuracy, F1)?}
 \end{quotation}
-To answer this, we visualize the accuracy and F1-score per prefix length in \ref{fig:control_flow_by_len_vis}.
+To answer this, we visualize the accuracy and F1-score per prefix length in \ref{fig:control_flow_by_len_vis}. As the prefix length increases from 1 to 15, the accuracy increases from approximately 0.60 to 0.81, and the F1 score increases from 0.45 to 0.77.
 \begin{figure}[t]
 	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_by_len_vis.png}
 	\caption{Accuracy and F1 score based on prefix length for control-flow only classifier.}
 	\label{fig:control_flow_by_len_vis}
 \end{figure}
 
+We can also visualize the importance of the given features. The most important features are the occurrences of clinical activities like \textit{Admission NC} (Normal Care admission), \textit{Admission IC} (Intensive Care admission), \textit{Leucocytes}, and \textit{CRP}. Figure \ref{fig:control_flow_feature_importances} shows the top predictive features for both prefix lengths. It can be clearly observed, that the feature importance does barely change depending on the prefix length.
 
-
-We can also visualize the importance of the given features by using the approach laid out in \cite{feature_importance}
-\subsubsection{Control-flow only}
-\begin{figure}[t]
-	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_feature_importance.png}
-	\caption{Importance of features of classifier based on control-flow only.}
-	\label{fig:control_flow_feature_importance}
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_feature_importance_len9.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_feature_importance_len13.png}
+	\caption{Importance of features for prefix length 9 (left) and 13 (right) for control-flow only classifier.}
+	\label{fig:control_flow_feature_importances}
 \end{figure}
-Subsequently, we will analyze the resource consumption by our code by dissecting the total time into the time spent on specific pipeline steps, as well as stating the peak memory consumed during the execution. 
+Subsequently, we will analyze the resource consumption by our code by dissecting the total time into the time spent on specific pipeline steps, as well as stating the peak memory consumed during the execution. The runtime of our code is depicted in \ref{fig:control_flow_runtime}. It shows us that the majority of time is consumed by the discovery and the model training - this is to be expected.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_runtime.png}
+	\caption{Runtime of the control-flow based classifier.}
+	\label{fig:control_flow_runtime}
+\end{figure}
+
+\subsection{Case attributes only}
+For the case-attributes-only approach, we utilize the static trace-level attributes (such as age, clinical criteria, and diagnosis codes) associated with each patient's case. Since these attributes are static and do not change as the case progresses, the prefix length is irrelevant for this model. We split the event log (75\% training, 25\% testing) and train a Gradient Boosting classifier on all available case attributes to predict the discharge types.
+
+The model achieves an overall accuracy of 70.0\% and an F1-score of 66.1\%. As shown in the confusion matrix and the per-class accuracy bar chart (Figure \ref{fig:case_attributes_eval}), the classifier performs well on the majority outcome \textit{Release A} (92.6\% correct) and achieves moderate success on the \textit{uncertain\_outcome} class (50.0\% correct). However, due to class imbalance and the static nature of the attributes, prediction accuracy for minority discharge outcomes (\textit{Release B-E}) remains extremely low.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/case_attributes_confusion_matrix.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/case_attributes_per_class_accuracy.png}
+	\caption{Confusion matrix (left) and per-class accuracies (right) for the case-attributes-only classifier.}
+	\label{fig:case_attributes_eval}
+\end{figure}
+
+The feature importance chart (Figure \ref{fig:case_attributes_feature_importance}) shows the top predictive attributes. The patient's \textit{Age} is the single most significant predictor (importance score of 0.140), followed by clinical indicators such as whether infection was suspected (\textit{InfectionSuspected}) and whether two or more SIRS criteria were met (\textit{SIRSCriteria2OrMore}). Diagnoses C and B also show moderate predictive value.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.7\textwidth]{figures/sepsis/case_attributes_feature_importance.png}
+	\caption{Feature importances for the case-attributes-only classifier.}
+	\label{fig:case_attributes_feature_importance}
+\end{figure}
 \begin{comment}
 1. A clear definition of the prediction problem and label construction: for example, defining a
 case as “deviant” if its final alignment cost exceeds a chosen threshold, if a particular rule is
