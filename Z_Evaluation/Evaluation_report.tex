@@ -1,5 +1,6 @@
 \documentclass[12pt,a4paper]{article}
 
+\usepackage{comment}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
@@ -27,7 +28,7 @@ Alessandro Berti\\[6ex]
 \newpage
 
 \section{Introduction}
-In the following we will evaluate two different experimental studies to compare and evaluate the usage of conformance information in the predictions of future deviations and compliance risks. Later, we will discuss the overall viability of the usage of conformance information in predictive process mining tasks. 
+In the following we will evaluate two different experimental studies - based on the event logs \textit{BPI Challenge 2012} and \textit{Sepsis Cases} - to compare and evaluate the usage of conformance information in the predictions of future deviations and compliance risks. Later, we will discuss the overall viability of the usage of conformance information in predictive process mining tasks. 
 
 \section{Experimental Study 1: BPI Challenge 2012}
 \begin{comment}
@@ -69,6 +70,56 @@ Discussion on computational aspects: Measure, reporting of runtime, feasability
 
 
 \section{Experimental study 2: Sepsis Cases}
+In the event log \textit{Sepsis Cases}, cases represent patients going through a sepsis-specific handling pathway in a hospital. The data is anonymized and timestamps have been randomized. Events were recorded using an ERP. Additionally, 39 case attributes are present in the log. 
+A suitable application would be to predict the outcome of a case. Since there is a set of different discharge types (\textit{Release A-E}), we can easily set these as the \texttt{Process Outcome} prediction type in our CLI. To do so, we need to select \texttt{Process Outcome} as prediction goal and specify the activity names that represent the outcomes.
+In the following, we will present results based on:
+\begin{enumerate}
+        \item Control-flow only (base model)
+        \item Case-attributes only
+        \item Control-flow and alignments (conformance aware)
+        \item Hybrid approach combining 1.-3.
+        \item Different Prefix lengths (only relevant for control-flow and alignments)
+\end{enumerate}
+\subsection{Control-flow only}
+\begin{itemize}
+        \item Discovery algorithm: Inductive miner with noise threshhold $0.2$
+        \item Prediction target: Process outcome with outcome activties \textit{Release A-E}
+        \item Classification algorithm: Gradient Boosting with standard hyper-parameters
+\end{itemize}
+We observe, that the model predicts (pooled over the different prefixes) the majority label (\textit{Release A}) in nearly all cases, as seen in the figure displaying the confusion matrix \ref{fig:control_flow_confusion_matrix}.
+Thus the per-class accuracy is also very high vor \textit{Release A} but catastrophic for every other outcome. This can be seen in \ref{fig:control_flow_per_class_accuracy}.
+
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_per_class_accuracy.png}
+	\caption{Per class accuracy for control-flow only classifier.}
+	\label{fig:control_flow_per_class_accuracy}
+\end{figure}
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_confusion_matrix.png}
+	\caption{Pooled confusion matrix over all prefixes for control-flow only classifier.}
+	\label{fig:control_flow_confusion_matrix}
+\end{figure}
+Naturally, we are interested in the question
+\begin{quotation}
+\textit{What influence does the length of the prefixes have on the prediction quality (e.g. accuracy, F1)?}
+\end{quotation}
+To answer this, we visualize the accuracy and F1-score per prefix length in \ref{fig:control_flow_by_len_vis}.
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_by_len_vis.png}
+	\caption{Accuracy and F1 score based on prefix length for control-flow only classifier.}
+	\label{fig:control_flow_by_len_vis}
+\end{figure}
+
+
+
+We can also visualize the importance of the given features by using the approach laid out in \cite{feature_importance}
+\subsubsection{Control-flow only}
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_feature_importance.png}
+	\caption{Importance of features of classifier based on control-flow only.}
+	\label{fig:control_flow_feature_importance}
+\end{figure}
+Subsequently, we will analyze the resource consumption by our code by dissecting the total time into the time spent on specific pipeline steps, as well as stating the peak memory consumed during the execution. 
 \begin{comment}
 1. A clear definition of the prediction problem and label construction: for example, defining a
 case as “deviant” if its final alignment cost exceeds a chosen threshold, if a particular rule is
@@ -114,4 +165,10 @@ Discussion on computational aspects: Measure, reporting of runtime, feasability
 ——> Mention alignment noise, multiple target labels for one case, definition of labels, missing labels for cases, bad data quality, highly individual data, 
 -> limitations and ideas to future work
 \end{comment}
+\begin{thebibliography}{10}
+\bibitem{feature_importance}
+Michael Allen, \textit{Random Forest and SHAP Values}, 2022.
+\url{https://michaelallen1966.github.io/titanic/27_random_forest_shap.html} (visited June 2026).
+\end{thebibliography}
+
 \end{document}
