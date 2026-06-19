@@ -31,31 +31,17 @@ Alessandro Berti\\[6ex]
 \newpage
 
 \section{Summary}
-In this phase, we focused on gaining actual insights about the central question "Does conformance information derived from a process model improve the prediction of future deviations and compliance risks?". Furthermore we packaged the whole software artifact as an installable python project, and cleaned out obsolete CLI output artifacts. 
+In this phase, we focused on gaining actual insights about the central question "Does conformance information derived from a process model improve the prediction of future deviations and compliance risks?". 
+\subsection{Incorporated Improvement Suggestions}
+We considered Alessandro's improvement suggestions and packaged the whole software artifact as an installable python project, and cleaned out obsolete CLI output artifacts and the html-based documentation from our Code folder in the repository. Cleaning the repository was done by simply editing the \texttt{gitignore} file.
+The software artifact can be installed by, from the Git repository root directory, running:\\
+\texttt{pip install -e .}\\ 
+if the software is to be installed in editable mode (this means that changes to the .py files directly take effect on the installed package).
+If no further development is desired, the software artifact can also be installed in standard mode via:\\
+\texttt{pip install .}\\ 
+(from the Git repository root directory). Alternatively, the CLI tool can also be installed without cloning the Git repository by running the following command:\\
+\texttt{pip install git+https://git.rwth-aachen.de/schuppenerr/conformance-predictions.git}\\
 
-\section{Technical Documentation}
-To ensure maintainability, we thoroughly documented our codebase using the following workflow:
-\begin{itemize}
-    \item \textbf{Documentation Format:} Each module includes a high-level summary docstring, and every function contains Google-style docstrings describing its behavior, arguments (\texttt{Args:}), exceptions (\texttt{Raises:}), and return values (\texttt{Returns:}).
-    \item \textbf{Generation \& Access:} The HTML documentation is automatically built using \texttt{pdoc} via:
-    \begin{verbatim}
-    pdoc --docformat google src/ -o docs/
-    \end{verbatim}
-    This can be opened interactively via \texttt{Code/docs/index.html} in a browser. Additionally, a compiled PDF version is available as \texttt{Technical_doc.pdf} in the \texttt{Z_Evaluation} directory.
-\end{itemize}
-While comprehensively documenting all functions and matching the Google format was a highly demanding effort, it ensures the pipeline remains fully accessible and easy to extend.
-
-\subsection{Codebase Architecture}
-
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth]{figures/architecture.png}
-    \caption{Data Flow and Pipeline Architecture Diagram}
-    \label{fig:architecture}
-\end{figure}
-
-\section{Team settings and Workflow}
 
 \section{Sprint review}
 
