@@ -71,7 +71,7 @@ Discussion on computational aspects: Measure, reporting of runtime, feasability
 
 \section{Experimental study 2: Process Outcome of Sepsis Cases}
 In the event log \textit{Sepsis Cases}, cases represent patients going through a sepsis-specific handling pathway in a hospital. The data is anonymized and timestamps have been randomized. Events were recorded using an ERP. Additionally, 39 case attributes are present in the log. 
-A suitable application would be to predict the outcome of a case. Since there is a set of different discharge types (\textit{Release A-E}), we can easily set these as the \texttt{Process Outcome} prediction type in our CLI. Note, that \textit{uncertain outcome} signifies, that none of these discharges were executed in the given case. To do so, we need to select \texttt{Process Outcome} as prediction goal and specify the activity names that represent the outcomes.
+A suitable application would be to predict the outcome of a case. Since there is a set of different discharge types - as they are called in a study on patient trajectories \cite{sepsis_study} - \textit{Release A-E}, we can easily set these as the \texttt{Process Outcome} prediction type in our CLI. Note, that \textit{uncertain outcome} signifies, that none of these discharges were executed in the given case. To do so, we need to select \texttt{Process Outcome} as prediction goal and specify the activity names that represent the outcomes.
 In the following, we will present results based on:
 \begin{enumerate}
         \item Control-flow only (base model)
@@ -202,8 +202,7 @@ In contrast, the \textbf{conformance-aware approach} utilizing alignment-based f
 \end{enumerate}
 
 Furthermore, from a resource consumption perspective, the conformance-aware pipeline introduces a severe bottleneck. While conformance-agnostic feature extraction is computationally lightweight and scales linearly, alignment computation scales exponentially with trace prefix lengths, drastically increasing peak memory and runtime without delivering a proportional dividend in accuracy or F1-score.
-
-\keypoint{Summary Recommendation:} For highly imbalanced healthcare process logs like \textit{Sepsis Cases}, a conformance-agnostic approach combining static case attributes with early control-flow prefixes yields the most efficient and accurate predictive performance. Conformance-aware (alignment-based) predictive monitoring should only be deployed if the underlying process model is strictly constrained, highly reliable, and where identifying structural deviations is a primary, explicit domain requirement rather than a proxy for outcome classification.
+For highly imbalanced healthcare process logs like \textit{Sepsis Cases}, a conformance-agnostic approach combining static case attributes with early control-flow prefixes yields the most efficient and accurate predictive performance. Conformance-aware (alignment-based) predictive monitoring should only be deployed if the underlying process model is strictly constrained, highly reliable, and where identifying structural deviations is a primary, explicit domain requirement rather than a proxy for outcome classification.
 \begin{comment}
 
 1. A clear definition of the prediction problem and label construction: for example, defining a
@@ -254,6 +253,9 @@ Discussion on computational aspects: Measure, reporting of runtime, feasability
 \bibitem{feature_importance}
 Michael Allen, \textit{Random Forest and SHAP Values}, 2022.
 \url{https://michaelallen1966.github.io/titanic/27_random_forest_shap.html} (visited June 2026).
+\bibitem{sepsis_study}
+Mannhardt, F., \& Blinde, D., \textit{Analyzing the trajectories of patients with sepsis using process mining}, 2017.
+\url{https://pure.tue.nl/ws/portalfiles/portal/68704626/bpmds_08_paper.pdf}
 \end{thebibliography}
 
 \end{document}
