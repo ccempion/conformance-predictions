@@ -29,6 +29,7 @@ import sklearn.metrics as metrics
 from sklearn.pipeline import Pipeline
 from src import pipeline
 from src import config
+from src import model_training
 
 def measure_runtime(func: Callable, *args: Any, **kwargs: Any) -> Tuple[Any, float]:
     """Measure the runtime of an arbitrary function.
@@ -244,6 +245,8 @@ def evaluate_by_prefix_length(
     outcome_activities: Optional[List[str]] = None,
     prefix_range_start: Optional[int] = None,
     prefix_range_end: Optional[int] = None,
+    algorithm: Optional[Any] = None,
+    ml_params: Optional[Dict[str, Any]] = None,
 ) -> pd.DataFrame:
     """Trains models with trace-prefixes of specified length and aggregates the resulting F1 and Accuracy scores.
 
@@ -255,11 +258,20 @@ def evaluate_by_prefix_length(
         outcome_activities (Optional[List[str]], optional): Optionally specified outcome activities. Required for prediction type 'process outcome'. Defaults to None.
         prefix_range_start (Optional[int], optional): Specified lower bound of prefix length range. Defaults to None. If not specified, the maximum of (1, lower quartile trace length) is used.
         prefix_range_end (Optional[int], optional): Specified upper bound of prefix length range. Defaults to None. If not specified, the median trace length is identified and used.
+        algorithm (Optional[Any], optional): User specified algorithm (ClassificationAlgorithm or RegressionAlgorithm). Defaults to None.
+        ml_params (Optional[Dict[str, Any]], optional): Parameters for the ML algorithm. Defaults to None.
 
     Returns:
         pd.DataFrame: A dataframe containing the F1 and accuracy score per prefix length in the provided range.
     """
     case_id_col = "case:concept:name"
+    is_regression = (target == config.PredictionTarget.REMAINING_TIME)
+
+    if algorithm is None:
+        if is_regression:
+            algorithm = config.RegressionAlgorithm.DECISION_TREE
+        else:
+            algorithm = config.ClassificationAlgorithm.DECISION_TREE
     
     if prefix_range_start is None or prefix_range_end is None:
         case_lengths = log.groupby(case_id_col).size()
@@ -292,19 +304,41 @@ def evaluate_by_prefix_length(
             outcome_activities=outcome_activities,
             prefix_length=prefix_length
         )
-        result = pipeline.run_conformance_prediction_pipeline(
-            X_test=X_test,
-            y_test=y_test,
-            X_train=X_train,
-            y_train=y_train,
-            # ml_params=ml_params, --> for now use the default values
-        )
-        metrics = result.get("metrics", {})
-        results.append({
-            "prefix_length": prefix_length,
-            "accuracy": metrics.get("accuracy"),
-            "f1": metrics.get("f1")
-        })
+        
+        # Train model specifically for this prefix length
+        try:
+            if is_regression:
+                trained_model = model_training.train_regression_model(
+                    X_train, y_train, algorithm=algorithm, ml_params=ml_params
+                )
+            else:
+                if len(np.unique(y_train)) < 2:
+                    # Fallback to create_classification_pipeline directly to avoid raising ValueError for single-class splits (e.g. in tests)
+                    trained_model = model_training.create_classification_pipeline(algorithm=algorithm, ml_params=ml_params)
+                    trained_model.fit(X_train, y_train)
+                else:
+                    trained_model = model_training.train_classification_model(
+                        X_train, y_train, algorithm=algorithm, ml_params=ml_params
+                    )
+            
+            result = pipeline.run_conformance_prediction_pipeline(
+                X_test=X_test,
+                y_test=y_test,
+                X_train=X_train,
+                y_train=y_train,
+                ml_params=ml_params,
+                preloaded_model=trained_model,
+                is_regression=is_regression,
+            )
+            metrics = result.get("metrics", {})
+            results.append({
+                "prefix_length": prefix_length,
+                "accuracy": metrics.get("accuracy"),
+                "f1": metrics.get("f1")
+            })
+        except ValueError as e:
+            # Handle cases where training fails (e.g. single-class split)
+            print(f"Skipping prefix length {prefix_length} due to training error: {e}")
     
     return pd.DataFrame(results)
 

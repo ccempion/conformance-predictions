@@ -27,7 +27,11 @@ Alessandro Berti\\[6ex]
 \newpage
 
 \section{Introduction}
+<<<<<<< HEAD
 In the following we will evaluate two different experimental studies to compare and evaluate the usage of conformance information in the predictions of future deviations and compliance risks. Later, we will discuss the overall viability of the usage of conformance information in predictive process mining tasks.
+=======
+In the following we will evaluate two different experimental studies - based on the event logs \textit{BPI Challenge 2012} and \textit{Sepsis Cases} - to compare and evaluate the usage of conformance information in the predictions of future deviations and compliance risks. Later, we will discuss the overall viability of the usage of conformance information in predictive process mining tasks. 
+>>>>>>> be23ddb9a14d6af4c8b8e7db4f7477b056d2eeea
 
 \section{Experimental Study 1: BPI Challenge 2012}
 The BPI challenge 2012 is a broadly known real-life log of a dutch bank, which captures the events of application procedures for loans and overdrafts. Application procedures for such products often involve multiple layers for reasons of diligence and security, which requires process mining specialists, to carefully evaluate deviant cases by the neccessity and importance. For Example, there were cases, which were contacted by phone for additional information with regard to their application, or the application is subsequently subjected to a final assessment upon which the application is either approved and activated, declined, or cancelled.
@@ -71,8 +75,142 @@ Discussion on computational aspects: Measure, reporting of runtime, feasability
 
 
 
-\section{Experimental study 2: Sepsis Cases}
+\section{Experimental study 2: Process Outcome of Sepsis Cases}
+In the event log \textit{Sepsis Cases}, cases represent patients going through a sepsis-specific handling pathway in a hospital. The data is anonymized and timestamps have been randomized. Events were recorded using an ERP. Additionally, 39 case attributes are present in the log. 
+A suitable application would be to predict the outcome of a case. Since there is a set of different discharge types - as they are called in a study on patient trajectories \cite{sepsis_study} - \textit{Release A-E}, we can easily set these as the \texttt{Process Outcome} prediction type in our CLI. Note, that \textit{uncertain outcome} signifies, that none of these discharges were executed in the given case. To do so, we need to select \texttt{Process Outcome} as prediction goal and specify the activity names that represent the outcomes.
+In the following, we will present results based on:
+\begin{enumerate}
+        \item Control-flow only (base model)
+        \item Case-attributes only
+        \item Control-flow and alignments (conformance aware)
+        \item Different prefix lengths (only relevant for control-flow and alignments)
+\end{enumerate}
+\subsection{Control-flow only}
+\begin{itemize}
+        \item Discovery algorithm: Inductive miner with noise threshold $0.2$
+        \item Prediction target: Process outcome with outcome activties \textit{Release A-E}
+        \item Classification algorithm: Gradient Boosting / Logistic Regression with standard hyper-parameters
+\end{itemize}
+We observe that the model predicts primarily the majority labels (such as \textit{Release A} and \textit{uncertain\_outcome}). For prefix length 6 and prefix length 13 (median), the confusion matrices and per-class accuracies are displayed in Figures \ref{fig:control_flow_confusion_matrices} and \ref{fig:control_flow_per_class_accuracies}. This might be due to the fact, that \textit{Release A} contributes to 63.6\% and in 25.8\%, the discharge activity is skipped.
+
+The model achieves high accuracy on the majority class \textit{Release A} (around 97\%) and the \textit{uncertain\_outcome} class (around 87-89\%), but performs poorly on the minority outcomes (\textit{Release B-E}), which are rarely predicted correctly due to the class imbalance.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_confusion_matrix_len6.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_confusion_matrix_len13.png}
+	\caption{Confusion matrices for prefix length 9 (left) and 13 (right) for control-flow only classifier.}
+	\label{fig:control_flow_confusion_matrices}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_per_class_accuracy_len6.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_per_class_accuracy_len13.png}
+	\caption{Per-class accuracies for prefix length 6 (left) and 13 (right) for control-flow only classifier.}
+	\label{fig:control_flow_per_class_accuracies}
+\end{figure}
+
+Naturally, we are interested in the question
+\begin{quotation}
+\textit{What influence does the length of the prefixes have on the prediction quality (e.g. accuracy, F1)?}
+\end{quotation}
+To answer this, we visualize the accuracy and F1-score per prefix length in \ref{fig:control_flow_by_len_vis}. As the prefix length increases from 1 to 15, the accuracy increases from approximately 0.63 to 0.81, and the F1 score increases from 0.48 to 0.78.
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_by_len_vis.png}
+	\caption{Accuracy and F1 score based on prefix length for control-flow only classifier.}
+	\label{fig:control_flow_by_len_vis}
+\end{figure}
+
+We can also visualize the importance of the given features. The most important features are the occurrences of clinical activities like \textit{Admission NC} (Normal Care admission), \textit{Admission IC} (Intensive Care admission), \textit{IV Liquid}, and \textit{IV Antibiotics}. Figure \ref{fig:control_flow_feature_importances} shows the top predictive features for both prefix lengths. It can be clearly observed, that the feature importance does change depending on the prefix length.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_feature_importance_len6.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/control_flow_feature_importance_len13.png}
+	\caption{Importance of features for prefix length 6 (left) and 13 (right) for control-flow only classifier.}
+	\label{fig:control_flow_feature_importances}
+\end{figure}
+Subsequently, we will analyze the resource consumption by our code by dissecting the total time into the time spent on specific pipeline steps, as well as stating the peak memory consumed during the execution. The runtime of our code is depicted in \ref{fig:control_flow_runtime}. It shows us that the majority of time is consumed by the discovery and the model training - this is to be expected.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figures/sepsis/control_flow_runtime.png}
+	\caption{Runtime of the control-flow based classifier.}
+	\label{fig:control_flow_runtime}
+\end{figure}
+
+\subsection{Case attributes only}
+For the case-attributes-only approach, we utilize the static trace-level attributes (such as age, clinical criteria, and diagnosis codes) associated with each patient's case. Since these attributes are static and do not change as the case progresses, the prefix length is irrelevant for this model. We split the event log (75\% training, 25\% testing) and train a Logistic Regression classifier on all available case attributes to predict the discharge types.
+
+The model achieves an overall accuracy of 81\% and an F1-score of 78\%. As shown in the confusion matrix and the per-class accuracy bar chart (Figure \ref{fig:case_attributes_eval}), the classifier performs moderately well on the majority outcome \textit{Release A} (89.9\% correct) and achieves high success on the \textit{uncertain\_outcome} class (93.3\% correct). However, due to class imbalance and the static nature of the attributes, prediction accuracy for minority discharge outcomes (\textit{Release B-E}) remains extremely low.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/case_attributes_confusion_matrix.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/case_attributes_per_class_accuracy.png}
+	\caption{Confusion matrix (left) and per-class accuracies (right) for the case-attributes-only classifier.}
+	\label{fig:case_attributes_eval}
+\end{figure}
+
+The feature importance chart (Figure \ref{fig:case_attributes_feature_importance}) shows the top predictive attributes. Here, it seems that many attributes are similarly predictive. This might be attributed to correlation or causation between the case attributes.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.7\textwidth]{figures/sepsis/case_attributes_feature_importance.png}
+	\caption{Feature importances for the case-attributes-only classifier.}
+	\label{fig:case_attributes_feature_importance}
+\end{figure}
+
+\subsection{Alignment-based}
+Another way to gain more information about a case is to align the trace to the process model. Using the inductive miner with a noise threshold of 0.2, we discovered a normative process model with which we can determine traces deviating from the discovered to-be process execution. Of course, it must be noted that this does not provide us with an \textbf{actual normative process model}. This means that the results from aligning model and log will include deviations that are, in reality, no deviations and in parallel, miss deviations that would be discovered if the log was aligned with the real process model.
+We conducted the same prefix length based predictions as we did with the control-flow, but with aligned traces. 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/alignments_confusion_matrix_len6.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/alignments_confusion_matrix_len13.png}
+	\caption{Confusion matrices for prefix length 6 (left) and 13 (right) for alignments classifier.}
+	\label{fig:alignments_confusion_matrices}
+\end{figure}
+The alignment-based prediction approach has a very high recall of the majority label (\textit{Release A}) again, but poor class-accuracy for all other classes, including the uncertain outcome class. This can be seen in the confusion matrices \ref{fig:alignments_confusion_matrices} and the average class accuracy charts \ref{fig:alignments_per_class_accuracies}.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/alignments_per_class_accuracy_len6.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis/alignments_per_class_accuracy_len13.png}
+	\caption{Per-class accuracies for prefix length 6 (left) and 13 (right) for alignments classifier.}
+	\label{fig:alignments_per_class_accuracies}
+\end{figure}
+Notably, an increase in prefix length did not improve the F1-score or the overall accuracy. This behavior is strange and hints at the classifier being overly biased toward the majority class due to the severe class imbalance, thereby failing to leverage the additional structural and behavioral deviation patterns captured by the alignments at longer prefix lengths.
+\begin{figure}[t]
+	\includegraphics[width=1\textwidth]{figures/sepsis/alignments_by_len_vis.png}
+	\caption{Accuracy and F1 score based on prefix length for alignments classifier.}
+	\label{fig:alignments_by_len_vis}
+\end{figure}
+
+For the computational resource consumption we can clearly see, that aligning the train and test splits of the event log to the process model contributes mainly to the time the CLI pipeline took in total. Only about a third of the time was spent on tasks non-alignment related. The script's peak memory usage was about 259MB.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\textwidth]{figures/sepsis/alignments_runtime.png}
+	\caption{Runtime of the alignments based classifier.}
+	\label{fig:alignments_runtime}
+\end{figure}
+
+
+
+\subsection{Conclusion: Conformance-Aware vs. Conformance-Agnostic Predictive Monitoring}
+In this experimental study, we evaluated the predictive capabilities of three distinct feature sets: control-flow (conformance-agnostic), static case attributes, and process alignments (conformance-aware) - to forecast process outcomes in the \textit{Sepsis Cases} event log.
+
+The \textbf{conformance-agnostic approaches} (control-flow and case attributes) served as strong baselines. The case-attributes-only model immediately achieved a high baseline accuracy ($81\%$) due to the strong predictive power of static clinical indicators available at patient admission. Meanwhile, the control-flow-only model demonstrated a clear progression: as the prefix length increased from 1 to 15, the classifier gradually captured the sequential context of clinical interventions (e.g., \textit{IV Liquid}, \textit{Admission IC}), resulting in a steady performance climb (F1-score rising from $0.48$ to $0.78$). Both models, however, suffered significantly from the severe class imbalance, heavily favoring the majority outcomes (\textit{Release A} and \textit{uncertain\_outcome}).
+
+In contrast, the \textbf{conformance-aware approach} utilizing alignment-based features presented a unexpected paradox. While alignments theoretically provide richer behavioral context by explicitly mapping actual traces against a normative process model, this approach did not yield the anticipated performance boost. Instead, the alignment-based classifier remained stagnated across varying prefix lengths. This behavior can be attributed to two main factors:
+\begin{enumerate}
+    \item \textbf{Model Generalization:} The normative model discovered by the Inductive Miner (noise threshold $0.2$) may have been too permissive or underfitting, leading to uniform alignment costs and features that failed to provide discriminative signals for minority classes.
+    \item \textbf{Class Imbalance Vulnerability:} The structural deviation patterns captured by the alignments were entirely overshadowed by the overwhelming presence of the majority class, forcing the classifier to rely on majority-label shortcuts.
+\end{enumerate}
+
+Furthermore, from a resource consumption perspective, the conformance-aware pipeline introduces a severe bottleneck. While conformance-agnostic feature extraction is computationally lightweight and scales linearly, alignment computation scales exponentially with trace prefix lengths, drastically increasing peak memory and runtime without delivering a proportional dividend in accuracy or F1-score.
+For highly imbalanced healthcare process logs like \textit{Sepsis Cases}, a conformance-agnostic approach combining static case attributes with early control-flow prefixes yields the most efficient and accurate predictive performance. Conformance-aware (alignment-based) predictive monitoring should only be deployed if the underlying process model is strictly constrained, highly reliable, and where identifying structural deviations is a primary, explicit domain requirement rather than a proxy for outcome classification.
 \begin{comment}
+
 1. A clear definition of the prediction problem and label construction: for example, defining a
 case as “deviant” if its final alignment cost exceeds a chosen threshold, if a particular rule is
 violated (e.g., an LTL constraint), or if conformance checking detects a specific type of non-
@@ -117,4 +255,13 @@ Discussion on computational aspects: Measure, reporting of runtime, feasability
 ——> Mention alignment noise, multiple target labels for one case, definition of labels, missing labels for cases, bad data quality, highly individual data, 
 -> limitations and ideas to future work
 \end{comment}
+\begin{thebibliography}{10}
+\bibitem{feature_importance}
+Michael Allen, \textit{Random Forest and SHAP Values}, 2022.
+\url{https://michaelallen1966.github.io/titanic/27_random_forest_shap.html} (visited June 2026).
+\bibitem{sepsis_study}
+Mannhardt, F., \& Blinde, D., \textit{Analyzing the trajectories of patients with sepsis using process mining}, 2017.
+\url{https://pure.tue.nl/ws/portalfiles/portal/68704626/bpmds_08_paper.pdf}
+\end{thebibliography}
+
 \end{document}
