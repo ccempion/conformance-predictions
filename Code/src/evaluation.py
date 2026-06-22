@@ -96,6 +96,35 @@ def compute_regression_metrics(
         "MAE": mae,
     }
 
+def pick_duration_unit(values_seconds) -> Tuple[float, str]:
+    """Pick ONE human-readable time unit for second-valued data, chosen from the
+    ~95th-percentile magnitude so the whole series can be shown in a single unit.
+
+    Used to render remaining-time errors (MAE/RMSE, both in seconds) as e.g. hours
+    or days instead of unreadable raw seconds. The unit is selected once and applied
+    uniformly by the caller (divide values by the returned divisor).
+
+    Args:
+        values_seconds: Array-like of durations in seconds (e.g. the test labels).
+
+    Returns:
+        Tuple[float, str]: (divisor, label), e.g. (3600.0, "hours"). Empty/all-zero
+        input falls back to (1.0, "seconds").
+    """
+    values = np.abs(np.asarray(values_seconds, dtype=float))
+    values = values[~np.isnan(values)]
+    if values.size == 0:
+        return (1.0, "seconds")
+
+    magnitude = float(np.percentile(values, 95))
+    if magnitude >= 86400:
+        return (86400.0, "days")
+    if magnitude >= 3600:
+        return (3600.0, "hours")
+    if magnitude >= 60:
+        return (60.0, "minutes")
+    return (1.0, "seconds")
+
 def compute_classification_metrics(
     y_true: np.ndarray,
     y_pred: np.ndarray,
@@ -285,7 +314,8 @@ def evaluate_by_prefix_length(
     log_train, log_test= pm4py.split_train_test(log, train_percentage=0.75)
 
     if log_train.empty or log_test.empty:
-        return pd.DataFrame(columns=["prefix_length", "accuracy", "f1"])
+        cols = ["prefix_length", "MSE", "RMSE", "MAE"] if is_regression else ["prefix_length", "accuracy", "f1"]
+        return pd.DataFrame(columns=cols)
 
     for prefix_length in prefix_range:
         X_train, y_train, class_names = pipeline.extract_target_and_feature(
@@ -331,11 +361,16 @@ def evaluate_by_prefix_length(
                 is_regression=is_regression,
             )
             metrics = result.get("metrics", {})
-            results.append({
-                "prefix_length": prefix_length,
-                "accuracy": metrics.get("accuracy"),
-                "f1": metrics.get("f1")
-            })
+            if is_regression:
+                # Regression metrics are keyed MSE/RMSE/MAE; spreading them keeps the
+                # by-length DataFrame usable (the old accuracy/f1 keys were always None here).
+                results.append({"prefix_length": prefix_length, **metrics})
+            else:
+                results.append({
+                    "prefix_length": prefix_length,
+                    "accuracy": metrics.get("accuracy"),
+                    "f1": metrics.get("f1")
+                })
         except ValueError as e:
             # Handle cases where training fails (e.g. single-class split)
             print(f"Skipping prefix length {prefix_length} due to training error: {e}")

@@ -518,6 +518,15 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
 
     is_classification = not is_remaining_time
 
+    # For remaining-time, pick one human-readable duration unit and apply it uniformly to
+    # printed errors and plots (raw seconds are unreadable). The unit is chosen from the
+    # error (residual) magnitude — the scale of the MAE/RMSE we actually display — not the
+    # much larger label scale, which would render errors as tiny fractions (e.g. 0.04 days).
+    unit_divisor, unit_label = (1.0, "seconds")
+    if is_remaining_time:
+        residuals = np.abs(np.asarray(y_pred, dtype=float) - np.asarray(y_test_arr, dtype=float))
+        unit_divisor, unit_label = evaluation.pick_duration_unit(residuals)
+
     if feature_importance is not None and len(feature_importance) > 0 and input("\nSave feature importance chart? (y/N): ").lower().strip() == 'y':
         path_input = input("Folder to save in (press Enter for Downloads): ").strip()
         base_dir = path_input if path_input else None
@@ -542,7 +551,12 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
             scope = "Global - Full traces"
         print(f"\n{target_str} metrics ({scope}):")
         for name, value in metrics.items():
-            print(f"  {name}: {value}")
+            if is_remaining_time and name in ("MAE", "RMSE") and unit_divisor != 1.0:
+                # MAE/RMSE share the seconds dimension, so convert to the chosen unit and
+                # keep raw seconds in parentheses for traceability. MSE (seconds^2) stays raw.
+                print(f"  {name}: {value / unit_divisor:.2f} {unit_label} ({value:.1f} s)")
+            else:
+                print(f"  {name}: {value}")
 
     if is_classification:
         if test_prefix_lengths is not None:
@@ -553,13 +567,27 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
         vis.display_confusion_matrix_text(y_test_arr, y_pred, class_names)
         vis.display_per_class_stats(y_test_arr, y_pred, class_names)
 
-    # Prefix-length performance breakdown (HL-17) — only meaningful when lengths vary.
-    if test_prefix_lengths is not None and len(set(test_prefix_lengths)) > 1:
+    # Prefix-length performance breakdown (HL-17). For classification it is only meaningful
+    # when lengths vary; for remaining-time we always surface it (one row for a fixed length).
+    if test_prefix_lengths is not None and (len(set(test_prefix_lengths)) > 1 or is_remaining_time):
         by_len = evaluation.metrics_by_prefix_length(
             y_test_arr, y_pred, y_prob, test_prefix_lengths, is_regression=is_remaining_time
         )
         print("\nMetrics by prefix length:")
-        print(by_len.to_string(index=False))
+        if is_remaining_time and not by_len.empty:
+            # Show the per-length errors in the same human-readable unit as the global metrics.
+            # MAE/RMSE share the seconds dimension; MSE (seconds^2) can't map to one time unit
+            # and is redundant with RMSE, so drop it from the readable view.
+            by_len_disp = by_len.drop(columns=[c for c in ("MSE",) if c in by_len.columns])
+            for col in ("MAE", "RMSE"):
+                if col in by_len_disp.columns:
+                    by_len_disp[col] = (by_len_disp[col] / unit_divisor).round(2)
+            by_len_disp = by_len_disp.rename(columns={
+                "MAE": f"MAE ({unit_label})", "RMSE": f"RMSE ({unit_label})"
+            })
+            print(by_len_disp.to_string(index=False))
+        else:
+            print(by_len.to_string(index=False))
 
         if is_classification:
             while True:
@@ -582,7 +610,7 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
         prompt = "\nDo you want to save a visualization of the performance per prefix-length? (y/N): "
         if input(prompt).lower().strip() == 'y':
             by_len_output_path = input("Enter filename (default: by_len_vis.png): ").strip() or "by_len_vis.png"
-            vis.plot_evaluate_by_prefix_length(by_len, by_len_output_path)
+            vis.plot_evaluate_by_prefix_length(by_len, by_len_output_path, unit_divisor, unit_label)
 
     if is_classification and input("\nSave confusion matrix and accuracy chart? (y/N): ").lower().strip() == 'y':
         path_input = input("Folder to save in (press Enter for Downloads): ").strip()
@@ -597,6 +625,12 @@ def _display_results(results, is_remaining_time, is_process_outcome, class_names
         roc_data, pr_data = evaluation.prepare_curve_data(y_test_arr, y_prob, class_names)
         saved_to = vis.save_curve_visuals(roc_data, pr_data, base_dir)
         print(f"Curves saved to: {saved_to}")
+
+    if is_remaining_time and input("\nSave regression plots (predicted-vs-actual, residuals)? (y/N): ").lower().strip() == 'y':
+        path_input = input("Folder to save in (press Enter for Downloads): ").strip()
+        base_dir = path_input if path_input else None
+        saved_to = vis.save_regression_visuals(y_test_arr, y_pred, base_dir, unit_divisor, unit_label)
+        print(f"Regression plots saved to: {saved_to}")
 
 
 def run_interactive_cli() -> List[Tuple[str, float]]:

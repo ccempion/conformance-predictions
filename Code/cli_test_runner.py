@@ -113,12 +113,16 @@ def build_answers(s: Scenario) -> List[str]:
         a.append("n")                                # "reconfigure hyperparameters and retrain?" -> break
 
     # --- post-evaluation prompts ---
-    if s.target == 2:                                # confusion-matrix/accuracy chart (process outcome only)
+    if s.target == 3:                                # remaining-time: _display_results emits three
+        # save prompts in order — feature importance, per-prefix-length viz, regression plots.
+        a += ["n", "n", "n"]
+    elif s.target == 2:                              # confusion-matrix/accuracy chart (process outcome only)
         if s.conf_chart_dir:
             a += ["y", s.conf_chart_dir]
         else:
             a.append("n")
-    a.append("n")                                    # "perform predictions on new data?"
+    if s.target != 3:
+        a.append("n")                                # feature-importance / next post-eval prompt
 
     # --- __main__ post-run prompts ---
     if s.pie_save:
@@ -129,6 +133,9 @@ def build_answers(s: Scenario) -> List[str]:
         a += ["y", s.json_save]                      # JSON report: save
     else:
         a.append("n")
+
+    if s.target == 3:
+        a.append("n")                                # "perform predictions on new data?" (restart) -> stop
 
     return a
 
