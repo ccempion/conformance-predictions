@@ -28,56 +28,99 @@ Alessandro Berti\\[6ex]
 \newpage
 
 \section{Introduction}
-<<<<<<< HEAD
-In the following we will evaluate two different experimental studies to compare and evaluate the usage of conformance information in the predictions of future deviations and compliance risks. Later, we will discuss the overall viability of the usage of conformance information in predictive process mining tasks.
-=======
-In the following we will evaluate two different experimental studies - based on the event logs \textit{BPI Challenge 2012} and \textit{Sepsis Cases} - to compare and evaluate the usage of conformance information in the predictions of future deviations and compliance risks. Later, we will discuss the overall viability of the usage of conformance information in predictive process mining tasks. 
->>>>>>> be23ddb9a14d6af4c8b8e7db4f7477b056d2eeea
+In the following we will evaluate two different experimental studies - based on the full(Experimental study 2) and filtered (Experimental study 1) event log \textit{Sepsis Cases} - to compare and evaluate the usage of conformance information in the predictions of future deviations and compliance risks. Later, we will discuss the overall viability of the usage of conformance information in predictive process mining tasks.
 
-\section{Experimental Study 1: BPI Challenge 2012}
-The BPI challenge 2012 is a broadly known real-life log of a dutch bank, which captures the events of application procedures for loans and overdrafts. Application procedures for such products often involve multiple layers for reasons of diligence and security, which requires process mining specialists, to carefully evaluate deviant cases by the neccessity and importance. For Example, there were cases, which were contacted by phone for additional information with regard to their application, or the application is subsequently subjected to a final assessment upon which the application is either approved and activated, declined, or cancelled.
+In the event log \textit{Sepsis Cases}, cases represent patients going through a sepsis-specific handling pathway in a hospital. The data is anonymized and timestamps have been randomized. Events were recorded using an ERP. Additionally, 39 case attributes are present in the log.
 
-As an experimental study, we want to predict, whether a running case will be "too" deviant through alignments. This is not a trivial task and further requires a business analyst to investigate how happy paths for each target outcome would look like. 
-\begin{comment}
-1. A clear definition of the prediction problem and label construction: for example, defining a
-case as “deviant” if its final alignment cost exceeds a chosen threshold, if a particular rule is
-violated (e.g., an LTL constraint), or if conformance checking detects a specific type of non-
-compliant pattern. Motivations for the chosen definition must be documented.
-\end{comment}
-%including its characteristics and why it is suitable for the study
-\begin{comment}
-Lab Evaluation Report: deliverables and content
+\section{Experimental Study 1: Remaining Time Prediction of Sepsis cases}
+As an experimental study, we want to predict the remaining time of specific prefix lengths. In application, remaining time plays a huge role in time-bounded cases. In hospital's e.g. sepsis-diagnosis for example, remaining time is specifically important since the severity of the disease could worsen or even lead to unlucky outcomes. Therefore, having a remaining time prediction(optimally connected to specific activities), can be used to build an early-warn-system and recommendations for later activities such that the remaining time of a diagnosis can actively be lowered.
+In this experimental study we have used a filtered version of the sepsis cases, where we filtered out all the cases having a higher duration of approximately 30 days. We did it for simplicity reasons, such that we have a more homogenous event log. This is due to the huge variations in its case durations: Some cases have a duration of over one year, wheras others have a duration of around one day.
 
-1 Definition of the prediction problem and label construction for conformance deviation targets
+In real-life application, this approach is not recommended, since the remaining time prediction's outcomes target are explicitly those cases, which have a duration exceeding specific thresholds.
 
-explaining both technical details and conceptual implications for organizations that wish to anticipate and mitigate non-compliant behavior.
+In the following evaluation, I will focus on multiple variations of algorithms with their respective parameters. However, most of the chosen parameters of the CLI walkthroughs remain the same. Furthermore, the discovered Petri net visualization itself carries no meaning for the remaining-time target, so we neither display nor save it. However, a process model still has to be \emph{discovered} so that the alignment-based (conformance-aware) features can be computed for the conformance-based runs.
+For all the following outcomes, we configured the following standard parameters:
 
-2 Choosing dataset for the prediction problem
+\begin{enumerate}
+	\item Prediction Target: ``Remaining time''
+	\item Prefix Mode: varying, 1 to 8
+	\item Split value: 0.7
+	\item Discovery algorithm (for the alignment features): Inductive miner with noise threshold 0.2 % [assumption --- please proofread / adjust]
+\end{enumerate}
 
-3 definition of the dedicated CLI walkthrough
--> Maybe 2-3 cases which are based on prefix length
+With these settings, we compare three regression algorithms, each trained once on the control flow (base model) and once on control flow augmented with alignments (conformance-based):
+\begin{enumerate}
+	\item Decision Tree Regressor
+	\begin{enumerate}
+		\item \texttt{max\_depth}: 8
+		\item \texttt{random\_state}: 42
+	\end{enumerate}
+	\item Random Forest Regressor
+	\begin{enumerate}
+		\item \texttt{n\_estimators}: 100
+		\item \texttt{random\_state}: 42
+	\end{enumerate}
+	\item Gradient Boosting Regressor
+	\begin{enumerate}
+		\item \texttt{random\_state}: 42
+	\end{enumerate}
+\end{enumerate}
 
-4  evaluation protocol: How will the data be processed and what splitting etc. is applied and why exactly that
-
-5.1 Application of Baseline Model 
-
-5.2 Application of Conformance-aware model (which may augment the results)
--> Clearly state the chosen parameters and why they were chosen for the specific usecase
-
-6 Evaluate the target with the evaluation module’s outputs. 
-
-7 COMPARISON: baseline/conformance target predictions
--> Usage of visualizations and metrics
-
-Discussion on computational aspects: Measure, reporting of runtime, feasability
--> mention the conformance deviations
--> mention that if prefix-generation with rising length makes the whole process taking much more computational power
-\end{comment}
+Additionally, our regression pipeline outputs the root mean squared error (RMSE) and the mean absolute error (MAE). In this study we report \emph{only} the MAE, because it simply averages the absolute values of the deviations, making it an appropriate metric to explain to non-technical stakeholders. All errors are reported in \emph{days} (the CLI automatically selects a human-readable time unit).
 
 
+\subsection{Evaluation protocol}
+The filtered log of $844$ cases is split $0.7\,/\,0.3$ into training and test \emph{cases} before any prefix extraction, so that no prefix of a test case can leak into the training data. Each case is then expanded into all prefixes of length $1$ to $8$, yielding $4476$ training and $1824$ test prefix-instances. The label of a prefix is the true remaining time (in seconds) from the end of that prefix to the completion of its case.
+
+\subsection{Results}
+Table~\ref{tab:rt_mae} reports the global MAE (pooled over prefix lengths $1$--$8$) for every regressor and feature set.
+
+\begin{table}[htbp]
+	\centering
+	\begin{tabular}{l c c}
+		\hline
+		\textbf{Regressor} & \textbf{Control-flow (base)} & \textbf{conformance-aware} \\
+		\hline
+		Decision Tree     & $5.17$ & $5.35$ \\
+		Random Forest     & $5.46$ & $5.27$ \\
+		Gradient Boosting & $\mathbf{4.98}$ & $5.00$ \\
+		\hline
+	\end{tabular}
+	\caption{Global Mean Absolute Error (in days) by regressor and feature set, pooled over prefix lengths $1$--$8$. Lower is better; the best value is shown in bold.}
+	\label{tab:rt_mae}
+\end{table}
+
+Two patterns stand out. First, \textbf{Gradient Boosting} is the strongest regressor in both feature sets ($\approx 5.0$ days), whereas the Random Forest is the weakest on the control-flow features. Second, and more important for our research question, \textbf{adding conformance (alignment) information does not improve the remaining-time prediction}: the conformance-aware MAE is essentially equal to (Gradient Boosting: $5.00$ vs.\ $4.98$ days) or slightly worse than (Decision Tree) the control-flow baseline, and only the Random Forest shows a marginal gain for the conformance-aware case. This mirrors the conclusion of Experimental Study~2.
+Figure~\ref{fig:rt_mae_by_len} shows the MAE as a function of prefix length for all six configurations.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.9\textwidth]{figures/sepsis_remaining_time/mae_by_prefix_comparison.png}
+	\caption{Remaining-time MAE (days) by prefix length for the three regressors on control-flow (solid lines) vs.\ conformance-aware (dashed lines) features.}
+	\label{fig:rt_mae_by_len}
+\end{figure}
+
+Contrary to the intuition that observing more of a case should make its remaining time easier to predict, the MAE stays flat or even drifts slightly \emph{upward} as the prefix grows from $1$ to $8$ (e.g.\ Gradient Boosting on control-flow rises from $\approx 4.9$ to $\approx 5.1$ days). The Gradient Boosting curves sit lowest and are the most stable, while the Random Forest curves are the highest and most volatile. For every regressor the control-flow and conformance-aware curves track each other closely, again indicating that the alignment features add little signal. The number of test instances per length decreases ($242 \to 200$) as the shorter cases run out of events.
+
+To understand the error structure, Figure~\ref{fig:rt_diag} shows the predicted-vs-actual scatter (left) and the residual distribution (right) for the best model (Gradient Boosting on control-flow features).
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.48\textwidth]{figures/sepsis_remaining_time/control_flow_gradient_boosting_predicted_vs_actual.png}
+	\includegraphics[width=0.48\textwidth]{figures/sepsis_remaining_time/control_flow_gradient_boosting_residuals.png}
+	\caption{Predicted vs.\ actual remaining time (left) and residual distribution (right) for the Gradient Boosting regressor on control-flow features.}
+	\label{fig:rt_diag}
+\end{figure}
+
+The scatter plot reveals the core limitation: the model compresses almost all predictions into a narrow band of roughly $3$--$7$ days regardless of the true remaining time. Cases with a large actual remaining time ($10$--$30$ days) are therefore strongly \emph{under}-predicted (points far below the $y=x$ line), a classic regression-to-the-mean effect. The residual histogram confirms this: most residuals sit slightly above zero (the many near-completion prefixes are over-predicted by a few days), but a heavy left tail reaches down to $-25$ days from the minority of long-running cases. This asymmetry is the main driver of the $\approx 5$-day MAE, and it is a property of the (filtered) data rather than of the feature set --- which is precisely why the conformance features cannot help.
+
+\subsection{Computational aspects}
+The conformance-aware pipeline is markedly more expensive. On the same split, control-flow feature extraction over prefixes $1$--$8$ took $\approx 0.2$\,s and produced $16$ features, whereas the conformance-aware extraction took $\approx 4.4$\,s --- about $20\times$ longer, dominated by alignment computation --- and produced $165$ features. Training times were small throughout ($\le 3.5$\,s per regressor). Crucially, this extra cost did \emph{not} translate into a lower MAE. Because alignments are recomputed for every prefix, the cost grows with prefix length and, more steeply, with log size; on larger or unfiltered logs (the full Sepsis log, or the BPI Challenge logs) alignment computation becomes the dominant and fastest-growing cost, so the conformance-aware approach scales poorly relative to its (here, absent) predictive benefit.
+
+\subsection{Threats to validity and Future work}
+This experimental study showed, that control-flow-based models exhibit a stronger overall outcome for this specific configuration and event log. Nevertheless, it is highly narrowed to specific parameters mirroring our observations on the overall validity of the usage of conformance-based diagnostics. Opposed to our observations, we think that alignments can still improve predicion pipelines, but requires further investigation into the algorithms and features used for prediction.
 
 \section{Experimental study 2: Process Outcome of Sepsis Cases}
-In the event log \textit{Sepsis Cases}, cases represent patients going through a sepsis-specific handling pathway in a hospital. The data is anonymized and timestamps have been randomized. Events were recorded using an ERP. Additionally, 39 case attributes are present in the log. 
 A suitable application would be to predict the outcome of a case. Since there is a set of different discharge types - as they are called in a study on patient trajectories \cite{sepsis_study} - \textit{Release A-E}, we can easily set these as the \texttt{Process Outcome} prediction type in our CLI. Note, that \textit{uncertain outcome} signifies, that none of these discharges were executed in the given case. To do so, we need to select \texttt{Process Outcome} as prediction goal and specify the activity names that represent the outcomes.
 In the following, we will present results based on:
 \begin{enumerate}
@@ -195,8 +238,6 @@ For the computational resource consumption we can clearly see, that aligning the
 	\label{fig:alignments_runtime}
 \end{figure}
 
-
-
 \subsection{Conclusion: Conformance-Aware vs. Conformance-Agnostic Predictive Monitoring}
 In this experimental study, we evaluated the predictive capabilities of three distinct feature sets: control-flow (conformance-agnostic), static case attributes, and process alignments (conformance-aware) - to forecast process outcomes in the \textit{Sepsis Cases} event log.
 
@@ -210,52 +251,7 @@ In contrast, the \textbf{conformance-aware approach} utilizing alignment-based f
 
 Furthermore, from a resource consumption perspective, the conformance-aware pipeline introduces a severe bottleneck. While conformance-agnostic feature extraction is computationally lightweight and scales linearly, alignment computation scales exponentially with trace prefix lengths, drastically increasing peak memory and runtime without delivering a proportional dividend in accuracy or F1-score.
 For highly imbalanced healthcare process logs like \textit{Sepsis Cases}, a conformance-agnostic approach combining static case attributes with early control-flow prefixes yields the most efficient and accurate predictive performance. Conformance-aware (alignment-based) predictive monitoring should only be deployed if the underlying process model is strictly constrained, highly reliable, and where identifying structural deviations is a primary, explicit domain requirement rather than a proxy for outcome classification.
-\begin{comment}
 
-1. A clear definition of the prediction problem and label construction: for example, defining a
-case as “deviant” if its final alignment cost exceeds a chosen threshold, if a particular rule is
-violated (e.g., an LTL constraint), or if conformance checking detects a specific type of non-
-compliant pattern. Motivations for the chosen definition must be documented.
-\end{comment}
-%including its characteristics and why it is suitable for the study
-\begin{comment}
-Lab Evaluation Report: deliverables and content
-
-1 Definition of the prediction problem and label construction for conformance deviation targets
-
-explaining both technical details and conceptual implications for organizations that wish to anticipate and mitigate non-compliant behavior.
-
-2 Choosing dataset for the prediction problem
-
-3 definition of the dedicated CLI walkthrough
--> Maybe 2-3 cases which are based on prefix length
-
-4  evaluation protocol: How will the data be processed and what splitting etc. is applied and why exactly that
-
-5.1 Application of Baseline Model 
-
-5.2 Application of Conformance-aware model (which may augment the results)
--> Clearly state the chosen parameters and why they were chosen for the specific usecase
-
-6 Evaluate the target with the evaluation module’s outputs. 
-
-7 COMPARISON: baseline/conformance target predictions
--> Usage of visualizations and metrics
-
-Discussion on computational aspects: Measure, reporting of runtime, feasability
--> mention the conformance deviations
--> mention that if prefix-generation with rising length makes the whole process taking much more computational power
-\end{comment}
-
-\section{viability discussion}
-\begin{comment}
-8 General discussion: 
--> does it improve predictions using conformance features?
--> Which indicators are useful
--> threats to validity?
-——> Mention alignment noise, multiple target labels for one case, definition of labels, missing labels for cases, bad data quality, highly individual data, 
--> limitations and ideas to future work
-\end{comment}
 \begin{thebibliography}{10}
 \bibitem{feature_importance}
 Michael Allen, \textit{Random Forest and SHAP Values}, 2022.
