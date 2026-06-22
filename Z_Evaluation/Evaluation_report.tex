@@ -27,9 +27,12 @@ Alessandro Berti\\[6ex]
 \newpage
 
 \section{Introduction}
-In the following we will evaluate two different experimental studies to compare and evaluate the usage of conformance information in the predictions of future deviations and compliance risks. Later, we will discuss the overall viability of the usage of conformance information in predictive process mining tasks. 
+In the following we will evaluate two different experimental studies to compare and evaluate the usage of conformance information in the predictions of future deviations and compliance risks. Later, we will discuss the overall viability of the usage of conformance information in predictive process mining tasks.
 
 \section{Experimental Study 1: BPI Challenge 2012}
+The BPI challenge 2012 is a broadly known real-life log of a dutch bank, which captures the events of application procedures for loans and overdrafts. Application procedures for such products often involve multiple layers for reasons of diligence and security, which requires process mining specialists, to carefully evaluate deviant cases by the neccessity and importance. For Example, there were cases, which were contacted by phone for additional information with regard to their application, or the application is subsequently subjected to a final assessment upon which the application is either approved and activated, declined, or cancelled.
+
+As an experimental study, we want to predict, whether a running case will be "too" deviant through alignments. This is not a trivial task and further requires a business analyst to investigate how happy paths for each target outcome would look like. 
 \begin{comment}
 1. A clear definition of the prediction problem and label construction: for example, defining a
 case as “deviant” if its final alignment cost exceeds a chosen threshold, if a particular rule is

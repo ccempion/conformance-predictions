@@ -187,7 +187,7 @@ def _prompt_data_and_model() -> Tuple[str, Optional[str], Optional[config.Discov
     ][choice - 1]
 
     if discovery_alg == config.Discovery_alg.INDUCTIVE:
-        discovery_params['noise_threshold'] = float(input("Noise threshold (default 0.0): ") or 0.0)
+        discovery_params['noise_threshold'] = float(input("Noise threshold (default 0): ") or 0.0)
         discovery_params['disable_fallthroughs'] = input("Disable fall-throughs? (y/N): ").lower() == 'y'
     elif discovery_alg == config.Discovery_alg.ALPHA:
         print("Alpha Miner has no configurable parameters.")

@@ -18,7 +18,6 @@ from typing import Dict, Any, List, Tuple, Optional
 
 from src.config import ModelRepresentation
 
-
 # ------------------------------------------
 # Image display (and save)
 # ------------------------------------------
@@ -327,7 +326,6 @@ def plot_evaluate_by_prefix_length(
         plt.close(fig)
     else:
         plt.show()
-
 
 def plot_processing_times(
     time_list: List[Tuple[str, float]],
