@@ -229,6 +229,118 @@ def save_curve_visuals(
     return str(folder)
 
 
+def plot_predicted_vs_actual(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    output_path: Optional[str] = None,
+    unit_divisor: float = 1.0,
+    unit_label: str = "seconds",
+) -> None:
+    """Scatter of actual vs. predicted remaining time, with a y=x reference line.
+
+    Points hugging the diagonal mean accurate predictions; systematic departure reveals
+    over-/under-estimation. Values are divided by ``unit_divisor`` so the axes read in a
+    human unit (see ``evaluation.pick_duration_unit``).
+
+    Args:
+        y_true (np.ndarray): True remaining time in seconds.
+        y_pred (np.ndarray): Predicted remaining time in seconds.
+        output_path (Optional[str], optional): Path to save to; if None, show interactively.
+        unit_divisor (float, optional): Seconds-per-unit divisor. Defaults to 1.0.
+        unit_label (str, optional): Display unit label. Defaults to "seconds".
+    """
+    y_true = np.asarray(y_true, dtype=float) / unit_divisor
+    y_pred = np.asarray(y_pred, dtype=float) / unit_divisor
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.scatter(y_true, y_pred, alpha=0.4, edgecolors='none', color="steelblue")
+
+    lo = float(min(y_true.min(), y_pred.min())) if y_true.size else 0.0
+    hi = float(max(y_true.max(), y_pred.max())) if y_true.size else 1.0
+    ax.plot([lo, hi], [lo, hi], color='navy', linestyle='--', label='Perfect prediction (y=x)')
+
+    ax.set_xlabel(f"Actual remaining time ({unit_label})")
+    ax.set_ylabel(f"Predicted remaining time ({unit_label})")
+    ax.set_title("Predicted vs. Actual Remaining Time")
+    ax.legend(loc="upper left")
+    ax.grid(True, linestyle='--', alpha=0.7)
+
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
+
+
+def plot_residual_distribution(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    output_path: Optional[str] = None,
+    unit_divisor: float = 1.0,
+    unit_label: str = "seconds",
+) -> None:
+    """Histogram of residuals (predicted - actual), centred on zero.
+
+    A residual cloud centred and symmetric around 0 indicates an unbiased model; a shifted
+    centre reveals systematic over-/under-estimation. Residuals are divided by
+    ``unit_divisor`` to read in a human unit.
+
+    Args:
+        y_true (np.ndarray): True remaining time in seconds.
+        y_pred (np.ndarray): Predicted remaining time in seconds.
+        output_path (Optional[str], optional): Path to save to; if None, show interactively.
+        unit_divisor (float, optional): Seconds-per-unit divisor. Defaults to 1.0.
+        unit_label (str, optional): Display unit label. Defaults to "seconds".
+    """
+    residuals = (np.asarray(y_pred, dtype=float) - np.asarray(y_true, dtype=float)) / unit_divisor
+
+    fig, ax = plt.subplots(figsize=(9, 6))
+    ax.hist(residuals, bins=40, color="steelblue", edgecolor="black", alpha=0.8)
+    ax.axvline(0.0, color='navy', linestyle='--', label='Zero error')
+
+    ax.set_xlabel(f"Residual (predicted - actual) ({unit_label})")
+    ax.set_ylabel("Count")
+    ax.set_title("Residual Distribution")
+    ax.legend(loc="upper right")
+    ax.grid(True, linestyle='--', alpha=0.7)
+
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150)
+        plt.close(fig)
+    else:
+        plt.show()
+
+
+def save_regression_visuals(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    base_dir: Optional[str] = None,
+    unit_divisor: float = 1.0,
+    unit_label: str = "seconds",
+) -> str:
+    """Create a timestamped folder and save predicted-vs-actual + residual plots inside it.
+
+    Regression counterpart of ``save_evaluation_visuals``. Returns the absolute path of the
+    created folder.
+    """
+    import pathlib
+    import datetime
+
+    root = pathlib.Path(base_dir) if base_dir else pathlib.Path.home() / "Downloads"
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    folder = root / f"regression_results_{timestamp}"
+    folder.mkdir(parents=True, exist_ok=True)
+
+    plot_predicted_vs_actual(
+        y_true, y_pred, str(folder / "predicted_vs_actual.png"), unit_divisor, unit_label)
+    plot_residual_distribution(
+        y_true, y_pred, str(folder / "residuals.png"), unit_divisor, unit_label)
+
+    return str(folder)
+
+
 def plot_roc_curves(
     roc_data: Dict[str, Tuple[np.ndarray, np.ndarray]],
     output_path: Optional[str] = None,
@@ -296,25 +408,32 @@ def plot_pr_curves(
 def plot_evaluate_by_prefix_length(
     results_df: pd.DataFrame,
     output_path: Optional[str] = None,
+    unit_divisor: float = 1.0,
+    unit_label: str = "seconds",
 ) -> None:
     """
     Plots the results of metrics_by_prefix_length.
-    X-axis: prefix_length. Y-axis: Metrics (Accuracy/F1 for clf, MAE for reg).
+    X-axis: prefix_length. Y-axis: Metrics (Accuracy/F1 for clf, MAE/RMSE for reg).
+
+    For regression, error columns (MAE/RMSE) are divided by ``unit_divisor`` so the
+    y-axis reads in a human unit (see ``evaluation.pick_duration_unit``).
     """
     fig, ax = plt.subplots(figsize=(10, 6))
-    
+
     if "accuracy" in results_df.columns:
         ax.plot(results_df["prefix_length"], results_df["accuracy"], marker='o', label="Accuracy", color="blue")
     if "f1" in results_df.columns:
         ax.plot(results_df["prefix_length"], results_df["f1"], marker='o', label="F1 Score", color="green")
-    
+
     if "MAE" in results_df.columns:
-        ax.plot(results_df["prefix_length"], results_df["MAE"], marker='s', label="MAE", color="red")
-        ax.set_ylabel("Mean Absolute Error (seconds)")
+        ax.plot(results_df["prefix_length"], results_df["MAE"] / unit_divisor, marker='s', label="MAE", color="red")
+        if "RMSE" in results_df.columns:
+            ax.plot(results_df["prefix_length"], results_df["RMSE"] / unit_divisor, marker='^', label="RMSE", color="darkorange")
+        ax.set_ylabel(f"Error ({unit_label})")
     else:
         ax.set_ylabel("Score")
         ax.set_ylim(0, 1.05)
-    
+
     ax.set_xlabel("Prefix Length")
     ax.set_title("Model Performance by Prefix Length")
     ax.legend()
