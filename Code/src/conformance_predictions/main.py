@@ -8,8 +8,8 @@ import sys
 import json
 import numpy as np
 from typing import Optional, Tuple, List, Any
-from src import model_training, pipeline, config, evaluation, feature_extraction
-from src import visualization as vis
+from conformance_predictions import model_training, pipeline, config, evaluation, feature_extraction
+from conformance_predictions import visualization as vis
 import pm4py
 
 def _prompt_classifier_params(algorithm: config.ClassificationAlgorithm) -> dict:

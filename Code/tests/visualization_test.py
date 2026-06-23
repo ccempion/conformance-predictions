@@ -4,8 +4,8 @@ import pandas as pd
 import os
 import io as python_io
 import sys
-from src import visualization
-from src.evaluation import compute_roc_curve, compute_pr_curve
+from conformance_predictions import visualization
+from conformance_predictions.evaluation import compute_roc_curve, compute_pr_curve
 
 @pytest.fixture
 def dummy_data():

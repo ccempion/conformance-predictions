@@ -22,7 +22,7 @@ from sklearn.ensemble import (
 from sklearn.linear_model import LogisticRegression
 from typing import Dict, Any, Tuple, Optional
 
-from src.config import RegressionAlgorithm, ClassificationAlgorithm
+from conformance_predictions.config import RegressionAlgorithm, ClassificationAlgorithm
 
 
 def predict(model: Pipeline, X: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:

@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import os
-from src.io import load_event_log, load_process_model
+from conformance_predictions.io import load_event_log, load_process_model
 
 def test_load_event_log_csv(tmp_path):
     # Create a dummy CSV log

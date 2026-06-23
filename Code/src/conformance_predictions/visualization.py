@@ -16,7 +16,7 @@ from pm4py.objects.petri_net.obj import PetriNet, Marking
 
 from typing import Dict, Any, List, Tuple, Optional
 
-from src.config import ModelRepresentation
+from conformance_predictions.config import ModelRepresentation
 
 # ------------------------------------------
 # Image display (and save)
