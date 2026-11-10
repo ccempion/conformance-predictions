@@ -18,7 +18,7 @@ We're building a Python-based tool that combines process mining and machine lear
 - **PM4Py** — process mining (conformance checking, event log handling)
 - **Python / scikit-learn** — machine learning and data processing
 - **Trello** — task tracking
-- **GitLab** — version control and project management
+- **GitLab (RWTH)** — version control and project management
 
 ## Repository layout
 
@@ -59,8 +59,16 @@ We're building a Python-based tool that combines process mining and machine lear
       └── visualization_test.py
   ```
 - **`Requirements Engineering/`**, **`Project Setup/`**, **`Sprint 1–3/`**, **`Assessment/`** — academic deliverables (LaTeX/PDF), including the per-sprint **User Guide**.
-- **`Sources/`** — reference literature.
+## Data
+
+The event logs are not included in this repository. The experiments use the public **Sepsis Cases** event log (Mannhardt, 2016), available from the 4TU.ResearchData repository: https://doi.org/10.4121/uuid:915d2bfb-7e84-49ad-a286-dc35f063a460. Download the `.xes` / `.xes.gz` file and point the tool to it (see [`Code/README.md`](Code/README.md)).
 
 ## Status
 
 Working interactive pipeline. All three prediction targets (future deviations, process outcome, remaining time), the four feature types, and the discovery/ML algorithm options are implemented.
+
+> This is a mirror of the original project repository on the RWTH Aachen GitLab, where development took place.
+
+## License
+
+The source code is released under the [MIT License](LICENSE). Academic reports and figures are © the authors.
